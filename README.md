@@ -2,3 +2,4 @@
 
 This is the code repository for the NCEA API codebase.
 
+# How to use
