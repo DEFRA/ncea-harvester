@@ -19,6 +19,6 @@ variables:
   ACR.Deploy: false  
 
 steps
-  - template: steps-build-and-test.yml
-  - template: steps-build-and-push-docker-images.yml
-  - template: steps-build-and-push-helm-charts.yml
+- template: steps-build-and-test.yml
+- template: steps-build-and-push-docker-images.yml
+- template: steps-build-and-push-helm-charts.yml
