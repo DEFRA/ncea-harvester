@@ -18,7 +18,7 @@ variables:
   imageName: '$ncea.harvester:$(Build.BuildId)'
   ACR.Deploy: false  
 
-steps
+steps:
 - template: steps-build-and-test.yml
 - template: steps-build-and-push-docker-images.yml
 - template: steps-build-and-push-helm-charts.yml
