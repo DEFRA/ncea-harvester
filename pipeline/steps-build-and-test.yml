@@ -2,7 +2,7 @@ steps:
 
   - task: UseDotNet@2
     inputs:
-        version: '8.x'
+      version: '8.x'
 
   - task: SonarCloudPrepare@1
     displayName: 'Prepare analysis on SonarCloud'
