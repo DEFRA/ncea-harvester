@@ -1,17 +1,5 @@
-# Starter pipeline
-
-name: $(Date:yyyyMMdd)$(Rev:.r)
-
-trigger:
-  branches:
-    include:
-      - main
-      - feature/*
-
-pool:
-  vmImage: 'ubuntu-latest'
-
 steps:
+
   - task: UseDotNet@2
     inputs:
         version: '8.x'
@@ -60,4 +48,3 @@ steps:
     displayName: 'Publish Quality Gate Result'
     inputs:
       pollingTimeoutSec: '300'
-    
