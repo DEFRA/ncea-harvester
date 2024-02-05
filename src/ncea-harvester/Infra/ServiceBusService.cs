@@ -21,12 +21,18 @@ namespace ncea.harvester.infra
         private readonly string _serviceBusQueueName;
         private readonly AppSettings _appSettings;
 
-        public ServiceBusService(IOptions<AppSettings> appSettings)
+        public ServiceBusService(IOptions<AppSettings> appSettings, ServiceBusClient queueClient = null)
         {
             _appSettings = appSettings.Value;
             _serviceBusConnectionString = _appSettings.ServiceBusConnectionString;
             _serviceBusQueueName = _appSettings.ServiceBusQueueName;
-            _queueClient = new ServiceBusClient(_appSettings.ServiceBusConnectionString, new DefaultAzureCredential());
+
+            if (queueClient != null) {
+                _queueClient = queueClient;
+            }
+            else {
+                _queueClient = new ServiceBusClient(_appSettings.ServiceBusConnectionString, new DefaultAzureCredential());
+            }
         }
 
         public async Task SendMessageAsync(string messageBody)

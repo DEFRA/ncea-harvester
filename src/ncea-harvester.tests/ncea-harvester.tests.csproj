@@ -25,10 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Processors\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ncea-harvester\ncea-harvester.csproj" />
   </ItemGroup>
 

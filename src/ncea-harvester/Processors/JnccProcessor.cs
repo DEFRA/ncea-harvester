@@ -34,9 +34,15 @@ namespace ncea.harvester.Processors
         {
             foreach (var documentLink in documentLinks)
             {
-                var apiUrl = "/waf/" + documentLink;
-                var metaDataXmlString = await _apiClient.GetAsync(apiUrl);
-                await _serviceBusService.SendMessageAsync(metaDataXmlString);
+                try
+                {
+                    var apiUrl = "/waf/" + documentLink;
+                    var metaDataXmlString = await _apiClient.GetAsync(apiUrl);
+                    await _serviceBusService.SendMessageAsync(metaDataXmlString);
+                } catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
         }
 
