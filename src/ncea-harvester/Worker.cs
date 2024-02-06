@@ -9,12 +9,14 @@ namespace ncea.harvester
         private readonly ILogger<Worker> _logger;
         private readonly IOptions<AppSettings> _appSettings;
         private readonly IProcessor _processor;
+        private readonly IHostApplicationLifetime _lifetime;
 
-        public Worker(ILogger<Worker> logger, IOptions<AppSettings> appSettings, IProcessor processor)
+        public Worker(ILogger<Worker> logger, IOptions<AppSettings> appSettings, IProcessor processor, IHostApplicationLifetime lifetime)
         {
             _logger = logger;
             _appSettings = appSettings;
             _processor = processor;
+            _lifetime = lifetime;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,10 +28,8 @@ namespace ncea.harvester
                     _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 }
 
-
                 await _processor.Process();
-
-                await Task.Delay(1000, stoppingToken);
+                _lifetime.StopApplication();
             }
         }
     }
