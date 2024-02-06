@@ -1,12 +1,6 @@
 ﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Moq;
-using Moq.Protected;
-using ncea.harvester.infra;
 using ncea_harvester.tests.Clients;
-using Xunit;
 
 namespace ncea_harvester.tests.Infra
 {

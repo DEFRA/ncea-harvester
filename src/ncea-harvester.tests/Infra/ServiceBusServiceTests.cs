@@ -1,14 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
-using Microsoft.Extensions.Options;
 using Moq;
-using ncea.harvester.infra;
-using ncea.harvester.Models;
 using ncea_harvester.tests.Clients;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ncea_harvester.tests.Infra
 {

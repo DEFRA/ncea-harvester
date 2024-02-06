@@ -1,14 +1,7 @@
-﻿using Azure;
-using Azure.Identity;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Options;
 using ncea.harvester.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ncea.harvester.infra
 {

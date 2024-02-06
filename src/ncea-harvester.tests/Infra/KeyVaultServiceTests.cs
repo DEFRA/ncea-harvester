@@ -1,17 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
-using Azure;
-using Azure.Core;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Moq;
-using ncea.harvester.infra;
-using ncea.harvester.Models;
-using ncea_harvester.tests.Clients;
-using Xunit;
+﻿using ncea_harvester.tests.Clients;
 
 namespace ncea_harvester.tests.Infra
 {

@@ -1,11 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using ncea.harvester.infra;
 using ncea.harvester.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ncea.harvester.Processors
 {

@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Configuration;
 using ncea.harvester;
 using ncea.harvester.infra;
 using ncea.harvester.Models;
 using ncea.harvester.Processors;
-using System.Reflection;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
@@ -11,6 +9,7 @@ IConfiguration configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
                                 .AddJsonFile("appsettings.json")
                                 .Build();
+
 builder.Services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IApiClient, ApiClient>();

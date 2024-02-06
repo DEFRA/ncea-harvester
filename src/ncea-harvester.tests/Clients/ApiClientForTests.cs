@@ -1,15 +1,6 @@
-﻿using Azure.Security.KeyVault.Secrets;
-using Azure;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Moq;
 using Moq.Protected;
-using System.Net;
 using ncea.harvester.infra;
-using System.Net.Http;
 
 namespace ncea_harvester.tests.Clients
 {
