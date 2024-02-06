@@ -5,12 +5,7 @@ using ncea.harvester.Models;
 
 namespace ncea.harvester.Processors
 {
-    public interface IJnccProcessor
-    {
-        Task Process();
-    }
-
-    public class JnccProcessor : IJnccProcessor
+    public class JnccProcessor : IProcessor
     {
         private readonly IApiClient _apiClient;
         private readonly IServiceBusService _serviceBusService;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ncea.harvester.Processors
 {
-    internal interface IProcessor
+    public interface IProcessor
     {
         Task Process();
     }

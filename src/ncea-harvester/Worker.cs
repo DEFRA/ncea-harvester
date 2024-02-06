@@ -8,13 +8,13 @@ namespace ncea.harvester
     {
         private readonly ILogger<Worker> _logger;
         private readonly IOptions<AppSettings> _appSettings;
-        private readonly IJnccProcessor _jnccProcessor;
+        private readonly IProcessor _processor;
 
-        public Worker(ILogger<Worker> logger, IOptions<AppSettings> appSettings, IJnccProcessor jnccProcessor)
+        public Worker(ILogger<Worker> logger, IOptions<AppSettings> appSettings, IProcessor processor)
         {
             _logger = logger;
             _appSettings = appSettings;
-            _jnccProcessor = jnccProcessor;
+            _processor = processor;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,7 +27,7 @@ namespace ncea.harvester
                 }
 
 
-                await _jnccProcessor.Process();
+                await _processor.Process();
 
                 await Task.Delay(1000, stoppingToken);
             }
