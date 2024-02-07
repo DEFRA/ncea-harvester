@@ -14,14 +14,12 @@ public class Worker : BackgroundService
     private TelemetryClient _telemetryClient;
     private readonly IOptions<HarvesterConfigurations> _appSettings;
     private readonly IProcessor _processor;
-    private readonly IHostApplicationLifetime _lifetime;
 
-    public Worker(ILogger<Worker> logger, IOptions<HarvesterConfigurations> appSettings, IProcessor processor, IHostApplicationLifetime lifetime, TelemetryClient telemetryClient)
+    public Worker(ILogger<Worker> logger, IOptions<HarvesterConfigurations> appSettings, IProcessor processor, TelemetryClient telemetryClient)
     {
         _logger = logger;
         _appSettings = appSettings;
         _processor = processor;
-        _lifetime = lifetime;
         _cron = CronExpression.Parse(appSettings.Value.Processor.Schedule);
         _telemetryClient = telemetryClient;
     }

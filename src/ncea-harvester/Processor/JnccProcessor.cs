@@ -38,7 +38,7 @@ public class JnccProcessor : IProcessor
             {
                 var apiUrl = "/waf/" + documentLink;
                 var metaDataXmlString = await _apiClient.GetAsync(apiUrl);
-                await _serviceBusService.SendMessageAsync(metaDataXmlString);
+                //await _serviceBusService.SendMessageAsync(metaDataXmlString);
                 var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
                 await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, "jncc", Path.GetFileName(documentLink)), CancellationToken.None);                
             } catch (Exception ex)

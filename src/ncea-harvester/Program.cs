@@ -6,6 +6,7 @@ using Azure.Messaging.ServiceBus;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
+using Azure.Security.KeyVault.Secrets;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -14,17 +15,20 @@ var configuration = new ConfigurationBuilder()
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
+
 var keyVaultEndpoint = new Uri(configuration.GetValue<string>("AppSettings:KeyVaultUri"));
 var blobStorageEndpoint = new Uri(configuration.GetValue<string>("AppSettings:BlobStorage"));
 var servicebusHostName = configuration.GetValue<string>("AppSettings:ServiceBusHostName");
 
 builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
 builder.Services.AddApplicationInsightsTelemetryWorkerService();
-builder.Services.AddScoped(x => new BlobServiceClient(blobStorageEndpoint, new DefaultAzureCredential()));
-builder.Services.AddScoped(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));
+builder.Services.AddSingleton(x => new SecretClient(keyVaultEndpoint, new DefaultAzureCredential()));
+builder.Services.AddSingleton(x => new BlobServiceClient(blobStorageEndpoint, new DefaultAzureCredential()));
+builder.Services.AddSingleton(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));
 
 builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("AppSettings"));
 builder.Services.AddHttpClient();
+
 builder.Services.AddSingleton<IApiClient, ApiClient>();
 builder.Services.AddSingleton<IServiceBusService, ServiceBusService>();
 builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
