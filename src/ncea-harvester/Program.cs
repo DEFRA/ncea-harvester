@@ -11,10 +11,12 @@ using Azure.Security.KeyVault.Secrets;
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
                                 .AddJsonFile("appsettings.json")
+                                .AddEnvironmentVariables()
                                 .Build();
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
+builder.Services.AddLogging();
 
 var keyVaultEndpoint = new Uri(configuration.GetValue<string>("AppSettings:KeyVaultUri"));
 var blobStorageEndpoint = new Uri(configuration.GetValue<string>("AppSettings:BlobStorage"));

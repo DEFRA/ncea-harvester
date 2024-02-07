@@ -13,14 +13,20 @@ public class JnccProcessor : IProcessor
     private readonly IApiClient _apiClient;
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
+    private readonly ILogger<JnccProcessor> _logger;
     private readonly HarvesterConfigurations _appSettings;
 
-    public JnccProcessor(IApiClient apiClient, IServiceBusService serviceBusService, IBlobService blobService, IOptions<HarvesterConfigurations> appSettings)
+    public JnccProcessor(IApiClient apiClient, 
+        IServiceBusService serviceBusService, 
+        IBlobService blobService,
+        ILogger<JnccProcessor> logger,
+        IOptions<HarvesterConfigurations> appSettings)
     {
         _apiClient = apiClient;
         _appSettings = appSettings.Value;
         _apiClient.CreateClient(_appSettings.Processor.DataSourceApiBase);
         _serviceBusService = serviceBusService;
+        _logger = logger;
         _blobService = blobService;
     }
     public async Task Process()
@@ -38,11 +44,12 @@ public class JnccProcessor : IProcessor
             {
                 var apiUrl = "/waf/" + documentLink;
                 var metaDataXmlString = await _apiClient.GetAsync(apiUrl);
-                //await _serviceBusService.SendMessageAsync(metaDataXmlString);
+                await _serviceBusService.SendMessageAsync(metaDataXmlString);
                 var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, "jncc", Path.GetFileName(documentLink)), CancellationToken.None);                
+                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentLink), "jncc"), CancellationToken.None);                
             } catch (Exception ex)
             {
+                _logger.LogError($"Error occured {ex.StackTrace}");
                 Console.WriteLine(ex);
             }
         }

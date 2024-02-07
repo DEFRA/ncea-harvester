@@ -40,7 +40,7 @@ public class BlobService : IBlobService
         var blobContainer = _blobServiceClient.GetBlobContainerClient(request.Container);
         await blobContainer.CreateIfNotExistsAsync(PublicAccessType.BlobContainer, null, cancellationToken);        
         var blobClient = blobContainer.GetBlobClient(request.FileName);
-        await blobClient.UploadAsync(request.Blob, cancellationToken);
+        await blobClient.UploadAsync(request.Blob, true, cancellationToken);
         return blobClient.Uri.AbsoluteUri;
     }
 
