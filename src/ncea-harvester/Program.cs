@@ -1,32 +1,38 @@
 using Azure.Identity;
-using ncea.harvester;
-using ncea.harvester.infra;
-using ncea.harvester.Models;
-using ncea.harvester.Processors;
-
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
-builder.Services.AddApplicationInsightsTelemetryWorkerService();
+using Azure.Storage.Blobs;
+using Ncea.Harvester;
+using Ncea.Harvester.Infrastructure;
+using Azure.Messaging.ServiceBus;
+using Ncea.Harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Models;
+using Ncea.Harvester.Processors.Contracts;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
                                 .AddJsonFile("appsettings.json")
                                 .Build();
 
-var keyVaultEndpoint = new Uri(configuration.GetValue<string>("KeyVaultUri"));
-builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddHostedService<Worker>();
+var keyVaultEndpoint = new Uri(configuration.GetValue<string>("AppSettings:KeyVaultUri"));
+var blobStorageEndpoint = new Uri(configuration.GetValue<string>("AppSettings:BlobStorage"));
+var servicebusHostName = configuration.GetValue<string>("AppSettings:ServiceBusHostName");
 
-builder.Services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
+builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
+builder.Services.AddApplicationInsightsTelemetryWorkerService();
+builder.Services.AddScoped(x => new BlobServiceClient(blobStorageEndpoint, new DefaultAzureCredential()));
+builder.Services.AddScoped(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));
+
+builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("AppSettings"));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IApiClient, ApiClient>();
 builder.Services.AddSingleton<IServiceBusService, ServiceBusService>();
 builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
+builder.Services.AddSingleton<IBlobService, BlobService>();
 ConfigureProcessor(builder, configuration);
 
 var host = builder.Build();
 host.Run();
-
-
 
 static void ConfigureProcessor(HostApplicationBuilder builder, IConfiguration configuration)
 {

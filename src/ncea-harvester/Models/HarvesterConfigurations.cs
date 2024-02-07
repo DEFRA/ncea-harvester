@@ -1,8 +1,8 @@
-﻿using ncea.harvester.Constants;
+﻿using Ncea.Harvester.Constants;
 
-namespace ncea.harvester.Models
+namespace Ncea.Harvester.Models
 {
-    public class AppSettings
+    public class HarvesterConfigurations
     {
         public Processor Processor { get; set; } = null!;
         public string ServiceBusConnectionString { get; set; } = null!;

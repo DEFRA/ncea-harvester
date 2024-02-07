@@ -1,9 +1,7 @@
-﻿
-namespace ncea.harvester.Constants
+﻿namespace Ncea.Harvester.Constants;
+
+public enum ProcessorType
 {
-    public enum ProcessorType
-    {
-        Medin,
-        Jncc
-    }
+    Medin,
+    Jncc
 }
