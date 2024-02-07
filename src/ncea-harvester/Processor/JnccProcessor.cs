@@ -14,24 +14,24 @@ public class JnccProcessor : IProcessor
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
     private readonly ILogger<JnccProcessor> _logger;
-    private readonly HarvesterConfigurations _appSettings;
+    private readonly HarvesterConfigurations _harvesterConfigurations;
 
     public JnccProcessor(IApiClient apiClient, 
         IServiceBusService serviceBusService, 
         IBlobService blobService,
         ILogger<JnccProcessor> logger,
-        IOptions<HarvesterConfigurations> appSettings)
+        IOptions<HarvesterConfigurations> harvesterConfigurations)
     {
         _apiClient = apiClient;
-        _appSettings = appSettings.Value;
-        _apiClient.CreateClient(_appSettings.Processor.DataSourceApiBase);
+        _harvesterConfigurations = harvesterConfigurations.Value;
+        _apiClient.CreateClient(_harvesterConfigurations.Processor.DataSourceApiBase);
         _serviceBusService = serviceBusService;
         _logger = logger;
         _blobService = blobService;
     }
     public async Task Process()
     {
-        var responseHtmlString = await _apiClient.GetAsync(_appSettings.Processor.DataSourceApiUrl);
+        var responseHtmlString = await _apiClient.GetAsync(_harvesterConfigurations.Processor.DataSourceApiUrl);
         var documentLinks = GetDocumentLinks(responseHtmlString);
         await SendMetaDataToServiceBus(documentLinks);
     }
@@ -46,7 +46,7 @@ public class JnccProcessor : IProcessor
                 var metaDataXmlString = await _apiClient.GetAsync(apiUrl);
                 await _serviceBusService.SendMessageAsync(metaDataXmlString);
                 var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentLink), "jncc"), CancellationToken.None);                
+                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentLink), _harvesterConfigurations.Processor.ProcessorType.ToString()), CancellationToken.None);                
             } catch (Exception ex)
             {
                 _logger.LogError($"Error occured {ex.StackTrace}");

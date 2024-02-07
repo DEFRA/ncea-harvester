@@ -10,13 +10,11 @@ public class ServiceBusService : IServiceBusService
 {
     private readonly ServiceBusClient _queueClient;
     private readonly string _serviceBusQueueName;
-    private readonly HarvesterConfigurations _appSettings;
 
-    public ServiceBusService(IOptions<HarvesterConfigurations> appSettings, ServiceBusClient queueClient)
+    public ServiceBusService(IOptions<HarvesterConfigurations> harvesterConfigurations, ServiceBusClient queueClient)
     {
-        _appSettings = appSettings.Value;
         _queueClient = queueClient;
-        _serviceBusQueueName = _appSettings.ServiceBusQueueName;
+        _serviceBusQueueName = $"{harvesterConfigurations.Value.Processor.ProcessorType}-harvester-queue";
     }
 
     public async Task SendMessageAsync(string messageBody)
