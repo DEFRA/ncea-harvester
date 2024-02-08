@@ -12,15 +12,15 @@ public class Worker : BackgroundService
     private readonly CronExpression _cron;
     private readonly ILogger<Worker> _logger;
     private TelemetryClient _telemetryClient;
-    private readonly IOptions<HarvesterConfigurations> _appSettings;
+    private readonly IOptions<HarvesterConfigurations> _harvesterConfigurations;
     private readonly IProcessor _processor;
 
-    public Worker(ILogger<Worker> logger, IOptions<HarvesterConfigurations> appSettings, IProcessor processor, TelemetryClient telemetryClient)
+    public Worker(ILogger<Worker> logger, IOptions<HarvesterConfigurations> harvesterConfigurations, IProcessor processor, TelemetryClient telemetryClient)
     {
         _logger = logger;
-        _appSettings = appSettings;
+        _harvesterConfigurations = harvesterConfigurations;
         _processor = processor;
-        _cron = CronExpression.Parse(appSettings.Value.Processor.Schedule);
+        _cron = CronExpression.Parse(_harvesterConfigurations.Value.Processor.Schedule);
         _telemetryClient = telemetryClient;
     }
 

@@ -5,9 +5,6 @@ namespace Ncea.Harvester.Models
     public class HarvesterConfigurations
     {
         public Processor Processor { get; set; } = null!;
-        public string ServiceBusConnectionString { get; set; } = null!;
-        public string ServiceBusQueueName { get; set; } = null!;
-        public string KeyVaultUri { get; set; } = null!;
     }
 
     public class Processor

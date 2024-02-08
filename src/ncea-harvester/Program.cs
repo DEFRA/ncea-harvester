@@ -18,14 +18,14 @@ var configuration = new ConfigurationBuilder()
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
-builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("AppSettings"));
+builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("HarvesterConfigurations"));
 builder.Services.AddHttpClient();
 
-var processorType = configuration.GetValue<string>("AppSettings:Processor:ProcessorType");
+var processorType = configuration.GetValue<string>("HarvesterConfigurations:Processor:ProcessorType");
 var dataSourceName = Enum.Parse(typeof(ProcessorType), processorType!).ToString()!.ToLowerInvariant();
 
 ConfigureKeyVault(configuration, builder);
-ConfigiureLogging(builder);
+ConfigureLogging(builder);
 await ConfigureBlobStorage(configuration, builder, dataSourceName);
 await ConfigureServiceBusQueue(configuration, builder, dataSourceName);
 ConfigureServices(builder);
@@ -36,7 +36,7 @@ host.Run();
 
 static void ConfigureProcessor(HostApplicationBuilder builder, IConfiguration configuration)
 {
-    var processorTypeName = configuration.GetValue<string>("AppSettings:Processor:Type");
+    var processorTypeName = configuration.GetValue<string>("HarvesterConfigurations:Processor:Type");
     var assembly = typeof(Program).Assembly;
     var type = assembly.GetType(processorTypeName!);
 
@@ -68,7 +68,7 @@ static void ConfigureKeyVault(IConfigurationRoot configuration, HostApplicationB
     builder.Services.AddSingleton(x => new SecretClient(keyVaultEndpoint, new DefaultAzureCredential()));
 }
 
-static void ConfigiureLogging(HostApplicationBuilder builder)
+static void ConfigureLogging(HostApplicationBuilder builder)
 {
     builder.Services.AddLogging(loggingBuilder =>
     {
@@ -85,16 +85,7 @@ static async Task ConfigureBlobStorage(IConfigurationRoot configuration, HostApp
 
     builder.Services.AddSingleton(x => blobServiceClient);
     BlobContainerClient container = blobServiceClient.GetBlobContainerClient(dataSourceName);
-    try
-    {
-        await container.CreateIfNotExistsAsync();
-    }
-    catch(Exception ex)
-    {
-        Console.WriteLine("If you are running with the default connection string, please make sure you have started the storage emulator. Press the Windows key and type Azure Storage to select and run it from the list of applications - then restart the sample.");
-        Console.ReadLine();
-        throw;
-    }
+    await container.CreateIfNotExistsAsync();
 }
 
 static void ConfigureServices(HostApplicationBuilder builder)
