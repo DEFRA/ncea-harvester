@@ -46,7 +46,8 @@ public class JnccProcessor : IProcessor
                 var metaDataXmlString = await _apiClient.GetAsync(apiUrl);
                 await _serviceBusService.SendMessageAsync(metaDataXmlString);
                 var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentLink), _harvesterConfigurations.Processor.ProcessorType.ToString()), CancellationToken.None);                
+                var dataSourceName = _harvesterConfigurations.Processor.ProcessorType.ToString().ToLowerInvariant();
+                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentLink), dataSourceName), CancellationToken.None);                
             } catch (Exception ex)
             {
                 _logger.LogError($"Error occured {ex.StackTrace}");
