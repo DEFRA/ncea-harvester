@@ -21,10 +21,13 @@ builder.Services.AddHostedService<Worker>();
 builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("AppSettings"));
 builder.Services.AddHttpClient();
 
+var processorType = configuration.GetValue<string>("AppSettings:Processor:ProcessorType");
+var dataSourceName = Enum.Parse(typeof(ProcessorType), processorType!).ToString()!.ToLowerInvariant();
+
 ConfigureKeyVault(configuration, builder);
 ConfigiureLogging(builder);
-ConfigureBlobStorage(configuration, builder);
-await ConfigureServiceBusQueue(configuration, builder);
+await ConfigureBlobStorage(configuration, builder, dataSourceName);
+await ConfigureServiceBusQueue(configuration, builder, dataSourceName);
 ConfigureServices(builder);
 ConfigureProcessor(builder, configuration);
 
@@ -43,14 +46,12 @@ static void ConfigureProcessor(HostApplicationBuilder builder, IConfiguration co
     }
 }
 
-static async Task ConfigureServiceBusQueue(IConfigurationRoot configuration, HostApplicationBuilder builder)
+static async Task ConfigureServiceBusQueue(IConfigurationRoot configuration, HostApplicationBuilder builder, string dataSourceName)
 {
     var servicebusHostName = configuration.GetValue<string>("ServiceBusHostName");
-    builder.Services.AddSingleton(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));
-
-    var sourceName = configuration.GetValue<string>("AppSettings:Processor:ProcessorType");
-    var processorType = Enum.Parse(typeof(ProcessorType), sourceName!);
-    var queueName = $"{processorType}-harvester-queue";
+    builder.Services.AddSingleton(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));    
+    
+    var queueName = $"{dataSourceName}-harvester-queue";
 
     var servicebusAdminClient = new ServiceBusAdministrationClient(servicebusHostName, new DefaultAzureCredential());
     bool queueExists = await servicebusAdminClient.QueueExistsAsync(queueName);
@@ -62,7 +63,7 @@ static async Task ConfigureServiceBusQueue(IConfigurationRoot configuration, Hos
 
 static void ConfigureKeyVault(IConfigurationRoot configuration, HostApplicationBuilder builder)
 {
-    var keyVaultEndpoint = new Uri(configuration.GetValue<string>("KeyVaultUri"));
+    var keyVaultEndpoint = new Uri(configuration.GetValue<string>("KeyVaultUri")!);
     builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
     builder.Services.AddSingleton(x => new SecretClient(keyVaultEndpoint, new DefaultAzureCredential()));
 }
@@ -77,10 +78,23 @@ static void ConfigiureLogging(HostApplicationBuilder builder)
     builder.Services.AddApplicationInsightsTelemetryWorkerService();
 }
 
-static void ConfigureBlobStorage(IConfigurationRoot configuration, HostApplicationBuilder builder)
+static async Task ConfigureBlobStorage(IConfigurationRoot configuration, HostApplicationBuilder builder, string dataSourceName)
 {
-    var blobStorageEndpoint = new Uri(configuration.GetValue<string>("BlobStorageUri"));
-    builder.Services.AddSingleton(x => new BlobServiceClient(blobStorageEndpoint, new DefaultAzureCredential()));
+    var blobStorageEndpoint = new Uri(configuration.GetValue<string>("BlobStorageUri")!);
+    var blobServiceClient = new BlobServiceClient(blobStorageEndpoint, new DefaultAzureCredential());
+
+    builder.Services.AddSingleton(x => blobServiceClient);
+    BlobContainerClient container = blobServiceClient.GetBlobContainerClient(dataSourceName);
+    try
+    {
+        await container.CreateIfNotExistsAsync();
+    }
+    catch(Exception ex)
+    {
+        Console.WriteLine("If you are running with the default connection string, please make sure you have started the storage emulator. Press the Windows key and type Azure Storage to select and run it from the list of applications - then restart the sample.");
+        Console.ReadLine();
+        throw;
+    }
 }
 
 static void ConfigureServices(HostApplicationBuilder builder)
