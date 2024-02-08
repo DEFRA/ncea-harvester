@@ -9,6 +9,7 @@ using Ncea.Harvester.Processors.Contracts;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Messaging.ServiceBus.Administration;
 using Ncea.Harvester.Constants;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using static System.Net.Mime.MediaTypeNames;
 using Microsoft.ApplicationInsights.DependencyCollector;
@@ -109,3 +110,8 @@ static void ConfigureServices(HostApplicationBuilder builder)
     builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
     builder.Services.AddSingleton<IBlobService, BlobService>();
 }
+
+
+
+[ExcludeFromCodeCoverage]
+public partial class Program { }

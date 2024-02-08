@@ -1,6 +1,4 @@
-﻿
-
-using Ncea.Harvester.Tests.Clients;
+﻿using Ncea.Harvester.Tests.Clients;
 
 namespace Ncea.Harvester.Tests.Infrastructure;
 

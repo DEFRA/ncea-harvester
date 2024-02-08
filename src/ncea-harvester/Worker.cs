@@ -4,9 +4,11 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Options;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ncea.Harvester;
 
+[ExcludeFromCodeCoverage]
 public class Worker : BackgroundService
 {
     private readonly CronExpression _cron;

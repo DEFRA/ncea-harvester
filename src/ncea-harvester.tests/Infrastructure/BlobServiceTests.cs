@@ -1,9 +1,7 @@
-﻿using Azure.Messaging.ServiceBus;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Moq;
-using Ncea.Harvester.Tests.Clients;
 using Ncea.Harvester.Infrastructure.Models.Requests;
-using Azure.Storage.Blobs.Models;
+using Ncea.Harvester.Tests.Clients;
 
 namespace Ncea.Harvester.Tests.Infrastructure;
 
