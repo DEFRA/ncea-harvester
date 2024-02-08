@@ -13,7 +13,7 @@ public class JnccProcessor : IProcessor
     private readonly IApiClient _apiClient;
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
-    private readonly ILogger<JnccProcessor> _logger;
+    private readonly ILogger _logger;
     private readonly HarvesterConfigurations _harvesterConfigurations;
 
     public JnccProcessor(IApiClient apiClient, 
