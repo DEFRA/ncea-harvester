@@ -3,6 +3,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Options;
 using Ncea.Harvester.Infrastructure;
 using Ncea.Harvester.Models;
+using Ncea.Harvester.Constants;
 
 namespace Ncea.Harvester.Tests.Clients;
 
@@ -10,7 +11,7 @@ public static class ServiceBusServiceForTests
 {
     public static ServiceBusService Get(out Mock<ServiceBusSender> mockServiceBusSender)
     {
-        var appSettings = Options.Create(new HarvesterConfigurations() { ServiceBusConnectionString = "azure.servicebus-connection", ServiceBusQueueName = "test-queue" });
+        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { ProcessorType = It.IsAny<ProcessorType>() } });
         var mockServiceBusClient = new Mock<ServiceBusClient>();
         mockServiceBusSender = new Mock<ServiceBusSender>();
         var service = new ServiceBusService(appSettings, mockServiceBusClient.Object);
