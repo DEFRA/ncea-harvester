@@ -11,7 +11,6 @@ using Azure.Messaging.ServiceBus.Administration;
 using Ncea.Harvester.Constants;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
-using static System.Net.Mime.MediaTypeNames;
 using Microsoft.ApplicationInsights.DependencyCollector;
 
 var configuration = new ConfigurationBuilder()
