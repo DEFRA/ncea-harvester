@@ -9,6 +9,7 @@ using Ncea.Harvester.Processors.Contracts;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Messaging.ServiceBus.Administration;
 using Ncea.Harvester.Constants;
+using System.Diagnostics.CodeAnalysis;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -95,3 +96,8 @@ static void ConfigureServices(HostApplicationBuilder builder)
     builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
     builder.Services.AddSingleton<IBlobService, BlobService>();
 }
+
+
+
+[ExcludeFromCodeCoverage]
+public partial class Program { }
