@@ -10,6 +10,8 @@ using Azure.Security.KeyVault.Secrets;
 using Azure.Messaging.ServiceBus.Administration;
 using Ncea.Harvester.Constants;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging.ApplicationInsights;
+using Microsoft.ApplicationInsights.DependencyCollector;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -74,9 +76,20 @@ static void ConfigureLogging(HostApplicationBuilder builder)
     builder.Services.AddLogging(loggingBuilder =>
     {
         loggingBuilder.ClearProviders();
-        loggingBuilder.AddApplicationInsights();
+        loggingBuilder.AddApplicationInsights(
+            configureTelemetryConfiguration: (config) =>
+                config.ConnectionString = builder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString"),
+                configureApplicationInsightsLoggerOptions: (options) => { }
+            );
+        loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(null, LogLevel.Information);
+
     });
     builder.Services.AddApplicationInsightsTelemetryWorkerService();
+    builder.Services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) =>
+    {
+        module.EnableSqlCommandTextInstrumentation = true;
+        o.ConnectionString = builder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString");
+    });
 }
 
 static async Task ConfigureBlobStorage(IConfigurationRoot configuration, HostApplicationBuilder builder, string dataSourceName)

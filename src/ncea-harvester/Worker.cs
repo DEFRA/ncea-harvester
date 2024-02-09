@@ -12,7 +12,7 @@ namespace Ncea.Harvester;
 public class Worker : BackgroundService
 {
     private readonly CronExpression _cron;
-    private readonly ILogger<Worker> _logger;
+    private readonly ILogger _logger;
     private TelemetryClient _telemetryClient;
     private readonly IOptions<HarvesterConfigurations> _harvesterConfigurations;
     private readonly IProcessor _processor;
@@ -34,7 +34,7 @@ public class Worker : BackgroundService
 
             using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
             {
-                _logger.LogInformation("Metadata harversting started");
+                _logger.LogInformation($"Metadata harversting started for {_harvesterConfigurations.Value.Processor.ProcessorType}");
                 await _processor.Process();
                 _logger.LogInformation("Metadata harversting completed");
                 _telemetryClient.TrackEvent("Harvesting completed");
