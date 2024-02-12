@@ -11,6 +11,13 @@ steps:
       organization: 'defra'
       projectKey: 'DEFRA_ncea-harvester'
       projectName: 'ncea-harvester'
+      extraProperties: |
+          sonar.exclusions=**/obj/**,**/*.dll
+          sonar.exclusions=**/*.xml,**/*.yaml,**/DockerFile
+          sonar.coverage.exclusions=**/*.xml,**/*.yaml,**/DockerFile
+          sonar.dotnet.excludeGeneratedCode=true
+          sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.opencover.xml
+          sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
 
   - task: DotNetCoreCLI@2
     displayName: Restore
