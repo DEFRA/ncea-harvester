@@ -12,8 +12,7 @@ steps:
       projectKey: 'DEFRA_ncea-harvester'
       projectName: 'ncea-harvester'
       extraProperties: |
-          sonar.exclusions=**/obj/**,**/*.dll
-          sonar.exclusions=**/*.xml,**/*.yaml,**/DockerFile
+          sonar.exclusions=**/obj/**,**/*.dll,**/*.xml,**/*.yaml,**/DockerFile
           sonar.coverage.exclusions=**/*.xml,**/*.yaml,**/DockerFile
           sonar.dotnet.excludeGeneratedCode=true
           sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.opencover.xml
