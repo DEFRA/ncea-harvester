@@ -17,6 +17,7 @@ steps:
           sonar.dotnet.excludeGeneratedCode=true
           sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.opencover.xml
           sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
+          sonar.cs.opencover.reportsPaths=coverage.xml
 
   - task: DotNetCoreCLI@2
     displayName: Restore
@@ -36,7 +37,7 @@ steps:
     displayName: 'dotnet test'
     inputs:
       command: 'test'
-      arguments: '--configuration $(buildConfiguration) --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura'
+      arguments: '--configuration $(buildConfiguration) --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover'
       publishTestResults: true
       projects: '**/*.tests.csproj'
 
