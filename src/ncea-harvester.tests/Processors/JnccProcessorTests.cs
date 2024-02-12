@@ -1,0 +1,91 @@
+﻿using Azure.Messaging.ServiceBus;
+using Azure.Storage.Blobs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using Ncea.Harvester.Constants;
+using Ncea.Harvester.Models;
+using Ncea.Harvester.Processors;
+using Ncea.Harvester.Tests.Clients;
+using System.Net;
+
+namespace Ncea.Harvester.Tests.Processors;
+
+public class JnccProcessorTests
+{
+    [Fact]
+    public async Task Process_ShouldSendMessagesToServiceBus() {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+        var expectedData = "<html><body><a href=\"a.xml\">a</a><a href=\"b.xml\">b</a></body></html>";
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(expectedData),
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase="https://base-uri", DataSourceApiUrl="/test-url", ProcessorType= ProcessorType.Jncc, Type=""} });
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<BlobClient> mockBlobClient);
+        var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        // Act
+        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, appSettings);
+        await jnccService.Process();            
+
+        // Assert
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(2));
+        mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Exactly(2));
+        mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Exactly(2));
+        mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task Process_ShouldNotSendMessagesToServiceBus()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+        var expectedData = "<html><body></body></html>";
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(expectedData),
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" } });
+        var blobServiceMock = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                                      out Mock<BlobContainerClient> mockBlobContainerClient,
+                                                      out Mock<BlobClient> mockBlobClient);
+        var loggerMock = new Mock<ILogger<JnccProcessor>>();
+
+        // Act
+        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobServiceMock, loggerMock.Object, appSettings);
+        await jnccService.Process();
+
+        // Assert
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Never);
+        mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Never);
+        mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Never);
+        mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Process_ShouldThrowError()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.InternalServerError
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" } });
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<BlobClient> mockBlobClient);
+        var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        // Act & Assert
+        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService,logger, appSettings);
+        await Assert.ThrowsAsync<HttpRequestException>(() => jnccService.Process());
+    }
+}

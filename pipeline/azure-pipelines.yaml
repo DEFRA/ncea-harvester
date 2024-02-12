@@ -1,0 +1,24 @@
+# Starter pipeline
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+# variables:
+#   AzureSubscription: az-subscription
+#   AzureContainerRegistry: xx.azurecr.io
+#   dockerFileName: DockerFile
+#   imageName: '$ncea.harvester:$(Build.BuildId)'
+#   ACR.Deploy: false
+
+steps:
+- template: steps-build-and-test.yml
+# - template: steps-build-and-push-docker-images.yml
+# - template: steps-build-and-push-helm-charts.yml
