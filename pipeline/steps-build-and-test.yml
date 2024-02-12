@@ -15,7 +15,7 @@ steps:
           sonar.exclusions=**/obj/**,**/*.dll,**/*.xml,**/*.yaml,**/DockerFile
           sonar.coverage.exclusions=**/*.xml,**/*.yaml,**/DockerFile
           sonar.dotnet.excludeGeneratedCode=true
-          sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.opencover.xml
+          sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/*/coverage.opencover.xml
           sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
           sonar.cs.opencover.reportsPaths=coverage.xml
 
