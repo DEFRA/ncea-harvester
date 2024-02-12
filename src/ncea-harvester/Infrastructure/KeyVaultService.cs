@@ -5,7 +5,7 @@ namespace Ncea.Harvester.Infrastructure;
 
 public class KeyVaultService: IKeyVaultService
 {
-    private SecretClient _secretClient;
+    private readonly SecretClient _secretClient;
 
     public KeyVaultService(SecretClient secretClient)
     {

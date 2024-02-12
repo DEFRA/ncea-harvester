@@ -6,7 +6,7 @@ namespace Ncea.Harvester.Infrastructure;
 public class ApiClient: IApiClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private HttpClient _httpClient;
+    private HttpClient _httpClient = new HttpClient();
     public ApiClient(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;

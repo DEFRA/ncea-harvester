@@ -17,11 +17,11 @@ public class ServiceBusService : IServiceBusService
         _serviceBusQueueName = $"{harvesterConfigurations.Value.Processor.ProcessorType}-harvester-queue";
     }
 
-    public async Task SendMessageAsync(string messageBody)
+    public async Task SendMessageAsync(string message)
     {
         var sender = _queueClient.CreateSender(_serviceBusQueueName);
-        var messageInBytes = Encoding.UTF8.GetBytes(messageBody);
-        var message = new ServiceBusMessage(messageInBytes);
-        await sender.SendMessageAsync(message);
+        var messageInBytes = Encoding.UTF8.GetBytes(message);
+        var serviceBusMessage = new ServiceBusMessage(messageInBytes);
+        await sender.SendMessageAsync(serviceBusMessage);
     }
 }
