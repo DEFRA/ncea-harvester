@@ -50,8 +50,7 @@ public class JnccProcessor : IProcessor
                 await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentLink), dataSourceName), CancellationToken.None);                
             } catch (Exception ex)
             {
-                _logger.LogError($"Error occured {ex.StackTrace}");
-                Console.WriteLine(ex);
+                _logger.LogError(ex, $"Error occured while sending message to harvester queue");
             }
         }
     }

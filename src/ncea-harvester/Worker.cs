@@ -34,7 +34,7 @@ public class Worker : BackgroundService
 
             using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
             {
-                _logger.LogInformation($"Metadata harversting started for {_harvesterConfigurations.Value.Processor.ProcessorType}");
+                _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfigurations.Value.Processor.ProcessorType);
                 await _processor.Process();
                 _logger.LogInformation("Metadata harversting completed");
                 _telemetryClient.TrackEvent("Harvesting completed");

@@ -28,9 +28,12 @@ public class MedinProcessor : IProcessor
     }
     public Task Process()
     {
+        Console.Write(_harvesterConfigurations);
+        Console.Write(_apiClient);
         Console.Write(_serviceBusService);
         Console.Write(_blobService);
         Console.Write(_logger);
+        Console.Write(_apiClient);
         throw new NotImplementedException();
     }
 }

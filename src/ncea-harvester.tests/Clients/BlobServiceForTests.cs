@@ -8,7 +8,7 @@ namespace Ncea.Harvester.Tests.Clients;
 
 public static class BlobServiceForTests
 {
-    public static List<BlobItem> BlobItems = new List<BlobItem>();
+    private static List<BlobItem> BlobItems = new List<BlobItem>();
     public static BlobService Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                   out Mock<BlobContainerClient> mockBlobContainerClient,
                                   out Mock<BlobClient> mockBlobClient)
