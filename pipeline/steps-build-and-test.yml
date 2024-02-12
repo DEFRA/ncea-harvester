@@ -17,7 +17,6 @@ steps:
           sonar.dotnet.excludeGeneratedCode=true
           sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/*/coverage.opencover.xml
           sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
-          sonar.cs.opencover.reportsPaths=coverage.xml
 
   - task: DotNetCoreCLI@2
     displayName: Restore
