@@ -113,4 +113,4 @@ static void ConfigureServices(HostApplicationBuilder builder)
 
 
 [ExcludeFromCodeCoverage]
-public partial class Program { }
+public static partial class Program { }

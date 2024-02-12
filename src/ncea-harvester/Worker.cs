@@ -13,7 +13,7 @@ public class Worker : BackgroundService
 {
     private readonly CronExpression _cron;
     private readonly ILogger _logger;
-    private TelemetryClient _telemetryClient;
+    private readonly TelemetryClient _telemetryClient;
     private readonly IOptions<HarvesterConfigurations> _harvesterConfigurations;
     private readonly IProcessor _processor;
 
@@ -42,6 +42,7 @@ public class Worker : BackgroundService
 
             var utcNow = DateTime.UtcNow;
             var nextUtc = _cron.GetNextOccurrence(utcNow);
+            nextUtc = (nextUtc == null ? utcNow : nextUtc);
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }

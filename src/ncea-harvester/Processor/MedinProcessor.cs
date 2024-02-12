@@ -28,6 +28,9 @@ public class MedinProcessor : IProcessor
     }
     public Task Process()
     {
+        Console.Write(_serviceBusService);
+        Console.Write(_blobService);
+        Console.Write(_logger);
         throw new NotImplementedException();
     }
 }
