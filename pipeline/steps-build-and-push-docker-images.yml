@@ -12,8 +12,7 @@ steps:
     command: build
     containerRegistry: $(ACR.ServiceConnection)
     repository: $(ACR.ContainerRepository)
-    dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-    buildContext: '$(Build.SourcesDirectory)'
+    buildContext: ./ncea-harvetser
     tags: |
      latest
      $(Build.BuildId)
