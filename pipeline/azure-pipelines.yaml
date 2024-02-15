@@ -11,14 +11,14 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  dockerFileName: src/ncea-harvester/DockerFile
-  imageName: '$ncea.harvester:$(Build.BuildId)'
+variables
   ACR.Deploy: true
   ACR.ServiceConnection : acr-AZR-NCE-SND1
+  acrName: nceapocsbox
   ACR.ContainerRepository: defra/ncea-harvester-service
+  chartPath: src/ncea-harvester/charts/ncea-harvester
 
 steps:
 - template: steps-build-and-test.yml
 - template: steps-build-and-push-docker-images.yml
-# - template: steps-build-and-push-helm-charts.yml
+- template: steps-build-and-push-helm-charts.yml

@@ -7,10 +7,11 @@ steps:
     chartPath: $(chartPath)
     chartVersion: $(Build.SourceBranchName)
     arguments: '--app-version $(Build.SourceBranchName)'
+    destination: $(Build.ArtifactStagingDirectory)
 
 - task: AzureCLI@1
   condition: and(succeeded(), eq(variables['ACR.Deploy'], 'true'))
   inputs:
-    azureSubscription: $(AzureSubscription)
+    azureSubscription: $(ACR.ServiceConnection)
     scriptLocation: inlineScript
-    inlineScript: az acr helm push $(System.ArtifactsDirectory)/$(repositoryName)-$(Build.SourceBranchName).tgz --name $(AzureContainerRegistry) 
+    inlineScript: az acr helm push -n $(acrName) $(Build.ArtifactStagingDirectory)/$(ACR.ContainerRepository)-$(Build.BuildId).tgz

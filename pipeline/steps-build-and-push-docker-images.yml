@@ -12,9 +12,7 @@ steps:
     command: build
     containerRegistry: $(ACR.ServiceConnection)
     repository: $(ACR.ContainerRepository)
-    tags: |
-     latest
-     $(Build.BuildId)
+    tags: $(Build.BuildId)
     arguments: '--build-arg major=$(BuildMajor) --build-arg minor=$(BuildMinor) --build-arg build=$(Build.BuildId) --build-arg revision=$(BuildRevision)'
 
 - task: Docker@2
@@ -23,25 +21,4 @@ steps:
     command: push
     containerRegistry: $(ACR.ServiceConnection)
     repository: $(ACR.ContainerRepository)
-    tags: |
-     latest
-     $(Build.BuildId)
-
-# - task: Docker@1
-#   condition: and(succeeded(), eq(variables['ACR.Deploy'], 'true'))
-#   inputs:
-#     azureSubscriptionEndpoint: $(AzureSubscription)
-#     azureContainerRegistry: $(AzureContainerRegistry)
-#     command: build
-#     dockerFile: $(System.DefaultWorkingDirectory)/$(dockerFileName)
-#     includeLatestTag: false
-#     imageName: '$(imageName)'
-
-# - task: Docker@1
-#   condition: and(succeeded(), eq(variables['ACR.Deploy'], 'true'))
-#   inputs:
-#     azureSubscriptionEndpoint: $(AzureSubscription)
-#     azureContainerRegistry: $(AzureContainerRegistry)
-#     command: 'Push an image'
-#     imageName: '$(imageName)'
-#     includeSourceTags: false
+    tags: $(Build.BuildId)
