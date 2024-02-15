@@ -12,7 +12,6 @@ steps:
     command: build
     containerRegistry: $(ACR.ServiceConnection)
     repository: $(ACR.ContainerRepository)
-    buildContext: ./ncea-harvetser
     tags: |
      latest
      $(Build.BuildId)
