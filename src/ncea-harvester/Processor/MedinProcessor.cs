@@ -35,55 +35,57 @@ public class MedinProcessor : IProcessor
         var maxRecords = 100;
         var totalRecords = 0;
         var hasNextRecords = true;
-        var hasTotalRecords = true;
 
         while (hasNextRecords)
         {
             var responseXml = await GetMedinData(startPosition, maxRecords);
-            if (responseXml == null) continue;
-
-            startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out hasTotalRecords, out totalRecords, responseXml);
-            if (!hasNextRecords) continue;
-
-            var metaDataXmlNodes = GetMetadataList(responseXml);
-            if (metaDataXmlNodes == null || !metaDataXmlNodes.Any()) continue;
-
+            startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
+            var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
             await SendMetaDataToServiceBus(metaDataXmlNodes);
-            hasNextRecords = (startPosition <= totalRecords);
+
+            if(startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
         }
     }
 
-    private async Task SendMetaDataToServiceBus(IEnumerable<XElement> metaDataXmlNodes)
+    private async Task SendMetaDataToServiceBus(IEnumerable<XElement>? metaDataXmlNodes)
     {
+        if (metaDataXmlNodes == null || !metaDataXmlNodes.Any()) 
+          return; 
+        
         foreach (var metaDataXmlNode in metaDataXmlNodes)
+        {
+            try
             {
-                try
-                {
-                    var metaDataXmlString = Convert.ToString(metaDataXmlNode);
-                    if (string.IsNullOrWhiteSpace(metaDataXmlString)) continue;
+                var metaDataXmlString = Convert.ToString(metaDataXmlNode);
+                if (string.IsNullOrWhiteSpace(metaDataXmlString)) continue;
 
-                    await _serviceBusService.SendMessageAsync(metaDataXmlString);
-                    var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-                    var dataSourceName = _harvesterConfigurations.Processor.ProcessorType.ToString().ToLowerInvariant();
+                await _serviceBusService.SendMessageAsync(metaDataXmlString);
+                var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
+                var dataSourceName = _harvesterConfigurations.Processor.ProcessorType.ToString().ToLowerInvariant();
 
-                    var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
-                    var documentFileName = string.Concat(documentFileIdentifier, ".xml");
-                    await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentFileName), dataSourceName), CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error occured while sending message to harvester queue");
-                }
+                var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+                var documentFileName = string.Concat(documentFileIdentifier, ".xml");
+                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, dataSourceName), CancellationToken.None);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occured while sending message to harvester queue");
+            }
+        }
     }
 
-    private static IEnumerable<XElement>? GetMetadataList(XDocument? responseXml)
+    private static IEnumerable<XElement>? GetMetadataList(XDocument? responseXml, bool hasNextRecords)
     {
+        var metadataList = new List<XElement>();
+        if (responseXml == null || hasNextRecords == false) 
+            return metadataList;
+
+        
         string gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
-        var metaDataXmlElements = responseXml?.Descendants()
+        metadataList = responseXml?.Descendants()
                                .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
-                                           && n.Name.LocalName == "MD_Metadata");
-        return metaDataXmlElements;
+                                           && n.Name.LocalName == "MD_Metadata").ToList();
+        return metadataList;
     }
 
     private static string? GetFileIdentifier(XElement? xmlElement)
@@ -96,8 +98,15 @@ public class MedinProcessor : IProcessor
         return fileIdentifier;
     }
 
-    private static int GetNextStartPostionInMedinData(out bool hasNextRecords, out bool hasTotalRecords, out int totalRecords, XDocument? responseXml)
+    private static int GetNextStartPostionInMedinData(out bool hasNextRecords, out int totalRecords, XDocument? responseXml)
     {
+        if (responseXml == null)
+        {
+            hasNextRecords = false;
+            totalRecords = 0;
+            return 0;
+        }
+
         var cswNameSpace = "http://www.opengis.net/cat/csw/2.0.2";
         var searchResultsElement = responseXml?.Descendants()
                                         .FirstOrDefault(n => n.Name.Namespace.NamespaceName == cswNameSpace
@@ -105,7 +114,7 @@ public class MedinProcessor : IProcessor
         var nextRecordAttribute = searchResultsElement?.Attribute("nextRecord")?.Value;
         var totalRecordAttribute = searchResultsElement?.Attribute("numberOfRecordsMatched")?.Value;
         hasNextRecords = Int32.TryParse(nextRecordAttribute, out int nextRecord);
-        hasTotalRecords = Int32.TryParse(totalRecordAttribute, out totalRecords);
+        bool hasTotalRecords = Int32.TryParse(totalRecordAttribute, out totalRecords);
         hasNextRecords = (hasTotalRecords && hasNextRecords && nextRecord > 0);
         return nextRecord;
     }

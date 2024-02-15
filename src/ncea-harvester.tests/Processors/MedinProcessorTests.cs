@@ -91,7 +91,7 @@ public class MedinProcessorTests
     }
 
     [Fact]
-    public async Task Process_ShouldThrowError()
+    public async Task Process_MedinServiceRequestShouldThrowError()
     {
         //Arrange
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
