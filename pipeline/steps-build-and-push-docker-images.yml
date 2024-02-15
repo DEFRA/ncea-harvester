@@ -12,7 +12,7 @@ steps:
     command: build
     containerRegistry: $(ACR.ServiceConnection)
     repository: $(ACR.ContainerRepository)
-    Dockerfile: "$(Build.SourcesDirectory)/Dockerfile"
+    Dockerfile: $(Build.SourcesDirectory)/$(dockerFileName)
     tags: |
      latest
      $(Build.BuildId)

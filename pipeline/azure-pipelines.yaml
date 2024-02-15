@@ -12,7 +12,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  dockerFileName: DockerFile
+  dockerFileName: src/ncea-harvester/DockerFile
   imageName: '$ncea.harvester:$(Build.BuildId)'
   ACR.Deploy: true
   ACR.ServiceConnection : acr-AZR-NCE-SND1
