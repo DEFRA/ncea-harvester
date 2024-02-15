@@ -72,10 +72,10 @@ public class MedinProcessor : IProcessor
         }
     }
 
-    private static IEnumerable<XElement>? GetMetadataList(XDocument? responseXml, bool hasNextRecords)
+    private static List<XElement>? GetMetadataList(XDocument? responseXml, bool hasNextRecords)
     {
         List<XElement> metadataList = new List<XElement>();
-        if (responseXml == null || hasNextRecords == false) 
+        if ((responseXml == null) || !hasNextRecords) 
             return metadataList;
 
         
@@ -83,7 +83,7 @@ public class MedinProcessor : IProcessor
         metadataList = responseXml.Descendants()
                                .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
                                            && n.Name.LocalName == "MD_Metadata").ToList();
-        return (metadataList.Any() ? metadataList : new List<XElement>());
+        return (metadataList.Count > 0 ? metadataList : new List<XElement>());
     }
 
     private static string? GetFileIdentifier(XElement xmlElement)
