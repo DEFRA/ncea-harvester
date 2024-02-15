@@ -90,8 +90,8 @@ public class MedinProcessor : IProcessor
     {
         string gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
         var fileIdentifierXmlElement = xmlElement?.Descendants()
-                               .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
-                                           && n.Name.LocalName == "fileIdentifier").FirstOrDefault();
+                               .FirstOrDefault(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
+                                           && n.Name.LocalName == "fileIdentifier");
         var fileIdentifier = fileIdentifierXmlElement?.Descendants()?.FirstOrDefault()?.Value;
         return fileIdentifier;
     }
@@ -100,9 +100,8 @@ public class MedinProcessor : IProcessor
     {
         var cswNameSpace = "http://www.opengis.net/cat/csw/2.0.2";
         var searchResultsElement = responseXml?.Descendants()
-                                        .Where(n => n.Name.Namespace.NamespaceName == cswNameSpace
-                                                    && n.Name.LocalName == "SearchResults")
-                                        .FirstOrDefault();
+                                        .FirstOrDefault(n => n.Name.Namespace.NamespaceName == cswNameSpace
+                                                    && n.Name.LocalName == "SearchResults");
         var nextRecordAttribute = searchResultsElement?.Attribute("nextRecord")?.Value;
         var totalRecordAttribute = searchResultsElement?.Attribute("numberOfRecordsMatched")?.Value;
         hasNextRecords = Int32.TryParse(nextRecordAttribute, out int nextRecord);
