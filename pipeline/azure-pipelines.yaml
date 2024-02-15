@@ -11,7 +11,7 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables
+variables:
   ACR.Deploy: true
   ACR.ServiceConnection: acr-AZR-NCE-SND1
   acrName: nceapocsbox

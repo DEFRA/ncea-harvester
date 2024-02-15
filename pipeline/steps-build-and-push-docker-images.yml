@@ -13,7 +13,6 @@ steps:
     containerRegistry: $(ACR.ServiceConnection)
     repository: $(ACR.ContainerRepository)
     tags: $(Build.BuildId)
-    arguments: '--build-arg major=$(BuildMajor) --build-arg minor=$(BuildMinor) --build-arg build=$(Build.BuildId) --build-arg revision=$(BuildRevision)'
 
 - task: Docker@2
   displayName: Push
