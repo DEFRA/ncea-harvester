@@ -111,4 +111,62 @@ public class MedinProcessorTests
         var medinService = new MedinProcessor(apiClient, serviceBusService, blobService,logger, appSettings);
         await Assert.ThrowsAsync<HttpRequestException>(() => medinService.Process());        
     }
+
+    [Fact]
+    public async Task Process_ShouldThrowException()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.GetServiceBusWithError(out Mock<ServiceBusSender> mockServiceBusSender);
+        string expectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                            "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
+                            "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
+                            "  <csw:SearchResults numberOfRecordsMatched=\"2\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"3\">" +
+                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+                            "      <gmd:fileIdentifier>" +
+                            "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+                            "      </gmd:fileIdentifier>" +
+                            "    </gmd:MD_Metadata>" +
+                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+                            "      <gmd:fileIdentifier>" +
+                            "        <gco:CharacterString>defe1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+                            "      </gmd:fileIdentifier>" +
+                            "    </gmd:MD_Metadata>" +
+                            "  </csw:SearchResults>" +
+                            "</csw:GetRecordsResponse>";
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(expectedData),
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" } });
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<BlobClient> mockBlobClient);
+        var mockLogger = new Mock<ILogger<MedinProcessor>>(MockBehavior.Strict);
+        mockLogger.Setup(x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+            )
+        );
+
+        // Act
+        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, mockLogger.Object, appSettings);
+        await medinService.Process();
+
+        // Assert
+        mockLogger.Verify(
+            m => m.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(2),
+            It.IsAny<string>()
+        );
+    }
 }

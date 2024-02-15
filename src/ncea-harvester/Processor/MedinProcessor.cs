@@ -74,22 +74,22 @@ public class MedinProcessor : IProcessor
 
     private static IEnumerable<XElement>? GetMetadataList(XDocument? responseXml, bool hasNextRecords)
     {
-        var metadataList = new List<XElement>();
+        List<XElement> metadataList = new List<XElement>();
         if (responseXml == null || hasNextRecords == false) 
             return metadataList;
 
         
         string gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
-        metadataList = responseXml?.Descendants()
+        metadataList = responseXml.Descendants()
                                .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
                                            && n.Name.LocalName == "MD_Metadata").ToList();
-        return metadataList;
+        return (metadataList.Any() ? metadataList : new List<XElement>());
     }
 
-    private static string? GetFileIdentifier(XElement? xmlElement)
+    private static string? GetFileIdentifier(XElement xmlElement)
     {
         string gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
-        var fileIdentifierXmlElement = xmlElement?.Descendants()
+        var fileIdentifierXmlElement = xmlElement.Descendants()
                                .FirstOrDefault(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
                                            && n.Name.LocalName == "fileIdentifier");
         var fileIdentifier = fileIdentifierXmlElement?.Descendants()?.FirstOrDefault()?.Value;
