@@ -40,7 +40,7 @@ public class MedinProcessorTests
             Content = new StringContent(expectedData),
         };
         var apiClient = ApiClientForTests.Get(httpResponse);
-        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" } });
+        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" } });
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
@@ -73,7 +73,7 @@ public class MedinProcessorTests
             Content = new StringContent(expectedData),
         };
         var apiClient = ApiClientForTests.Get(httpResponse);
-        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" } });
+        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" } });
         var blobServiceMock = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                                       out Mock<BlobContainerClient> mockBlobContainerClient,
                                                       out Mock<BlobClient> mockBlobClient);
