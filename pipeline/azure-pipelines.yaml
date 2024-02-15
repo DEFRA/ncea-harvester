@@ -11,14 +11,14 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-# variables:
-#   AzureSubscription: az-subscription
-#   AzureContainerRegistry: xx.azurecr.io
-#   dockerFileName: DockerFile
-#   imageName: '$ncea.harvester:$(Build.BuildId)'
-#   ACR.Deploy: false
+variables:
+  dockerFileName: DockerFile
+  imageName: '$ncea.harvester:$(Build.BuildId)'
+  ACR.Deploy: true
+  ACR.ServiceConnection : acr-AZR-NCE-SND1
+  ACR.ContainerRepository: defra/ncea-harvester-service
 
 steps:
 - template: steps-build-and-test.yml
-# - template: steps-build-and-push-docker-images.yml
+- template: steps-build-and-push-docker-images.yml
 # - template: steps-build-and-push-helm-charts.yml

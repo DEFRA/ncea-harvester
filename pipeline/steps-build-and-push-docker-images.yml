@@ -1,20 +1,48 @@
 steps:
 
-- task: Docker@1
-  condition: and(succeeded(), eq(variables['ACR.Deploy'], 'true'))
+- task: Docker@2
+  displayName: Login to ACR
   inputs:
-    azureSubscriptionEndpoint: $(AzureSubscription)
-    azureContainerRegistry: $(AzureContainerRegistry)
-    command: build
-    dockerFile: $(System.DefaultWorkingDirectory)/$(dockerFileName)
-    includeLatestTag: false
-    imageName: '$(imageName)'
+    command: login
+    containerRegistry: $(ACR.ServiceConnection)
 
-- task: Docker@1
-  condition: and(succeeded(), eq(variables['ACR.Deploy'], 'true'))
+- task: Docker@2
+  displayName: 'Build'
   inputs:
-    azureSubscriptionEndpoint: $(AzureSubscription)
-    azureContainerRegistry: $(AzureContainerRegistry)
-    command: 'Push an image'
-    imageName: '$(imageName)'
-    includeSourceTags: false
+    command: build
+    containerRegistry: $(ACR.ServiceConnection)
+    repository: $(ACR.ContainerRepository)
+    Dockerfile: $(System.DefaultWorkingDirectory)/$(dockerFileName)
+    tags: |
+     latest
+     $(Build.BuildId)
+    arguments: '--build-arg major=$(BuildMajor) --build-arg minor=$(BuildMinor) --build-arg build=$(Build.BuildId) --build-arg revision=$(BuildRevision)'
+
+- task: Docker@2
+  displayName: Push
+  inputs:
+    command: push
+    containerRegistry: $(ACR.ServiceConnection)
+    repository: $(ACR.ContainerRepository)
+    tags: |
+     latest
+     $(Build.BuildId)
+
+# - task: Docker@1
+#   condition: and(succeeded(), eq(variables['ACR.Deploy'], 'true'))
+#   inputs:
+#     azureSubscriptionEndpoint: $(AzureSubscription)
+#     azureContainerRegistry: $(AzureContainerRegistry)
+#     command: build
+#     dockerFile: $(System.DefaultWorkingDirectory)/$(dockerFileName)
+#     includeLatestTag: false
+#     imageName: '$(imageName)'
+
+# - task: Docker@1
+#   condition: and(succeeded(), eq(variables['ACR.Deploy'], 'true'))
+#   inputs:
+#     azureSubscriptionEndpoint: $(AzureSubscription)
+#     azureContainerRegistry: $(AzureContainerRegistry)
+#     command: 'Push an image'
+#     imageName: '$(imageName)'
+#     includeSourceTags: false
