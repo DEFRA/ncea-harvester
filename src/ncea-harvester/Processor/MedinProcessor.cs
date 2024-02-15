@@ -56,9 +56,7 @@ public class MedinProcessor : IProcessor
         {
             try
             {
-                var metaDataXmlString = Convert.ToString(metaDataXmlNode);
-                if (string.IsNullOrWhiteSpace(metaDataXmlString)) continue;
-
+                string? metaDataXmlString = metaDataXmlNode.ToString();
                 await _serviceBusService.SendMessageAsync(metaDataXmlString);
                 var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
                 var dataSourceName = _harvesterConfigurations.Processor.ProcessorType.ToString().ToLowerInvariant();
@@ -98,17 +96,10 @@ public class MedinProcessor : IProcessor
         return fileIdentifier;
     }
 
-    private static int GetNextStartPostionInMedinData(out bool hasNextRecords, out int totalRecords, XDocument? responseXml)
+    private static int GetNextStartPostionInMedinData(out bool hasNextRecords, out int totalRecords, XDocument responseXml)
     {
-        if (responseXml == null)
-        {
-            hasNextRecords = false;
-            totalRecords = 0;
-            return 0;
-        }
-
         var cswNameSpace = "http://www.opengis.net/cat/csw/2.0.2";
-        var searchResultsElement = responseXml?.Descendants()
+        var searchResultsElement = responseXml.Descendants()
                                         .FirstOrDefault(n => n.Name.Namespace.NamespaceName == cswNameSpace
                                                     && n.Name.LocalName == "SearchResults");
         var nextRecordAttribute = searchResultsElement?.Attribute("nextRecord")?.Value;
@@ -119,12 +110,12 @@ public class MedinProcessor : IProcessor
         return nextRecord;
     }
 
-    private async Task<XDocument?> GetMedinData(int startPosition, int maxRecords)
+    private async Task<XDocument> GetMedinData(int startPosition, int maxRecords)
     {
         var apiUrl = _harvesterConfigurations.Processor.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
         var responseXmlString = await _apiClient.GetAsync(apiUrl);
-        var responseXml = XDocument.Parse(responseXmlString);
+        XDocument responseXml = XDocument.Parse(responseXmlString);
         return responseXml;
     }
 }
