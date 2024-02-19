@@ -13,6 +13,7 @@ variables:
   ACR.ResourceGroupName: NCEA-NW-POC
   ACR.ServiceConnection : acr-AZR-NCE-SND1
   ACR.ContainerRepository: defra/ncea-harvester-service
+  ARM.ServiceConnection : AZR-NCE-SND1
 
 stages:
 - stage: 'Build'

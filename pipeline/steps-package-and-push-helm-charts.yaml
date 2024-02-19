@@ -8,15 +8,15 @@ steps:
     chartVersion: $(Build.SourceBranchName)
     destination: $(Build.ArtifactStagingDirectory)
 
-- task: HelmDeploy@0
-  displayName: Helm save
-  inputs:
-    command: save
-    chartNameForACR: $(ACRName).azurecr.io/helm/$(ACR.ContainerRepository):$(Build.BuildId)
-    chartPathForACR: charts/$(ACR.ContainerRepository)
-    azureSubscriptionEndpointForACR: 'eaabc851-0376-4a4e-a983-644d04a6ac87'
-    azureResourceGroupForACR: $(ACR.ResourceGroupName)
-    azureContainerRegistry: $(ACR.ContainerRepository)
+# - task: HelmDeploy@0
+#   displayName: Helm save
+#   inputs:
+#     command: save
+#     chartNameForACR: $(ACRName).azurecr.io/helm/$(ACR.ContainerRepository):$(Build.BuildId)
+#     chartPathForACR: charts/$(ACR.ContainerRepository)
+#     azureSubscriptionEndpointForACR: $(ARM.ServiceConnection)
+#     azureResourceGroupForACR: $(ACR.ResourceGroupName)
+#     azureContainerRegistry: $(ACR.ContainerRepository)
 
 # - task: AzureCLI@1
 #   inputs:
