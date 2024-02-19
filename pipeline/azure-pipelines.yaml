@@ -33,7 +33,7 @@ stages:
         artifactNameSuffix: _$(branch)
       ${{ else }}:
         artifactNameSuffix: ''
-      chartPath: 'src/ncea-harvester/charts/ncea-harvester'
+      chartPath: 'src/ncea-harvester'
       
     steps:
       - template: steps-build-and-test.yaml
