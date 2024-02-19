@@ -1,0 +1,26 @@
+# steps:
+
+# - task: HelmDeploy@0
+#   displayName: 'Helm Deploy'
+#   inputs:
+#     connectionType: 'Azure Resource Manager'
+#     azureSubscription: 'AzureMSDN'
+#     azureResourceGroup: 'container-pipelines-demo'
+#     kubernetesCluster: 'dev-container-demo'
+#     useClusterAdmin: true
+#     namespace: 'apps'
+#     command: 'upgrade'
+#     chartType: 'Name'
+#     chartName: '$(containerRegistry)/$(containerRepository)'
+#     releaseName: '$(containerRepository)'
+#     overrideValues: 'ingress.basedomain=$(aksHostDev),image.tag=$(Build.BuildNumber),image.repository=$(containerRegistry).azurecr.io/$(containerRepository)'
+#     force: true
+
+#   - task: HelmDeploy@0
+#             inputs:
+#               connectionType: 'Kubernetes Service Connection'
+#               kubernetesServiceConnection: 'Staging-592588480'
+#               namespace: 'staging'
+#               command: 'upgrade'
+#               chartType: 'FilePath'
+#               chartPath: $(Build.ArtifactStagingDirectory)/server

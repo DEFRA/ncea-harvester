@@ -6,19 +6,50 @@ trigger:
   branches:
     include:
       - main
-      - feature/*
-
-pool:
-  vmImage: 'ubuntu-latest'
+      - feature/* 
 
 variables:
-  ACR.Deploy: true
-  ACR.ServiceConnection: acr-AZR-NCE-SND1
-  acrName: nceapocsbox
+  ACR.Name: nceapocsbox
+  ACR.ResourceGroupName: NCEA-NW-POC
+  ACR.ServiceConnection : acr-AZR-NCE-SND1
   ACR.ContainerRepository: defra/ncea-harvester-service
-  chartPath: src/ncea-harvester/charts/ncea-harvester
 
-steps:
-- template: steps-build-and-test.yml
-- template: steps-build-and-push-docker-images.yml
-- template: steps-build-and-push-helm-charts.yml
+stages:
+- stage: 'Build'
+  displayName: 'Build Harvester Service'
+  jobs: 
+  - job: 'Build'
+    displayName: 'Build job'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    variables:
+      isMaster: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+      isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+      branchSource: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
+      branch: $[replace(variables['branchSource'], '/', '-')]
+      ${{ if ne(variables.isMaster, 'true') }}:
+        artifactNameSuffix: _$(branch)
+      ${{ else }}:
+        artifactNameSuffix: ''
+      chartPath: 'src/ncea-harvester/charts/ncea-harvester'
+      
+    steps:
+      - template: steps-build-and-test.yaml
+      - template: steps-build-and-push-docker-images.yaml
+      - template: steps-package-and-push-helm-charts.yaml
+
+# - stage: 'Dev'
+#   displayName: 'Deploy to the dev environment'
+#   dependsOn: Build
+#   condition:  succeeded()
+#   jobs:
+#   - deployment: Deploy
+#     pool:
+#       vmImage: 'ubuntu-latest'
+#     environment: dev 
+#     strategy:
+#       runOnce:
+#         deploy:
+#           steps:
+#             - template: steps-deploy-helm-charts.yaml

@@ -1,0 +1,25 @@
+steps:
+
+- task: HelmDeploy@0
+  displayName: Helm package
+  inputs:
+    command: package
+    chartPath: $(chartPath)
+    chartVersion: $(Build.SourceBranchName)
+    destination: $(Build.ArtifactStagingDirectory)
+
+- task: HelmDeploy@0
+  displayName: Helm save
+  inputs:
+    command: save
+    chartNameForACR: $(ACRName).azurecr.io/helm/$(ACR.ContainerRepository):$(Build.BuildId)
+    chartPathForACR: charts/$(ACR.ContainerRepository)
+    azureSubscriptionEndpointForACR: $(ACR.ServiceConnection)
+    azureResourceGroupForACR: $(ACR.ResourceGroupName)
+    azureContainerRegistry: $(ACR.ContainerRepository)
+
+# - task: AzureCLI@1
+#   inputs:
+#     azureSubscription: $(Arm.ServiceConnection)
+#     scriptLocation: inlineScript
+#     inlineScript: az acr helm push -n $(acrName) $(Build.ArtifactStagingDirectory)/$(ACR.ContainerRepository)-$(Build.BuildId).tgz
