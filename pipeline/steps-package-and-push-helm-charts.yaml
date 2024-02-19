@@ -14,7 +14,7 @@ steps:
     command: save
     chartNameForACR: $(ACRName).azurecr.io/helm/$(ACR.ContainerRepository):$(Build.BuildId)
     chartPathForACR: charts/$(ACR.ContainerRepository)
-    azureSubscriptionEndpointForACR: $(ACR.ServiceConnection)
+    azureSubscriptionEndpointForACR: 'eaabc851-0376-4a4e-a983-644d04a6ac87'
     azureResourceGroupForACR: $(ACR.ResourceGroupName)
     azureContainerRegistry: $(ACR.ContainerRepository)
 
