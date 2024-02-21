@@ -1,9 +1,8 @@
-﻿using ncea.harvester.Infrastructure.Contracts;
-using Ncea.Harvester.Constants;
+﻿using Ncea.Harvester.Constants;
 
 namespace Ncea.Harvester.Models;
 
-public class HarvesterConfiguration : IHarvesterConfiguration
+public class HarvesterConfiguration
 {
     public ProcessorType ProcessorType { get; set; }
     public string Type { get; set; } = null!;

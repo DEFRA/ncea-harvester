@@ -1,7 +1,7 @@
 using Cronos;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using ncea.harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,10 +13,10 @@ public class Worker : BackgroundService
     private readonly CronExpression _cron;
     private readonly ILogger _logger;
     private readonly TelemetryClient _telemetryClient;
-    private readonly IHarvesterConfiguration _harvesterConfiguration;
+    private readonly HarvesterConfiguration _harvesterConfiguration;
     private readonly IProcessor _processor;
 
-    public Worker(ILogger<Worker> logger, IHarvesterConfiguration harvesterConfiguration, IProcessor processor, TelemetryClient telemetryClient)
+    public Worker(ILogger<Worker> logger, HarvesterConfiguration harvesterConfiguration, IProcessor processor, TelemetryClient telemetryClient)
     {
         _logger = logger;
         _harvesterConfiguration = harvesterConfiguration;

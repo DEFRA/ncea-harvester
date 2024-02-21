@@ -1,9 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
-using ncea.harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Constants;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors;

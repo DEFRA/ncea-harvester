@@ -1,7 +1,7 @@
 ﻿using HtmlAgilityPack;
-using ncea.harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
+using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using System.Text;
 
@@ -13,13 +13,13 @@ public class JnccProcessor : IProcessor
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
     private readonly ILogger _logger;
-    private readonly IHarvesterConfiguration _harvesterConfiguration;
+    private readonly HarvesterConfiguration _harvesterConfiguration;
 
     public JnccProcessor(IApiClient apiClient, 
         IServiceBusService serviceBusService, 
         IBlobService blobService,
         ILogger<JnccProcessor> logger,
-        IHarvesterConfiguration harvesterConfiguration)
+        HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
         _harvesterConfiguration = harvesterConfiguration;

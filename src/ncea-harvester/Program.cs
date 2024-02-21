@@ -12,7 +12,6 @@ using Ncea.Harvester.Constants;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;
-using ncea.harvester.Infrastructure.Contracts;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -22,11 +21,10 @@ var configuration = new ConfigurationBuilder()
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
-//builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("HarvesterConfigurations"));
 builder.Services.AddHttpClient();
 
 var dataSource = configuration.GetValue<string>("DataSource");
-var dataSourceName = Enum.Parse(typeof(DataSource), dataSource!).ToString()!.ToLowerInvariant();
+var dataSourceName = Enum.Parse(typeof(ProcessorType), dataSource!).ToString()!.ToLowerInvariant();
 var processorType = (ProcessorType)Enum.Parse(typeof(ProcessorType), dataSource!);
 var harvsesterConfigurations = configuration.GetSection("HarvesterConfigurations").Get<List<HarvesterConfiguration>>()!;
 
@@ -49,7 +47,7 @@ static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterCo
     if (type != null)
     {
         builder.Services.AddSingleton(typeof(IProcessor), type);
-        builder.Services.AddSingleton(typeof(IHarvesterConfiguration), harvsesterConfiguration);
+        builder.Services.AddSingleton(typeof(HarvesterConfiguration), harvsesterConfiguration);
     }
 }
 

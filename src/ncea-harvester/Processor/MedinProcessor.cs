@@ -1,6 +1,6 @@
-﻿using ncea.harvester.Infrastructure.Contracts;
-using Ncea.Harvester.Infrastructure.Contracts;
+﻿using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
+using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using System.Text;
 using System.Xml.Linq;
@@ -13,13 +13,13 @@ public class MedinProcessor : IProcessor
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
     private readonly ILogger<MedinProcessor> _logger;
-    private readonly IHarvesterConfiguration _harvesterConfiguration;
+    private readonly HarvesterConfiguration _harvesterConfiguration;
 
     public MedinProcessor(IApiClient apiClient,
         IServiceBusService serviceBusService,
         IBlobService blobService,
         ILogger<MedinProcessor> logger,
-        IHarvesterConfiguration harvesterConfiguration)
+        HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
         _harvesterConfiguration = harvesterConfiguration;

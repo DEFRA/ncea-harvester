@@ -1,6 +1,6 @@
 ﻿namespace Ncea.Harvester.Constants;
 
-public enum DataSource
+public enum ProcessorType
 {
     Medin,
     Jncc

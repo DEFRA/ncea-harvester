@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Azure.Messaging.ServiceBus;
 using Ncea.Harvester.Infrastructure.Contracts;
-using ncea.harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Models;
 
 namespace Ncea.Harvester.Infrastructure;
 
@@ -10,7 +10,7 @@ public class ServiceBusService : IServiceBusService
     private readonly ServiceBusClient _queueClient;
     private readonly string _serviceBusQueueName;
 
-    public ServiceBusService(IHarvesterConfiguration harvesterConfiguration, ServiceBusClient queueClient)
+    public ServiceBusService(HarvesterConfiguration harvesterConfiguration, ServiceBusClient queueClient)
     {
         _queueClient = queueClient;
         _serviceBusQueueName = $"{harvesterConfiguration.ProcessorType}-harvester-queue";
