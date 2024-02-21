@@ -1,8 +1,7 @@
 using Cronos;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.Extensions.Options;
-using Ncea.Harvester.Models;
+using ncea.harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Processors.Contracts;
 using System.Diagnostics.CodeAnalysis;
 
@@ -14,15 +13,15 @@ public class Worker : BackgroundService
     private readonly CronExpression _cron;
     private readonly ILogger _logger;
     private readonly TelemetryClient _telemetryClient;
-    private readonly IOptions<HarvesterConfigurations> _harvesterConfigurations;
+    private readonly IHarvesterConfiguration _harvesterConfiguration;
     private readonly IProcessor _processor;
 
-    public Worker(ILogger<Worker> logger, IOptions<HarvesterConfigurations> harvesterConfigurations, IProcessor processor, TelemetryClient telemetryClient)
+    public Worker(ILogger<Worker> logger, IHarvesterConfiguration harvesterConfiguration, IProcessor processor, TelemetryClient telemetryClient)
     {
         _logger = logger;
-        _harvesterConfigurations = harvesterConfigurations;
+        _harvesterConfiguration = harvesterConfiguration;
         _processor = processor;
-        _cron = CronExpression.Parse(_harvesterConfigurations.Value.Processor.Schedule);
+        _cron = CronExpression.Parse(_harvesterConfiguration.Schedule);
         _telemetryClient = telemetryClient;
     }
 
@@ -34,7 +33,7 @@ public class Worker : BackgroundService
 
             using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
             {
-                _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfigurations.Value.Processor.ProcessorType);
+                _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
                 await _processor.Process();
                 _logger.LogInformation("Metadata harversting completed");
                 _telemetryClient.TrackEvent("Harvesting completed");

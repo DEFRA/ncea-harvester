@@ -12,6 +12,7 @@ using Ncea.Harvester.Constants;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;
+using ncea.harvester.Infrastructure.Contracts;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -21,31 +22,34 @@ var configuration = new ConfigurationBuilder()
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
-builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("HarvesterConfigurations"));
+//builder.Services.Configure<HarvesterConfigurations>(configuration.GetSection("HarvesterConfigurations"));
 builder.Services.AddHttpClient();
 
-var processorType = configuration.GetValue<string>("HarvesterConfigurations:Processor:ProcessorType");
-var dataSourceName = Enum.Parse(typeof(ProcessorType), processorType!).ToString()!.ToLowerInvariant();
+var dataSource = configuration.GetValue<string>("DataSource");
+var dataSourceName = Enum.Parse(typeof(DataSource), dataSource!).ToString()!.ToLowerInvariant();
+var processorType = (ProcessorType)Enum.Parse(typeof(ProcessorType), dataSource!);
+var harvsesterConfigurations = configuration.GetSection("HarvesterConfigurations").Get<List<HarvesterConfiguration>>()!;
 
 ConfigureKeyVault(configuration, builder);
 ConfigureLogging(builder);
 await ConfigureBlobStorage(configuration, builder, dataSourceName);
 await ConfigureServiceBusQueue(configuration, builder, dataSourceName);
 ConfigureServices(builder);
-ConfigureProcessor(builder, configuration);
+ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 
 var host = builder.Build();
 host.Run();
 
-static void ConfigureProcessor(HostApplicationBuilder builder, IConfiguration configuration)
+static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterConfiguration> harvsesterConfigurations, ProcessorType processorType)
 {
-    var processorTypeName = configuration.GetValue<string>("HarvesterConfigurations:Processor:Type");
+    var harvsesterConfiguration = harvsesterConfigurations.Single(x => x.ProcessorType == processorType);
     var assembly = typeof(Program).Assembly;
-    var type = assembly.GetType(processorTypeName!);
+    var type = assembly.GetType(harvsesterConfiguration.Type);
 
     if (type != null)
     {
         builder.Services.AddSingleton(typeof(IProcessor), type);
+        builder.Services.AddSingleton(typeof(IHarvesterConfiguration), harvsesterConfiguration);
     }
 }
 

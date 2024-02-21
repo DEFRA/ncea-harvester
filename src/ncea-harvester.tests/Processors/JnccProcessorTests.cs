@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using ncea.harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Constants;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors;
@@ -24,13 +25,13 @@ public class JnccProcessorTests
             Content = new StringContent(expectedData),
         };
         var apiClient = ApiClientForTests.Get(httpResponse);
-        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase="https://base-uri", DataSourceApiUrl="/test-url", ProcessorType= ProcessorType.Jncc, Type=""} });
+        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase="https://base-uri", DataSourceApiUrl="/test-url", ProcessorType= ProcessorType.Jncc, Type=""};
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
         // Act
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, appSettings);
+        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
         await jnccService.Process();            
 
         // Assert
@@ -52,14 +53,14 @@ public class JnccProcessorTests
             Content = new StringContent(expectedData),
         };
         var apiClient = ApiClientForTests.Get(httpResponse);
-        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" } });
+        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobServiceMock = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                                       out Mock<BlobContainerClient> mockBlobContainerClient,
                                                       out Mock<BlobClient> mockBlobClient);
         var loggerMock = new Mock<ILogger<JnccProcessor>>();
 
         // Act
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobServiceMock, loggerMock.Object, appSettings);
+        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobServiceMock, loggerMock.Object, harvesterConfiguration);
         await jnccService.Process();
 
         // Assert
@@ -79,13 +80,13 @@ public class JnccProcessorTests
             StatusCode = HttpStatusCode.InternalServerError
         };
         var apiClient = ApiClientForTests.Get(httpResponse);
-        var appSettings = Options.Create(new HarvesterConfigurations() { Processor = new Processor() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" } });
+        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService,logger, appSettings);
+        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService,logger, harvesterConfiguration);
         await Assert.ThrowsAsync<HttpRequestException>(() => jnccService.Process());
     }
 }

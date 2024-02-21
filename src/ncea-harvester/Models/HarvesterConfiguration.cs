@@ -1,0 +1,14 @@
+﻿using ncea.harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Constants;
+
+namespace Ncea.Harvester.Models;
+
+public class HarvesterConfiguration : IHarvesterConfiguration
+{
+    public ProcessorType ProcessorType { get; set; }
+    public string Type { get; set; } = null!;
+    public string DataSourceApiBase { get; set; } = null!;
+    public string DataSourceApiUrl { get; set; } = null!;
+    public string Schedule { get; set; } = null!;
+}
+

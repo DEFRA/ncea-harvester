@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using ncea.harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
-using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using System.Text;
 using System.Xml.Linq;
@@ -14,17 +13,17 @@ public class MedinProcessor : IProcessor
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
     private readonly ILogger<MedinProcessor> _logger;
-    private readonly HarvesterConfigurations _harvesterConfigurations;
+    private readonly IHarvesterConfiguration _harvesterConfiguration;
 
     public MedinProcessor(IApiClient apiClient,
         IServiceBusService serviceBusService,
         IBlobService blobService,
         ILogger<MedinProcessor> logger,
-        IOptions<HarvesterConfigurations> harvesterConfigurations)
+        IHarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
-        _harvesterConfigurations = harvesterConfigurations.Value;
-        _apiClient.CreateClient(_harvesterConfigurations.Processor.DataSourceApiBase);
+        _harvesterConfiguration = harvesterConfiguration;
+        _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
         _serviceBusService = serviceBusService;
         _logger = logger;
         _blobService = blobService;
@@ -59,7 +58,7 @@ public class MedinProcessor : IProcessor
                 string? metaDataXmlString = metaDataXmlNode.ToString();
                 await _serviceBusService.SendMessageAsync(metaDataXmlString);
                 var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-                var dataSourceName = _harvesterConfigurations.Processor.ProcessorType.ToString().ToLowerInvariant();
+                var dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
 
                 var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
                 var documentFileName = string.Concat(documentFileIdentifier, ".xml");
@@ -112,7 +111,7 @@ public class MedinProcessor : IProcessor
 
     private async Task<XDocument> GetMedinData(int startPosition, int maxRecords)
     {
-        var apiUrl = _harvesterConfigurations.Processor.DataSourceApiUrl;
+        var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
         var responseXmlString = await _apiClient.GetAsync(apiUrl);
         XDocument responseXml = XDocument.Parse(responseXmlString);

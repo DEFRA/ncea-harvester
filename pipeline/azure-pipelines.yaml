@@ -25,7 +25,7 @@ stages:
       vmImage: 'ubuntu-latest'
 
     variables:
-      isMaster: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
       isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
       branchSource: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
       branch: $[replace(variables['branchSource'], '/', '-')]
