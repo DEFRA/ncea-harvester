@@ -16,11 +16,19 @@
 #     overrideValues: 'ingress.basedomain=$(aksHostDev),image.tag=$(Build.BuildNumber),image.repository=$(containerRegistry).azurecr.io/$(containerRepository)'
 #     force: true
 
-#   - task: HelmDeploy@0
-#             inputs:
-#               connectionType: 'Kubernetes Service Connection'
-#               kubernetesServiceConnection: 'Staging-592588480'
-#               namespace: 'staging'
-#               command: 'upgrade'
-#               chartType: 'FilePath'
-#               chartPath: $(Build.ArtifactStagingDirectory)/server
+- task: HelmDeploy@0
+  displayName: 'Helm Deploy'
+  condition: and(succeeded(), eq(variables.isPullRequest, false))
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceConnection: '$(AKS.ServiceConnection)'
+    namespace: default
+    command: 'upgrade'
+    chartType: 'Name'
+    chartName: '$(ACR.Name).azurecr.io/charts/$(ACR.ContainerRepository):$(Version)'
+    chartVersion: '$(Version)'
+    # azureSubscriptionForACR: '$(azureSubscription)'
+    azureResourceGroupForACR: '$(ACR.ResourceGroupName)'
+    azureContainerRegistry: '$(ACR.Name).azurecr.io'
+    install: true
+    releaseName: $(Version)

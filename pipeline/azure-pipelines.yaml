@@ -14,7 +14,7 @@ variables:
   ACR.ServiceConnection : acr-AZR-NCE-SND1
   ACR.ContainerRepository: defra/ncea-harvester-service
   ARM.ServiceConnection : AZR-NCE-SND1
-  AKS.ServiceConnection : AZR-NCE-SND1
+  AKS.ServiceConnection : aksServiceConn-AZR-NCE-SND1
 
 stages:
 - stage: 'Build'
