@@ -1,53 +1,88 @@
+{{- range $jobname, $job := .Values.jobs }}
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ .Values.nameOverride }}
+  name: {{ include "cronjobs.releaseName" $ }}-{{ $jobname }}
   labels:
-    {{- include "ncea-harvester.labels" . | nindent 4 }}
+    {{- include "cronjobs.labels" $ | nindent 4 }}
 spec:
-  schedule: "{{ .Values.schedule }}"
-  concurrencyPolicy: {{ .Values.concurrencyPolicy }}
-  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
-  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  concurrencyPolicy: {{ $job.concurrencyPolicy }}
+  failedJobsHistoryLimit: {{ $job.failedJobsHistoryLimit }}
   jobTemplate:
-    metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "ncea-harvester.selectorLabels" . | nindent 8 }}
     spec:
       template:
+        metadata:
+          labels:
+            app: {{ include "cronjobs.releaseName" $ }}
+            cron: {{ $jobname }}
         spec:
-          {{- with .Values.imagePullSecrets }}
+        {{- if hasKey $job "imagePullSecrets" }}
           imagePullSecrets:
-            {{- toYaml . | nindent 8 }}
+          - name: {{ $.Release.Name }}-docker
+        {{- end }}
+        {{- if and (hasKey $job "serviceAccount") (hasKey $job.serviceAccount "name") }}
+          serviceAccountName: {{ $job.serviceAccount.name }}
+        {{- else }}
+          serviceAccountName: {{ $.Release.Name}}-{{ $jobname }}
+        {{- end }}
+        {{- if hasKey $job "securityContext" }}
+          {{- if $job.securityContext.runAsUser }}
+          securityContext:
+            runAsUser: {{ $job.securityContext.runAsUser }}
+            {{- if $job.securityContext.runAsGroup }}
+            runAsGroup: {{ $job.securityContext.runAsGroup }}
+            {{- end }}
+            {{- if $job.securityContext.fsGroup }}
+            fsGroup: {{ $job.securityContext.fsGroup }}
+            {{- end }}
           {{- end }}
-          serviceAccountName: {{ include "ncea-harvester.serviceAccountName" . }}
+        {{- end }}
           containers:
-            - name: {{ .Chart.Name }}
-              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-              imagePullPolicy: {{ .Values.image.pullPolicy }}
-              env:
-                {{- range $key, $value := .Values.environment }}
-                - name: {{ $key }}
-                  value: {{ $value | quote }}
-                {{- end }}
-              resources:
-                limits: 
-                  memory: {{ .Values.resources.limits.memory }}
-                  cpu: {{ .Values.resources.limits.cpu }}
-                requests:
-                  memory: {{ .Values.resources.requests.memory }}
-                  cpu: {{ .Values.resources.requests.cpu }}
-          restartPolicy: {{ .Values.restartPolicy }}
-          {{- with .Values.affinity }}
-          affinity:
-            {{- toYaml . | nindent 8 }}
+          - image: {{ $job.image.repository }}:{{ $job.image.tag }}
+            imagePullPolicy: {{ $job.image.imagePullPolicy }}
+            name: {{ $jobname }}
+            {{- with $job.env }}
+            env:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- with $job.envFrom }}
+            envFrom:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- with $job.command }}
+            command:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- with $job.args }}
+            args:
+{{ toYaml . | indent 12 }}
+              {{- end }}
+            {{- with $job.resources }}
+            resources:
+{{ toYaml . | indent 14 }}
+            {{- end }}
+            {{- with $job.volumeMounts }}
+            volumeMounts:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+          {{- with $job.nodeSelector }}
+          nodeSelector:
+{{ toYaml . | indent 12 }}
           {{- end }}
-          {{- with .Values.tolerations }}
+          {{- with $job.affinity }}
+          affinity:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          {{- with $job.tolerations }}
           tolerations:
-            {{- toYaml . | nindent 8 }}
-          {{- end }}      
-      backoffLimit: {{ .Values.backoffLimit }}
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          restartPolicy: {{ $job.restartPolicy }}
+          {{- with $job.volumes }}
+          volumes:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+  schedule: {{ $job.schedule | quote }}
+  successfulJobsHistoryLimit: {{ $job.successfulJobsHistoryLimit }}
+{{- end }}

@@ -1,45 +1,36 @@
-replicaCount: 1
-
-image:
-  repository: nceapocsbox.azurecr.io/defra/ncea-harvester-service
-  pullPolicy: IfNotPresent
-  tag: "20240221.1_feature-310693-create-heml-chart"
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: "ncea-harvester-service"
-schedule: "*/1 * * * *"
-concurrencyPolicy: "Forbid"
-failedJobsHistoryLimit: 1
-successfulJobsHistoryLimit: 1
-backoffLimit: 0
-restartPolicy: "Never"
-
-environment:
-  DataSource : "Jncc"
-
-serviceAccount:
-  create: false
-  automount: false
-  annotations: {}
-  name: "serviceaccount-nceaharvester-sbox"
-
-podAnnotations: {}
-
-podLabels: {}
-
-podSecurityContext: {}
-
-securityContext: {}
-
-resources: {}
-
-volumes: []
-
-volumeMounts: []
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+jobs:
+  # first cron
+  medin:
+    image:
+      repository: nceapocsbox.azurecr.io/defra/ncea-harvester-service
+      tag: 20240221.1_feature-310693-create-heml-chart
+      imagePullPolicy: IfNotPresent
+    env:
+    - name: DataSource
+      value: "medin"
+    serviceAccount:
+      name: "serviceaccount-nceaharvester-sbox"
+    schedule: "*/1 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+    imagePullSecrets: []
+  # second cron
+  jncc:
+    image:
+      repository: nceapocsbox.azurecr.io/defra/ncea-harvester-service
+      tag: 20240221.1_feature-310693-create-heml-chart
+      imagePullPolicy: IfNotPresent
+    env:
+    - name: DataSource
+      value: "jncc"
+    schedule: "*/1 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+    imagePullSecrets: []
+  

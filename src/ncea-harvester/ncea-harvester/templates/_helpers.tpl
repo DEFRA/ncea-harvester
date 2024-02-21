@@ -1,41 +1,17 @@
-{{/*
-Expand the name of the chart.
-*/}}
-{{- define "ncea-harvester.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "ncea-harvester.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
-{{- end }}
+{{/* vim: set filetype=mustache: */}}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "ncea-harvester.chart" -}}
+{{- define "cronjobs.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "ncea-harvester.labels" -}}
-helm.sh/chart: {{ include "ncea-harvester.chart" . }}
-{{ include "ncea-harvester.selectorLabels" . }}
+{{- define "cronjobs.labels" -}}
+helm.sh/chart: {{ include "cronjobs.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -43,20 +19,37 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels
+Expand the release name of the chart.
 */}}
-{{- define "ncea-harvester.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "ncea-harvester.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
+{{- define "cronjobs.releaseName" -}}
+{{- default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 
 {{/*
-Create the name of the service account to use
+Create payload for any image pull secret.
+One kube secret will be created containing all the auths
+and will be shared by all the job pods requiring it.
 */}}
-{{- define "ncea-harvester.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "ncea-harvester.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
+{{- define "cronjobs.imageSecrets" -}}
+    {{- $secrets := dict -}}
+    {{- range $jobname, $job := .Values.jobs -}}
+        {{- if hasKey $job "imagePullSecrets" -}}
+            {{- range $ips := $job.imagePullSecrets -}}
+                {{- $userInfo := dict "username" $ips.username "password" $ips.password "auth" (printf "%s:%s" $ips.username $ips.password | b64enc) -}}
+                {{- if hasKey $ips "email" -}}
+                    {{ $_ := set $userInfo  "email" $ips.email -}}
+                {{- end -}}
+                {{- $_ := set $secrets $ips.registry $userInfo -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+    {{- if gt (len $secrets) 0 -}}
+        {{- $auth := dict "auths" $secrets -}}
+        {{/* Emit secret content as base64 */}}
+        {{- print ($auth | toJson | b64enc) -}}
+    {{- else -}}
+        {{/* There are no secrets*/}}
+        {{- print "" -}}
+    {{- end -}}
+{{- end -}}
