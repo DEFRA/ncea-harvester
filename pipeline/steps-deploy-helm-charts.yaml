@@ -24,11 +24,12 @@
     kubernetesServiceConnection: '$(AKS.ServiceConnection)'
     namespace: default
     command: 'upgrade'
-    chartType: 'Name'
-    chartName: '$(ACR.Name).azurecr.io/charts/$(ACR.ContainerRepository):$(Version)'
-    chartVersion: '$(Version)'
+    chartType: 'FilePath'
+    chartPath: '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber)'
+    # chartName: '$(ACR.Name).azurecr.io/charts/$(ACR.ContainerRepository):$(Version)'
+    # chartVersion: '$(Version)'
     # azureSubscriptionForACR: '$(azureSubscription)'
-    azureResourceGroupForACR: '$(ACR.ResourceGroupName)'
-    azureContainerRegistry: '$(ACR.Name).azurecr.io'
-    install: true
-    releaseName: $(Version)
+    # azureResourceGroupForACR: '$(ACR.ResourceGroupName)'
+    # azureContainerRegistry: '$(ACR.Name).azurecr.io'
+    # install: true
+    releaseName: 'ncea-harvester'
