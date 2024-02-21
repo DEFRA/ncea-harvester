@@ -2,21 +2,24 @@ steps:
 
 - task: HelmDeploy@0
   displayName: Helm package
+  condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     command: package
     chartPath: $(chartPath)
-    chartVersion: $(Build.SourceBranchName)
+    chartVersion: $(Build.BuildNumber)
     destination: $(Build.ArtifactStagingDirectory)
 
-# - task: HelmDeploy@0
-#   displayName: Helm save
-#   inputs:
-#     command: save
-#     chartNameForACR: $(ACRName).azurecr.io/helm/$(ACR.ContainerRepository):$(Build.BuildId)
-#     chartPathForACR: charts/$(ACR.ContainerRepository)
-#     azureSubscriptionEndpointForACR: $(ARM.ServiceConnection)
-#     azureResourceGroupForACR: $(ACR.ResourceGroupName)
-#     azureContainerRegistry: $(ACR.ContainerRepository)
+- task: HelmDeploy@0
+  displayName: Helm save
+  condition: and(succeeded(), eq(variables.isPullRequest, false))
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceConnection: $(AKS.ServiceConnection)
+    command: save
+    chartNameForACR: $charts/$(ACR.ContainerRepository):$(Build.BuildNumber)
+    chartPathForACR:  $(chartPath)
+    azureResourceGroupForACR: $(ACR.ResourceGroupName)
+    azureContainerRegistry: $(ACR.ContainerRepository))
 
 # - task: AzureCLI@1
 #   inputs:
