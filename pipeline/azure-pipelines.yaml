@@ -40,6 +40,7 @@ stages:
       - template: steps-build-and-test.yaml
       - template: steps-build-and-push-docker-images.yaml
       - template: steps-package-and-push-helm-charts.yaml
+      - template: steps-deploy-helm-charts.yaml
 
 # - stage: 'Dev'
 #   displayName: 'Deploy to the dev environment'
