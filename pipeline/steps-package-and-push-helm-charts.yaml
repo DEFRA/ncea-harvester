@@ -16,10 +16,12 @@ steps:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceConnection: $(AKS.ServiceConnection)
     command: save
-    chartNameForACR: $charts/$(ACR.ContainerRepository):$(Build.BuildNumber)
+    chartNameForACR: charts/$(ACR.ContainerRepository):$(Build.BuildNumber)
     chartPathForACR:  $(chartPath)
     azureResourceGroupForACR: $(ACR.ResourceGroupName)
-    azureContainerRegistry: $(ACR.ContainerRepository))
+    azureContainerRegistry: '$(ACR.Name).azurecr.io'
+  env:
+    HELM_EXPERIMENTAL_OCI: 1
 
 # - task: AzureCLI@1
 #   inputs:
