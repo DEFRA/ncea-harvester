@@ -24,8 +24,8 @@ builder.Services.AddHostedService<Worker>();
 builder.Services.AddHttpClient();
 
 var dataSource = configuration.GetValue<string>("DataSource");
-var dataSourceName = Enum.Parse(typeof(ProcessorType), dataSource!).ToString()!.ToLowerInvariant();
-var processorType = (ProcessorType)Enum.Parse(typeof(ProcessorType), dataSource!);
+var dataSourceName = Enum.Parse(typeof(ProcessorType), dataSource!, true).ToString()!.ToLowerInvariant();
+var processorType = (ProcessorType)Enum.Parse(typeof(ProcessorType), dataSource!, true);
 var harvsesterConfigurations = configuration.GetSection("HarvesterConfigurations").Get<List<HarvesterConfiguration>>()!;
 
 ConfigureKeyVault(configuration, builder);
