@@ -58,12 +58,12 @@ static async Task ConfigureServiceBusQueue(IConfigurationRoot configuration, Hos
 
     var queueName = $"{dataSourceName}-harvester-queue";
 
-    var servicebusAdminClient = new ServiceBusAdministrationClient(servicebusHostName, new DefaultAzureCredential());
-    bool queueExists = await servicebusAdminClient.QueueExistsAsync(queueName);
-    if (!queueExists)
-    {
-        await servicebusAdminClient.CreateQueueAsync(queueName);
-    }
+    //var servicebusAdminClient = new ServiceBusAdministrationClient(servicebusHostName, new DefaultAzureCredential());
+    //bool queueExists = await servicebusAdminClient.QueueExistsAsync(queueName);
+    //if (!queueExists)
+    //{
+    //    await servicebusAdminClient.CreateQueueAsync(queueName);
+    //}
 }
 
 static void ConfigureKeyVault(IConfigurationRoot configuration, HostApplicationBuilder builder)
