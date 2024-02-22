@@ -8,8 +8,7 @@ trigger:
       - main
       - feature/* 
 
-variables:
-  - template: templates/variables-build.yml
+variables:  
   - name : isMain
     value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   - name : isPullRequest
@@ -39,7 +38,8 @@ stages:
     displayName: 'Build job'
     pool:
       vmImage: 'ubuntu-latest'
-      
+    variables:
+      - template: templates/variables-build.yml      
     steps:
       - template: steps-build-and-test.yaml
       - template: steps-build-and-push-docker-images.yaml
@@ -85,4 +85,4 @@ stages:
               parameters:
                 envName: dev
                 releaseName: ncea-harvester-dev
-                serviceConnection: '$(aksServiceConnection)'
+                serviceConnection: aksServiceConn-AZR-NCE-SND1
