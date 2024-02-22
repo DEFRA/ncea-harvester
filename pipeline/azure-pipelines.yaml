@@ -42,7 +42,7 @@ stages:
       - template: steps-package-and-push-helm-charts.yaml
 
 - stage: 'sandbox'
-  displayName: 'Deploy to the sandbox environment'
+  displayName: 'Deploy to Sandbox'
   dependsOn: Build
   condition:  succeeded()
   jobs:

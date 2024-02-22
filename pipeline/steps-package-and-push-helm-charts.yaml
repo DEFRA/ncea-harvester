@@ -9,6 +9,12 @@ steps:
     chartVersion: $(Build.BuildNumber)
     destination: $(Build.ArtifactStagingDirectory)
 
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: $(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz
+    artifactName: charts
+
+
 # # - bash: |
 # #     helm push '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz' oci://$(ACR.Name).azurecr.io/helm
 

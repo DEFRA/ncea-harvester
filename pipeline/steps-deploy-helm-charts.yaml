@@ -10,6 +10,11 @@ parameters:
 
 steps:
 
+- task: DownloadPipelineArtifact@2
+  inputs:
+    buildType: 'current'
+    artifact: charts
+
 - task: HelmDeploy@0
   displayName: 'Helm Deploy'
   condition: and(succeeded(), eq(variables.isPullRequest, false))
@@ -19,8 +24,8 @@ steps:
     namespace: default
     command: 'upgrade'
     chartType: 'FilePath'
-    chartPath: '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz'
-    valueFile: $(chartPath)/values/values.${{ parameters.envName }}.yaml
+    chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
+    valueFile: $values/values.${{ parameters.envName }}.yaml
     overrideValues: 'image.tag=$(Build.BuildNumber)$(artifactNameSuffix)'
     install: true
     recreate: true
