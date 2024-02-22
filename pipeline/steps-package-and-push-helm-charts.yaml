@@ -18,6 +18,8 @@ steps:
 # # - bash: |
 # #     helm push '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz' oci://$(ACR.Name).azurecr.io/helm
 
+#helm chart push
+
 # - task: HelmDeploy@0
 #   displayName: Helm save
 #   condition: and(succeeded(), eq(variables.isPullRequest, false))

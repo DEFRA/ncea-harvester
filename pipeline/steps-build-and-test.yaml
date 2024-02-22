@@ -7,10 +7,10 @@ steps:
   - task: SonarCloudPrepare@1
     displayName: 'Prepare analysis on SonarCloud'
     inputs:
-      SonarCloud: 'defra-sonarcloud'
-      organization: 'defra'
-      projectKey: 'DEFRA_ncea-harvester'
-      projectName: 'ncea-harvester'
+      SonarCloud: '$(sonarCloudServiceConnection)'
+      organization: '$(sonarCloudOrganization)'
+      projectKey: '$(sonarProjectKeyHarvester)'
+      projectName: '$(sonarProjectNameHarvester)'
       extraProperties: |
           sonar.exclusions=**/obj/**,**/*.dll,**/*.xml,**/*.yaml,**/DockerFile
           sonar.coverage.exclusions=**/*.xml,**/*.yaml,**/DockerFile,**/Program.cs

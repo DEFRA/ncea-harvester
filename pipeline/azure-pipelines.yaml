@@ -9,21 +9,19 @@ trigger:
       - feature/* 
 
 variables:
-  ACR.Name: nceapocsbox
-  ACR.ResourceGroupName: NCEA-NW-POC
-  ACR.ServiceConnection : acr-AZR-NCE-SND1
-  ACR.ContainerRepository: defra/ncea-harvester-service
-  ARM.ServiceConnection : AZR-NCE-SND1
-  AKS.ServiceConnection : aksServiceConn-AZR-NCE-SND1
+  - template: templates/variables-build.yml
+    
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
   branchSource: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
   branch: $[replace(variables['branchSource'], '/', '-')]
-  ${{ if ne(variables.isMaster, 'true') }}:
+  ${{ if ne(variables.main, 'true') }}:
     artifactNameSuffix: _$(branch)
   ${{ else }}:
     artifactNameSuffix: ''
   chartPath: 'src/ncea-harvester/ncea-harvester'
+  containerRespository: 'defra/ncea-harvester-service'
+  imageTag: $(Build.BuildNumber)$(artifactNameSuffix)
 
 stages:
 - stage: 'Build'
@@ -42,7 +40,9 @@ stages:
 - stage: 'sandbox'
   displayName: 'Deploy to Sandbox'
   dependsOn: Build
-  condition:  succeeded()
+  condition:  and(succeeded(), eq(variables.isPullRequest, true))
+  variables:
+   - template: templates/variables-sandbox.yml
   jobs:
   - deployment: Deploy
     pool:
@@ -55,15 +55,14 @@ stages:
             - template: steps-deploy-helm-charts.yaml
               parameters:
                 envName: sandbox
-                namespace: default
                 releaseName: ncea-harvester-sandbox
-                serviceConnection: $(AKS.ServiceConnection)
-                imageTag: $(Build.BuildNumber)$(artifactNameSuffix)
 
 - stage: 'dev'
   displayName: 'Deploy to Dev'
   dependsOn: Build
   condition:  and(succeeded(), eq(variables.isMain, true))
+  variables:
+   - template: templates/variables-dev.yml
   jobs:
   - deployment: Deploy
     pool:
@@ -76,7 +75,4 @@ stages:
             - template: steps-deploy-helm-charts.yaml
               parameters:
                 envName: dev
-                namespace: default
-                releaseName: ncea-harvester-sandbox
-                serviceConnection: $(AKS.ServiceConnection)
-                imageTag: $(Build.BuildNumber)$(artifactNameSuffix)
+                releaseName: ncea-harvester-dev

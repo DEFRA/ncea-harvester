@@ -1,13 +1,7 @@
 parameters:
   - name: envName
     type: string
-  - name: namespace
-    type: string
   - name: releaseName
-    type: string
-  - name: serviceConnection
-    type: string
-  - name: imageTag
     type: string
 
 steps:
@@ -29,13 +23,13 @@ steps:
   condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceConnection: ${{ parameters.serviceConnection }}
-    namespace: ${{ parameters.namespace }}
+    kubernetesServiceConnection: $(aksServiceConnection)
+    namespace: $(aksNamespace)
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
     valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
-    overrideValues: 'image.tag=${{ parameters.imageTag }}'
+    overrideValues: 'image.tag=$(imageTag),env.serviceBusHostName=$(serviceBusHostName),env.keyVaultUri=$(keyVaultUri),env.blobStorageUri=$(blobStorageUri),'
     install: true
     force: true
     releaseName: ${{ parameters.releaseName }}

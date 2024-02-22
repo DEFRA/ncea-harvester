@@ -7,7 +7,12 @@ image:
   imagePullPolicy: IfNotPresent
 
 serviceAccount:
-      name: "serviceaccount-nceaharvester-sbox"
+  name: "serviceaccount-nceaharvester-sbox"
+
+env:
+  serviceBusHostName: &env1 ""
+  keyVaultUri: &env2 ""
+  blobStorageUri: &env3 ""
 
 jobs:    
   # cron job configurations for medin data source
@@ -15,6 +20,13 @@ jobs:
     env:
     - name: DataSource
       value: "medin"
+    - name: ServiceBusHostName
+      value: *env1
+    - name: KeyVaultUri
+      value: *env2
+    - name: BlobStorageUri
+      value: *env3
+
     schedule: "*/1 * * * *"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
@@ -27,6 +39,12 @@ jobs:
     env:
     - name: DataSource
       value: "jncc"
+    - name: ServiceBusHostName
+      value: ""
+    - name: KeyVaultUri
+      value: ""
+    - name: BlobStorageUri
+      value: ""
     
     schedule: "*/1 * * * *"
     failedJobsHistoryLimit: 1

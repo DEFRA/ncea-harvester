@@ -5,15 +5,15 @@ steps:
   condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     command: build
-    containerRegistry: $(ACR.ServiceConnection)
-    repository: $(ACR.ContainerRepository)
-    tags: '$(Build.BuildNumber)$(artifactNameSuffix)'
+    containerRegistry: $(acrServiceConnection)
+    repository: $(containerRespository)
+    tags: '$(imageTag)'
 
 - task: Docker@2
   displayName: 'Docker Push'
   condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     command: push
-    containerRegistry: $(ACR.ServiceConnection)
-    repository: $(ACR.ContainerRepository)
-    tags: '$(Build.BuildNumber)$(artifactNameSuffix)'
+    containerRegistry: $(acrServiceConnection)
+    repository: $(containerRespository)
+    tags: '$(imageTag)'
