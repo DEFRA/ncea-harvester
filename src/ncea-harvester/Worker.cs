@@ -39,10 +39,10 @@ public class Worker : BackgroundService
                 _telemetryClient.TrackEvent("Harvesting completed");
             }
 
-            var utcNow = DateTime.UtcNow;
-            var nextUtc = _cron.GetNextOccurrence(utcNow);
-            nextUtc = (nextUtc == null ? utcNow : nextUtc);
-            await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
+            //var utcNow = DateTime.UtcNow;
+            //var nextUtc = _cron.GetNextOccurrence(utcNow);
+            //nextUtc = (nextUtc == null ? utcNow : nextUtc);
+            //await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }
 }

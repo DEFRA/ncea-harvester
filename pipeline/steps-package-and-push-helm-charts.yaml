@@ -1,5 +1,10 @@
 steps:
 
+- task: HelmInstaller@1
+  displayName: Helm installer
+  inputs: 
+    helmVersionToInstall: latest
+
 - task: HelmDeploy@0
   displayName: Helm package
   condition: and(succeeded(), eq(variables.isPullRequest, false))
@@ -9,19 +14,19 @@ steps:
     chartVersion: $(Build.BuildNumber)
     destination: $(Build.ArtifactStagingDirectory)
 
-# - task: HelmDeploy@0
-#   displayName: Helm save
-#   condition: and(succeeded(), eq(variables.isPullRequest, false))
-#   inputs:
-#     connectionType: 'Kubernetes Service Connection'
-#     kubernetesServiceConnection: $(AKS.ServiceConnection)
-#     command: save
-#     chartNameForACR: charts/$(ACR.ContainerRepository):$(Build.BuildNumber)
-#     chartPathForACR:  $(chartPath)
-#     azureResourceGroupForACR: $(ACR.ResourceGroupName)
-#     azureContainerRegistry: '$(ACR.Name).azurecr.io'
-#   env:
-#     HELM_EXPERIMENTAL_OCI: 1
+- task: HelmDeploy@0
+  displayName: Helm save
+  condition: and(succeeded(), eq(variables.isPullRequest, false))
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceConnection: $(AKS.ServiceConnection)
+    command: save
+    chartNameForACR: charts/$(ACR.ContainerRepository):$(Build.BuildNumber)
+    chartPathForACR:  $(chartPath)
+    azureResourceGroupForACR: $(ACR.ResourceGroupName)
+    azureContainerRegistry: '$(ACR.Name).azurecr.io'
+  env:
+    HELM_EXPERIMENTAL_OCI: 1
 
 # - task: AzureCLI@1
 #   inputs:

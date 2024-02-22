@@ -22,6 +22,7 @@ steps:
   inputs:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceConnection: '$(AKS.ServiceConnection)'
+    # kubernetesCluster: ''
     namespace: default
     command: 'upgrade'
     chartType: 'FilePath'
@@ -31,5 +32,6 @@ steps:
     # azureSubscriptionForACR: '$(azureSubscription)'
     # azureResourceGroupForACR: '$(ACR.ResourceGroupName)'
     # azureContainerRegistry: '$(ACR.Name).azurecr.io'
-    # install: true
+    # valueFile: $(ChartPath)/values/${{ parameters.env_name }}.values.yaml
+    install: true
     releaseName: 'ncea-harvester'
