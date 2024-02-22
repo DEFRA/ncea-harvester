@@ -48,13 +48,13 @@ stages:
 - stage: 'sandbox'
   displayName: 'Deploy to Sandbox'
   dependsOn: Build
-  condition:  and(succeeded(), eq(variables.isPullRequest, true))
-  variables:
-  - template: templates/variables-sandbox.yml
+  condition:  and(succeeded(), eq(variables.isPullRequest, true))  
   jobs:
   - deployment: Deploy
     pool:
       vmImage: 'ubuntu-latest'
+    variables:
+      - template: templates/variables-sandbox.yml
     environment: sandbox 
     strategy:
       runOnce:
@@ -70,12 +70,12 @@ stages:
   displayName: 'Deploy to Dev'
   dependsOn: Build
   condition:  and(succeeded(), eq(variables.isMain, true))
-  variables:
-  - template: templates/variables-dev.yml
   jobs:
   - deployment: Deploy
     pool:
       vmImage: 'ubuntu-latest'
+    variables:
+      - template: templates/variables-dev.yml
     environment: dev 
     strategy:
       runOnce:
