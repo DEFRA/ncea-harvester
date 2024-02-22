@@ -14,8 +14,8 @@ steps:
     chartVersion: $(Build.BuildNumber)
     destination: $(Build.ArtifactStagingDirectory)
 
-- bash: |
-    helm push '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz' oci://$(ACR.Name).azurecr.io/helm
+# # - bash: |
+# #     helm push '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz' oci://$(ACR.Name).azurecr.io/helm
 
 
 # - task: HelmDeploy@0
