@@ -32,7 +32,7 @@ steps:
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
-    valueFile: $(Pipeline.Workspace)/chart/values/values.${{ parameters.envName }}.yaml
+    valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
     overrideValues: 'image.tag=$(Build.BuildNumber)$(artifactNameSuffix)'
     install: true
     recreate: true
