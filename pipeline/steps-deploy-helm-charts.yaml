@@ -1,34 +1,28 @@
-steps:
+parameters:
+  - name: envName
+    type: string
+  - name: namespace
+    type: string
+  - name: releaseName
+    type: string
+  - name: serviceConnection
+    type: string
 
-# - task: HelmDeploy@0
-#   displayName: 'Helm Deploy'
-#   inputs:
-#     connectionType: 'Azure Resource Manager'
-#     azureSubscription: 'AzureMSDN'
-#     azureResourceGroup: 'container-pipelines-demo'
-#     kubernetesCluster: 'dev-container-demo'
-#     useClusterAdmin: true
-#     namespace: 'apps'
-#     command: 'upgrade'
-#     chartType: 'Name'
-#     chartName: '$(containerRegistry)/$(containerRepository)'
-#     releaseName: '$(containerRepository)'
-#     overrideValues: 'ingress.basedomain=$(aksHostDev),image.tag=$(Build.BuildNumber),image.repository=$(containerRegistry).azurecr.io/$(containerRepository)'
-#     force: true
+steps:
 
 - task: HelmDeploy@0
   displayName: 'Helm Deploy'
   condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceConnection: '$(AKS.ServiceConnection)'
+    kubernetesServiceConnection: ${{ parameters.serviceConnection }}
     namespace: default
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz'
-    # valueFile: $(ChartPath)/values/${{ parameters.env_name }}.values.yaml
+    valueFile: $(chartPath)/values/values.${{ parameters.envName }}.yaml
     overrideValues: 'image.tag=$(Build.BuildNumber)$(artifactNameSuffix)'
     install: true
     recreate: true
     force: true
-    releaseName: 'ncea-harvester'
+    releaseName: ${{ parameters.releaseName }}

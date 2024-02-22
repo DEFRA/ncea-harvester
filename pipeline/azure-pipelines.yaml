@@ -40,19 +40,23 @@ stages:
       - template: steps-build-and-test.yaml
       - template: steps-build-and-push-docker-images.yaml
       - template: steps-package-and-push-helm-charts.yaml
-      - template: steps-deploy-helm-charts.yaml
 
-# - stage: 'Dev'
-#   displayName: 'Deploy to the dev environment'
-#   dependsOn: Build
-#   condition:  succeeded()
-#   jobs:
-#   - deployment: Deploy
-#     pool:
-#       vmImage: 'ubuntu-latest'
-#     environment: dev 
-#     strategy:
-#       runOnce:
-#         deploy:
-#           steps:
-#             - template: steps-deploy-helm-charts.yaml
+- stage: 'sandbox'
+  displayName: 'Deploy to the sandbox environment'
+  dependsOn: Build
+  condition:  succeeded()
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: sandbox 
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - template: steps-deploy-helm-charts.yaml
+              parameters:
+                envName: sandbox
+                namespace: $(containerRepository)
+                releaseName: ncea-harvester-sandbox
+                serviceConnection: $(AKS.ServiceConnection)

@@ -54,16 +54,19 @@ static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterCo
 static async Task ConfigureServiceBusQueue(IConfigurationRoot configuration, HostApplicationBuilder builder, string dataSourceName)
 {
     var servicebusHostName = configuration.GetValue<string>("ServiceBusHostName");
-    builder.Services.AddSingleton(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));
+    builder.Services.AddSingleton(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));   
 
-    var queueName = $"{dataSourceName}-harvester-queue";
-
-    //var servicebusAdminClient = new ServiceBusAdministrationClient(servicebusHostName, new DefaultAzureCredential());
-    //bool queueExists = await servicebusAdminClient.QueueExistsAsync(queueName);
-    //if (!queueExists)
-    //{
-    //    await servicebusAdminClient.CreateQueueAsync(queueName);
-    //}
+    var createQueue = configuration.GetValue<bool>("DynamicQueueCreation");
+    if (createQueue)
+    {
+        var queueName = $"{dataSourceName}-harvester-queue";
+        var servicebusAdminClient = new ServiceBusAdministrationClient(servicebusHostName, new DefaultAzureCredential());
+        bool queueExists = await servicebusAdminClient.QueueExistsAsync(queueName);
+        if (!queueExists)
+        {
+            await servicebusAdminClient.CreateQueueAsync(queueName);
+        }
+    }
 }
 
 static void ConfigureKeyVault(IConfigurationRoot configuration, HostApplicationBuilder builder)

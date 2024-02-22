@@ -27,9 +27,3 @@ steps:
 #     azureContainerRegistry: '$(ACR.Name).azurecr.io'
 #   env:
 #     HELM_EXPERIMENTAL_OCI: 1
-
-# - task: AzureCLI@1
-#   inputs:
-#     azureSubscription: $(Arm.ServiceConnection)
-#     scriptLocation: inlineScript
-#     inlineScript: az acr helm push -n $(acrName) $(Build.ArtifactStagingDirectory)/$(ACR.ContainerRepository)-$(Build.BuildId).tgz

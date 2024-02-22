@@ -1,0 +1,38 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: nceapocsbox.azurecr.io/defra/ncea-harvester-service
+  tag: latest
+  imagePullPolicy: IfNotPresent
+
+serviceAccount:
+      name: "serviceaccount-nceaharvester-sbox"
+
+jobs:
+    
+  # cron job configurations for medin data source
+  medin:    
+    env:
+    - name: DataSource
+      value: "medin"
+    schedule: "*/1 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+    imagePullSecrets: []
+  
+  # cron job configurations for jncc data source
+  jncc:    
+    env:
+    - name: DataSource
+      value: "jncc"
+    
+    schedule: "*/1 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+    imagePullSecrets: []
+  

@@ -1,4 +1,3 @@
-using Cronos;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Ncea.Harvester.Models;
@@ -9,8 +8,7 @@ namespace Ncea.Harvester;
 
 [ExcludeFromCodeCoverage]
 public class Worker : BackgroundService
-{
-    private readonly CronExpression _cron;
+{    
     private readonly ILogger _logger;
     private readonly TelemetryClient _telemetryClient;
     private readonly HarvesterConfiguration _harvesterConfiguration;
@@ -21,7 +19,6 @@ public class Worker : BackgroundService
         _logger = logger;
         _harvesterConfiguration = harvesterConfiguration;
         _processor = processor;
-        _cron = CronExpression.Parse(_harvesterConfiguration.Schedule);
         _telemetryClient = telemetryClient;
     }
 
@@ -38,11 +35,6 @@ public class Worker : BackgroundService
                 _logger.LogInformation("Metadata harversting completed");
                 _telemetryClient.TrackEvent("Harvesting completed");
             }
-
-            //var utcNow = DateTime.UtcNow;
-            //var nextUtc = _cron.GetNextOccurrence(utcNow);
-            //nextUtc = (nextUtc == null ? utcNow : nextUtc);
-            //await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }
 }
