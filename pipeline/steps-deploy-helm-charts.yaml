@@ -17,7 +17,7 @@ steps:
 
 - task: HelmDeploy@0
   displayName: 'Helm Deploy'
-  condition: and(succeeded(), eq(variables.isPullRequest, false))
+  # condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceConnection: ${{ parameters.serviceConnection }}
