@@ -7,7 +7,7 @@ steps:
   - task: SonarCloudPrepare@1
     displayName: 'Prepare analysis on SonarCloud'
     inputs:
-      SonarCloud: ${{ variables.sonarCloudServiceConnection }}
+      SonarCloud: '${{ variables.sonarCloudServiceConnection }}'
       organization: '$(sonarCloudOrganization)'
       projectKey: '$(sonarProjectKeyHarvester)'
       projectName: '$(sonarProjectNameHarvester)'
