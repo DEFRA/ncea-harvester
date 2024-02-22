@@ -8,9 +8,9 @@ steps:
     displayName: 'Prepare analysis on SonarCloud'
     inputs:
       SonarCloud: '${{ variables.sonarCloudServiceConnection }}'
-      organization: '$(sonarCloudOrganization)'
-      projectKey: '$(sonarProjectKeyHarvester)'
-      projectName: '$(sonarProjectNameHarvester)'
+      organization: '${{ variables.sonarCloudOrganization }}'
+      projectKey: '${{ variables.sonarProjectKeyHarvester }}'
+      projectName: '${{ variables.sonarProjectNameHarvester }}'
       extraProperties: |
           sonar.exclusions=**/obj/**,**/*.dll,**/*.xml,**/*.yaml,**/DockerFile
           sonar.coverage.exclusions=**/*.xml,**/*.yaml,**/DockerFile,**/Program.cs
