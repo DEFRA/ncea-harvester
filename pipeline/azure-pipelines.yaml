@@ -64,7 +64,7 @@ stages:
               parameters:
                 envName: sandbox
                 releaseName: ncea-harvester-sandbox
-                serviceConnection: $(aksServiceConnection)
+                serviceConnection: aksServiceConn-AZR-NCE-SND1
 
 - stage: 'dev'
   displayName: 'Deploy to Dev'
@@ -85,4 +85,4 @@ stages:
               parameters:
                 envName: dev
                 releaseName: ncea-harvester-dev
-                serviceConnection: $(aksServiceConnection)
+                serviceConnection: aksServiceConn-AZR-NCE-SND1
