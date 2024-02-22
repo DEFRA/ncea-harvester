@@ -15,6 +15,13 @@ steps:
     buildType: 'current'
     artifact: charts
 
+- task: ExtractFiles@1
+  inputs:
+    archiveFilePatterns: '**/*.tgz' # string. Required. Archive file patterns. Default: **/*.zip.
+    cleanDestinationFolder: true
+    overwriteExistingFiles: true
+    destinationFolder: 'chart' 
+
 - task: HelmDeploy@0
   displayName: 'Helm Deploy'
   # condition: and(succeeded(), eq(variables.isPullRequest, false))
@@ -25,7 +32,7 @@ steps:
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
-    valueFile: $values/values.${{ parameters.envName }}.yaml
+    valueFile: $(Pipeline.Workspace)/chart/values/values.${{ parameters.envName }}.yaml
     overrideValues: 'image.tag=$(Build.BuildNumber)$(artifactNameSuffix)'
     install: true
     recreate: true
