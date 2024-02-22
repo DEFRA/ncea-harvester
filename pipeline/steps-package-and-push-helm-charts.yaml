@@ -15,7 +15,7 @@ steps:
     destination: $(Build.ArtifactStagingDirectory)
 
 - bash: |
-    helm push chart $(ACR.ContainerRepository)-$(Build.BuildId).tgz oci://$(ACR.Name).azurecr.io/helm
+    helm push $(ACR.ContainerRepository)-$(Build.BuildId).tgz oci://$(ACR.Name).azurecr.io/helm
 
 
 # - task: HelmDeploy@0
