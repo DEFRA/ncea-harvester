@@ -24,17 +24,14 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+        _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
-            using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
-            {
-                _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
-                await _processor.Process();
-                _logger.LogInformation("Metadata harversting completed");
-                _telemetryClient.TrackEvent("Harvesting completed");
-            }
+        using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
+        {
+            _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
+            await _processor.Process();
+            _logger.LogInformation("Metadata harversting completed");
+            _telemetryClient.TrackEvent("Harvesting completed");
         }
     }
 }

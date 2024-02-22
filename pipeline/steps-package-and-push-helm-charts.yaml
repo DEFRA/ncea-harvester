@@ -18,17 +18,16 @@ steps:
 # # - bash: |
 # #     helm push '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz' oci://$(ACR.Name).azurecr.io/helm
 
-
-- task: HelmDeploy@0
-  displayName: Helm save
-  condition: and(succeeded(), eq(variables.isPullRequest, false))
-  inputs:
-    connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceConnection: $(AKS.ServiceConnection)
-    command: save
-    chartNameForACR: charts/$(ACR.ContainerRepository):$(Build.BuildNumber)
-    chartPathForACR:  $(chartPath) 
-    azureResourceGroupForACR: $(ACR.ResourceGroupName)
-    azureContainerRegistry: '$(ACR.Name).azurecr.io'
-  env:
-    HELM_EXPERIMENTAL_OCI: 1
+# - task: HelmDeploy@0
+#   displayName: Helm save
+#   condition: and(succeeded(), eq(variables.isPullRequest, false))
+#   inputs:
+#     connectionType: 'Kubernetes Service Connection'
+#     kubernetesServiceConnection: $(AKS.ServiceConnection)
+#     command: save
+#     chartNameForACR: charts/$(ACR.ContainerRepository):$(Build.BuildNumber)
+#     chartPathForACR:  $(chartPath) 
+#     azureResourceGroupForACR: $(ACR.ResourceGroupName)
+#     azureContainerRegistry: '$(ACR.Name).azurecr.io'
+#   env:
+#     HELM_EXPERIMENTAL_OCI: 1
