@@ -27,11 +27,7 @@ spec:
           imagePullSecrets:
           - name: {{ $.Release.Name }}-docker
         {{- end }}
-        {{- if and (hasKey $job "serviceAccount") (hasKey $job.serviceAccount "name") }}
           serviceAccountName: {{ $serviceAccountName }}
-        {{- else }}
-          serviceAccountName: {{ $.Release.Name}}-{{ $jobname }}
-        {{- end }}
         {{- if hasKey $job "securityContext" }}
           {{- if $job.securityContext.runAsUser }}
           securityContext:

@@ -26,7 +26,7 @@ steps:
     namespace: default
     command: 'upgrade'
     chartType: 'FilePath'
-    chartPath: '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber)'
+    chartPath: '$(Build.ArtifactStagingDirectory)/ncea-harvester-$(Build.BuildNumber).tgz'
     # chartName: '$(ACR.Name).azurecr.io/charts/$(ACR.ContainerRepository):$(Version)'
     # chartVersion: '$(Version)'
     # azureSubscriptionForACR: '$(azureSubscription)'
