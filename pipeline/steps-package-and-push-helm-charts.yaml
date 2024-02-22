@@ -15,7 +15,7 @@ steps:
     destination: $(Build.ArtifactStagingDirectory)
 
 - bash: |
-    helm push 'ncea-harvester-$(Build.BuildId).tgz' oci://$(ACR.Name).azurecr.io/helm
+    helm push 'ncea-harvester-$(Build.BuildNumber).tgz' oci://$(ACR.Name).azurecr.io/helm
 
 
 # - task: HelmDeploy@0
