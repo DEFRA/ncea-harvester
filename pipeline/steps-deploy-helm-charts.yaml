@@ -17,7 +17,7 @@ steps:
 
 - task: ExtractFiles@1
   inputs:
-    archiveFilePatterns: '**/*.tgz' # string. Required. Archive file patterns. Default: **/*.zip.
+    archiveFilePatterns: '$(Pipeline.Workspace)/charts/*.tgz'
     cleanDestinationFolder: true
     overwriteExistingFiles: true
     destinationFolder: 'chart' 
