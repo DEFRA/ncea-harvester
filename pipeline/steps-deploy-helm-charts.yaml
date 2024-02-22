@@ -20,11 +20,11 @@ steps:
     archiveFilePatterns: '$(Pipeline.Workspace)/charts/*.tgz'
     cleanDestinationFolder: true
     overwriteExistingFiles: true
-    destinationFolder: 'chart' 
+    destinationFolder: '$(Pipeline.Workspace)/chart' 
 
 - task: HelmDeploy@0
   displayName: 'Helm Deploy'
-  # condition: and(succeeded(), eq(variables.isPullRequest, false))
+  condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceConnection: ${{ parameters.serviceConnection }}
@@ -35,6 +35,5 @@ steps:
     valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
     overrideValues: 'image.tag=$(Build.BuildNumber)$(artifactNameSuffix)'
     install: true
-    recreate: true
     force: true
     releaseName: ${{ parameters.releaseName }}

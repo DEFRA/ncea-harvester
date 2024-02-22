@@ -15,6 +15,15 @@ variables:
   ACR.ContainerRepository: defra/ncea-harvester-service
   ARM.ServiceConnection : AZR-NCE-SND1
   AKS.ServiceConnection : aksServiceConn-AZR-NCE-SND1
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+  branchSource: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
+  branch: $[replace(variables['branchSource'], '/', '-')]
+  ${{ if ne(variables.isMaster, 'true') }}:
+    artifactNameSuffix: _$(branch)
+  ${{ else }}:
+    artifactNameSuffix: ''
+  chartPath: 'src/ncea-harvester/ncea-harvester'
 
 stages:
 - stage: 'Build'
@@ -24,17 +33,6 @@ stages:
     displayName: 'Build job'
     pool:
       vmImage: 'ubuntu-latest'
-
-    variables:
-      isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
-      isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
-      branchSource: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
-      branch: $[replace(variables['branchSource'], '/', '-')]
-      ${{ if ne(variables.isMaster, 'true') }}:
-        artifactNameSuffix: _$(branch)
-      ${{ else }}:
-        artifactNameSuffix: ''
-      chartPath: 'src/ncea-harvester/ncea-harvester'
       
     steps:
       - template: steps-build-and-test.yaml
