@@ -7,6 +7,8 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
+  - name: imageTag
+    type: string
 
 steps:
 
@@ -28,12 +30,12 @@ steps:
   inputs:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceConnection: ${{ parameters.serviceConnection }}
-    namespace: default
+    namespace: ${{ parameters.namespace }}
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
     valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
-    overrideValues: 'image.tag=$(Build.BuildNumber)$(artifactNameSuffix)'
+    overrideValues: 'image.tag=${{ parameters.serviceConnection }}'
     install: true
     force: true
     releaseName: ${{ parameters.releaseName }}

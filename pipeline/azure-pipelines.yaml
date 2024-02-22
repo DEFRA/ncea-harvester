@@ -55,6 +55,28 @@ stages:
             - template: steps-deploy-helm-charts.yaml
               parameters:
                 envName: sandbox
-                namespace: $(containerRepository)
+                namespace: default
                 releaseName: ncea-harvester-sandbox
                 serviceConnection: $(AKS.ServiceConnection)
+                imageTag: $(Build.BuildNumber)$(artifactNameSuffix)
+
+- stage: 'dev'
+  displayName: 'Deploy to Dev'
+  dependsOn: Build
+  condition:  and(succeeded(), eq(variables.isMain, true))
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: dev 
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - template: steps-deploy-helm-charts.yaml
+              parameters:
+                envName: dev
+                namespace: default
+                releaseName: ncea-harvester-sandbox
+                serviceConnection: $(AKS.ServiceConnection)
+                imageTag: $(Build.BuildNumber)$(artifactNameSuffix)
