@@ -1,10 +1,5 @@
 steps:
 
-- task: HelmInstaller@1
-  displayName: Helm installer
-  inputs: 
-    helmVersionToInstall: latest
-
 - task: HelmDeploy@0
   displayName: Helm package
   condition: and(succeeded(), eq(variables.isPullRequest, false))
