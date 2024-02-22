@@ -31,7 +31,7 @@ steps:
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
     valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
-    overrideValues: 'image.tag=$(imageTag),env.serviceBusHostName=$(serviceBusHostName),env.keyVaultUri=$(keyVaultUri),env.blobStorageUri=$(blobStorageUri),'
+    overrideValues: 'image.tag=$(imageTag),env.serviceBusHostName=$(serviceBusHostName),env.keyVaultUri=$(keyVaultUri),env.blobStorageUri=$(blobStorageUri)'
     install: true
     force: true
     releaseName: ${{ parameters.releaseName }}

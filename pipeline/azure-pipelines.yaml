@@ -50,7 +50,7 @@ stages:
   dependsOn: Build
   condition:  and(succeeded(), eq(variables.isPullRequest, true))
   variables:
-   - template: templates/variables-sandbox.yml
+  - template: templates/variables-sandbox.yml
   jobs:
   - deployment: Deploy
     pool:
@@ -71,7 +71,7 @@ stages:
   dependsOn: Build
   condition:  and(succeeded(), eq(variables.isMain, true))
   variables:
-   - template: templates/variables-dev.yml
+  - template: templates/variables-dev.yml
   jobs:
   - deployment: Deploy
     pool:
