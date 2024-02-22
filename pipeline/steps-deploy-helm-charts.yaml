@@ -3,6 +3,8 @@ parameters:
     type: string
   - name: releaseName
     type: string
+  - name: serviceConnection
+    type: string    
 
 steps:
 
@@ -23,7 +25,7 @@ steps:
   condition: and(succeeded(), eq(variables.isPullRequest, false))
   inputs:
     connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceConnection: $(aksServiceConnection)
+    kubernetesServiceConnection: ${{ parameters.serviceConnection }}
     namespace: $(aksNamespace)
     command: 'upgrade'
     chartType: 'FilePath'
