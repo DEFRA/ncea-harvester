@@ -20,14 +20,14 @@ variables:
   - name : branch
     value: $[replace(variables['branchName'], '/', '-')]
 
-  - ${{ if eq(variables.isMain, 'false') }}:
-    - name : artifactNameSuffix
-      value: _$(branch)
-  - ${{ else }}:
-    - name : artifactNameSuffix
-      value: _$(branch)
+  # - ${{ if eq(variables.isMain, 'false') }}:
+  #   - name : artifactNameSuffix
+  #     value: _$(branch)
+  # - ${{ else }}:
+  #   - name : artifactNameSuffix
+  #     value: _$(branch)
 
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'
   - name : imageTag
-    value: $(Build.BuildNumber)$(artifactNameSuffix)
+    value: $(Build.BuildNumber)_$(branch)
