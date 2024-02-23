@@ -10,10 +10,10 @@ parameters:
 
 steps:
 
-# - task: DownloadPipelineArtifact@2
-#   inputs:
-#     buildType: 'current'
-#     artifact: charts
+- task: DownloadPipelineArtifact@2
+  inputs:
+    buildType: 'current'
+    artifact: charts
 
 - task: ExtractFiles@1
   inputs:
