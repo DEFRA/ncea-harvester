@@ -5,8 +5,6 @@ parameters:
     type: string
   - name: aksServiceConnection
     type: string
-  - name: repository
-    type: string
 
 steps:
 
@@ -36,7 +34,7 @@ steps:
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
     valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
     overrideValues: |
-        image.repository=${{ parameters.repository }}
+        image.repository=$(containerRepositoryFullPath)
         image.tag=$(imageTag)
         serviceAccount.name=$(serviceAccountHarvester)
         env.serviceBusHostName=$(serviceBusHostName)

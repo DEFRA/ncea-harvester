@@ -51,7 +51,6 @@ stages:
                 envName: sandbox
                 releaseName: ncea-harvester-sandbox
                 aksServiceConnection: aksServiceConn-AZR-NCE-SND1
-                repository: $[variables.acrContainerRegistry]/$[variables.acrContainerRepositoryHarvester]
 
 - stage: 'dev'
   displayName: 'Deploy to Dev'
@@ -73,7 +72,6 @@ stages:
                 envName: dev
                 releaseName: ncea-harvester-dev
                 aksServiceConnection: aksServiceConn-AZR-NCE-SND1
-                repository: $[variables.acrContainerRegistry]/$[variables.acrContainerRepositoryHarvester]
 
 - stage: 'test'
   displayName: 'Deploy to test'
@@ -95,4 +93,3 @@ stages:
                 envName: dev
                 releaseName: ncea-harvester-test
                 aksServiceConnection: aksServiceConn-AZR-NCE-SND1
-                repository: $[variables.acrContainerRegistry]/$[variables.acrContainerRepositoryHarvester]
