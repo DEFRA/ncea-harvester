@@ -10,10 +10,10 @@ parameters:
 
 steps:
 
-- task: DownloadPipelineArtifact@2
-  inputs:
-    buildType: 'current'
-    artifact: charts
+# - task: DownloadPipelineArtifact@2
+#   inputs:
+#     buildType: 'current'
+#     artifact: charts
 
 - task: ExtractFiles@1
   inputs:
@@ -33,7 +33,7 @@ steps:
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
     valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
-    overrideValues: 'image.repository=$(repository),image.tag=$(imageTag),serviceAccount.name=$(serviceAccountHarvester),env.serviceBusHostName=$(serviceBusHostName),env.keyVaultUri=$(keyVaultUri),env.blobStorageUri=$(blobStorageUri)'
+    overrideValues: 'image.repository=${{ repository }},image.tag=$(imageTag),serviceAccount.name=$(serviceAccountHarvester),env.serviceBusHostName=$(serviceBusHostName),env.keyVaultUri=$(keyVaultUri),env.blobStorageUri=$(blobStorageUri)'
     install: true
     force: true
     releaseName: ${{ parameters.releaseName }}
