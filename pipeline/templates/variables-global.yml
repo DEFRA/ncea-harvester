@@ -25,7 +25,7 @@ variables:
       value: _$(branch)
   - ${{ else }}:
     - name : artifactNameSuffix
-      value: ''
+      value: _$(branch)
 
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'
