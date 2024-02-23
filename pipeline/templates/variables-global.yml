@@ -3,7 +3,7 @@ variables:
     value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   - name : isPullRequest
     value: $[eq(variables['Build.Reason'], 'PullRequest')]
-  - ${{ if eq(variables.isPullRequest, true) }}:
+  - ${{ if eq(variables.isPullRequest, 'true') }}:
     - name : branchSource
       value: $(System.PullRequest.SourceBranch)
   - ${{ else }}:
@@ -11,7 +11,7 @@ variables:
       value: $[replace(variables['Build.SourceBranch'], 'refs/heads/', ''
   - name : branch
     value: $[replace(variables['branchSource'], '/', '-')]
-  - ${{ if eq(variables.isMain, false) }}:
+  - ${{ if eq(variables.isMain, 'false') }}:
     - name : artifactNameSuffix
       value: _$(branch)
   - ${{ else }}:
