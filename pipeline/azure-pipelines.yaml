@@ -56,6 +56,8 @@ stages:
       vmImage: 'ubuntu-latest'
     variables:
       - template: templates/variables-sandbox.yml
+      - name : aksServiceConnection
+        value: aksServiceConn-AZR-NCE-SND1
     environment: sandbox 
     strategy:
       runOnce:
@@ -65,7 +67,6 @@ stages:
               parameters:
                 envName: sandbox
                 releaseName: ncea-harvester-sandbox
-                serviceConnection: aksServiceConn-AZR-NCE-SND1
 
 - stage: 'dev'
   displayName: 'Deploy to Dev'
@@ -77,6 +78,8 @@ stages:
       vmImage: 'ubuntu-latest'
     variables:
       - template: templates/variables-dev.yml
+      - name : aksServiceConnection
+        value: aksServiceConn-AZR-NCE-SND1
     environment: dev 
     strategy:
       runOnce:
@@ -86,4 +89,3 @@ stages:
               parameters:
                 envName: dev
                 releaseName: ncea-harvester-dev
-                serviceConnection: aksServiceConn-AZR-NCE-SND1
