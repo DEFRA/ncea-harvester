@@ -40,8 +40,8 @@ steps:
         env.serviceBusHostName=$(serviceBusHostName)
         env.keyVaultUri=$(keyVaultUri)
         env.blobStorageUri=$(blobStorageUri)
-        jobs.medin.env.schedule={{ replace(variables['medinSchedule'], ' ', '\\') }}
-        jobs.jncc.env.schedule={{ replace(variables['jnccSchedule'], ' ', '\\') }}
+        jobs.medin.env.schedule=$(medinSchedule)
+        jobs.jncc.env.schedule=$(jnccSchedule)
     install: true
     force: true
     releaseName: ${{ parameters.releaseName }}
