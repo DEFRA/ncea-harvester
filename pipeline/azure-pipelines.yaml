@@ -30,7 +30,7 @@ stages:
 - stage: 'sandbox'
   displayName: 'Deploy to Sandbox'
   dependsOn: Build
-  condition:  and(succeeded(), eq(variables.isPullRequest, false))  
+  condition:  and(succeeded(), eq(variables.isPullRequest, true))  
   jobs:
   - deployment: Deploy
     pool:
@@ -76,7 +76,7 @@ stages:
 - stage: 'test'
   displayName: 'Deploy to test'
   dependsOn: Build
-  condition:  and(succeeded(), eq(variables.isMain, true))
+  condition:  succeeded()
   jobs:
   - deployment: Deploy
     pool:
