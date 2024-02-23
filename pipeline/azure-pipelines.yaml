@@ -26,8 +26,6 @@ variables:
     value: 'src/ncea-harvester/ncea-harvester'
   - name : acrContainerRegistryServiceConnection
     value: acr-AZR-NCE-SND1
-  - name : containerRespository
-    value: 'defra/ncea-harvester-service'
   - name : imageTag
     value: $(Build.BuildNumber)$(artifactNameSuffix)
 
@@ -68,6 +66,7 @@ stages:
                 envName: sandbox
                 releaseName: ncea-harvester-sandbox
                 aksServiceConnection: aksServiceConn-AZR-NCE-SND1
+                repository: $(acrContainerRegistry)/$(acrContainerRepositoryHarvester)
 
 - stage: 'dev'
   displayName: 'Deploy to Dev'
@@ -89,3 +88,4 @@ stages:
                 envName: dev
                 releaseName: ncea-harvester-dev
                 aksServiceConnection: aksServiceConn-AZR-NCE-SND1
+                repository: $(acrContainerRegistry)/$(acrContainerRepositoryHarvester)
