@@ -30,4 +30,4 @@ variables:
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'
   - name : imageTag
-    value: $(Build.BuildNumber)_$(branch)
+    value: $(Build.BuildNumber)_$[variables['branch']]
