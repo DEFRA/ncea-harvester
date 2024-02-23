@@ -2,6 +2,11 @@
 {{- $tag := .Values.image.tag -}}
 {{- $imagePullPolicy := .Values.image.imagePullPolicy -}}
 {{- $serviceAccountName := .Values.serviceAccount.name -}}
+
+{{- $serviceBusHostName := .Values.env.serviceBusHostName -}}
+{{- $keyVaultUri := .Values.env.keyVaultUri -}}
+{{- $blobStorageUri := .Values.env.blobStorageUri -}}
+
 {{- range $jobname, $job := .Values.jobs }}
 ---
 apiVersion: batch/v1
@@ -48,6 +53,13 @@ spec:
             env:
 {{ toYaml . | indent 12 }}
             {{- end }}
+
+            - name: ServiceBusHostName
+              value: {{ $serviceBusHostName }}
+            - name: KeyVaultUri
+              value: {{ $keyVaultUri }}
+            - name: BlobStorageUri
+              value: {{ $blobStorageUri }}
             {{- with $job.envFrom }}
             envFrom:
 {{ toYaml . | indent 12 }}

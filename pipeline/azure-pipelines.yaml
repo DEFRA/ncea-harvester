@@ -1,4 +1,3 @@
-# Starter pipeline
 
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
