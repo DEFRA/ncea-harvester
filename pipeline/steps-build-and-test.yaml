@@ -4,19 +4,19 @@ steps:
     inputs:
       version: '8.x'
 
-  # - task: SonarCloudPrepare@1
-  #   displayName: 'Prepare analysis on SonarCloud'
-  #   inputs:
-  #     SonarCloud: '${{ variables.sonarCloudServiceConnection }}'
-  #     organization: '${{ variables.sonarCloudOrganization }}'
-  #     projectKey: '${{ variables.sonarProjectKeyHarvester }}'
-  #     projectName: '${{ variables.sonarProjectNameHarvester }}'
-  #     extraProperties: |
-  #         sonar.exclusions=**/obj/**,**/*.dll,**/*.xml,**/*.yaml,**/DockerFile
-  #         sonar.coverage.exclusions=**/*.xml,**/*.yaml,**/DockerFile,**/Program.cs
-  #         sonar.dotnet.excludeGeneratedCode=true
-  #         sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/*/coverage.opencover.xml
-  #         sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
+  - task: SonarCloudPrepare@1
+    displayName: 'Prepare analysis on SonarCloud'
+    inputs:
+      SonarCloud: 'defra-sonarcloud'
+      organization: '$(sonarCloudOrganization)'
+      projectKey: '$(sonarProjectKeyHarvester)'
+      projectName: '$(sonarProjectNameHarvester)'
+      extraProperties: |
+          sonar.exclusions=**/obj/**,**/*.dll,**/*.xml,**/*.yaml,**/DockerFile
+          sonar.coverage.exclusions=**/*.xml,**/*.yaml,**/DockerFile,**/Program.cs
+          sonar.dotnet.excludeGeneratedCode=true
+          sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/*/coverage.opencover.xml
+          sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/*.trx
 
   - task: DotNetCoreCLI@2
     displayName: Restore
@@ -47,10 +47,10 @@ steps:
       codeCoverageTool: 'Cobertura'
       summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
 
-  # - task: SonarCloudAnalyze@1
-  #   displayName: 'Run Code Analysis'
+  - task: SonarCloudAnalyze@1
+    displayName: 'Run Code Analysis'
 
-  # - task: SonarCloudPublish@1
-  #   displayName: 'Publish Quality Gate Result'
-  #   inputs:
-  #     pollingTimeoutSec: '300'
+  - task: SonarCloudPublish@1
+    displayName: 'Publish Quality Gate Result'
+    inputs:
+      pollingTimeoutSec: '300'
