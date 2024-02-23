@@ -20,12 +20,9 @@ variables:
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - name : imageTag
       value: $(Build.BuildNumber)
-  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
+  - ${{ else }}:
     - name : imageTag
-      value: $(Build.BuildNumber)_$(branch)
-  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
-    - name : imageTag
-      value: $(Build.BuildNumber)_$(branch)
+      value: $(Build.BuildNumber)_$(branch
 
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'

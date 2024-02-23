@@ -3,7 +3,7 @@
 
 image:
   repository: nceapocsbox.azurecr.io/defra/ncea-harvester-service
-  tag: latest
+  tag: 20240223.39_feature-310693-create-heml-chart
   imagePullPolicy: IfNotPresent
 
 serviceAccount:
