@@ -4,7 +4,7 @@ variables:
   - name : isPullRequest
     value: $[startsWith(variables['Build.SourceBranch'], 'refs/pull/')]
 
-  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/features/') }}:
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
     - name : branchName
       value: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
   - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
@@ -20,7 +20,7 @@ variables:
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - name : imageTag
       value: $(Build.BuildNumber)
-  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/features/') }}:
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
     - name : imageTag
       value: $(Build.BuildNumber)_$(branch)
   - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
