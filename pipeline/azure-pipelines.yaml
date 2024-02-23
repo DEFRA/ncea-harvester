@@ -11,6 +11,8 @@ variables:
   - template: templates/variables-global.yml
   - name : acrContainerRegistryServiceConnection
     value: acr-AZR-NCE-SND1
+  - name : deployToDev
+    value: false
 
 stages:
 - stage: 'Build'
@@ -54,7 +56,7 @@ stages:
 - stage: 'dev'
   displayName: 'Deploy to Dev'
   dependsOn: Build
-  condition:  and(succeeded(), eq(variables.isMain, true))
+  condition: and(succeeded(), and(eq(variables.isMain, true), eq(variables.deployToDev, true)))
   jobs:
   - deployment: Deploy
     pool:

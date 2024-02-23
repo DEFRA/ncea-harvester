@@ -11,6 +11,8 @@ parameters:
 steps:
 
 - task: DownloadPipelineArtifact@2
+  displayName: 'Download Helm Charts'
+  condition: succeeded()
   inputs:
     buildType: 'current'
     artifact: charts
@@ -24,7 +26,7 @@ steps:
 
 - task: HelmDeploy@0
   displayName: 'Helm Deploy'
-  condition: and(succeeded(), eq(variables.isPullRequest, false))
+  condition: succeeded()
   inputs:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceConnection: ${{ parameters.aksServiceConnection }}
