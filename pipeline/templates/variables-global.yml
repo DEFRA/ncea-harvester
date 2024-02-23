@@ -7,25 +7,25 @@ variables:
   - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/features/') }}:
     - name : branchName
       value: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
-  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/') }}:
-    - name : branchName
-      value: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
   - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
     - name : branchName
       value: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - name : branchName
-      value: 'master'
+      value: 'main'
 
   - name : branch
     value: $[replace(variables['branchName'], '/', '-')]
 
-  - ${{ if eq(variables.isMain, 'false') }}:
-    - name : imageTag
-      value: $(Build.BuildNumber)_$(branch)
-  - ${{ else }}:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - name : imageTag
       value: $(Build.BuildNumber)
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/features/') }}:
+    - name : imageTag
+      value: $(Build.BuildNumber)_$(branch)
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
+    - name : imageTag
+      value: $(Build.BuildNumber)_$(branch)
 
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'
