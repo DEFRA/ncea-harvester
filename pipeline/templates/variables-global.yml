@@ -22,7 +22,7 @@ variables:
       value: $(Build.BuildNumber)
   - ${{ else }}:
     - name : imageTag
-      value: $(Build.BuildNumber)_$(branch
+      value: $(Build.BuildNumber)_$(branch)
 
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'
