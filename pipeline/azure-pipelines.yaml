@@ -49,7 +49,7 @@ stages:
                 envName: sandbox
                 releaseName: ncea-harvester-sandbox
                 aksServiceConnection: aksServiceConn-AZR-NCE-SND1
-                repository: ${{ variables.acrContainerRegistry }}/${{ variables.acrContainerRepositoryHarvester }}
+                repository: $[variables.acrContainerRegistry]/$[variables.acrContainerRepositoryHarvester]
 
 - stage: 'dev'
   displayName: 'Deploy to Dev'
@@ -71,4 +71,26 @@ stages:
                 envName: dev
                 releaseName: ncea-harvester-dev
                 aksServiceConnection: aksServiceConn-AZR-NCE-SND1
-                repository: ${{ variables.acrContainerRegistry }}/${{ variables.acrContainerRepositoryHarvester }}
+                repository: $[variables.acrContainerRegistry]/$[variables.acrContainerRepositoryHarvester]
+
+- stage: 'test'
+  displayName: 'Deploy to test'
+  dependsOn: Build
+  condition:  and(succeeded(), eq(variables.isMain, true))
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - template: templates/variables-test.yml
+    environment: test 
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - template: steps-deploy-helm-charts.yaml
+              parameters:
+                envName: dev
+                releaseName: ncea-harvester-test
+                aksServiceConnection: aksServiceConn-AZR-NCE-SND1
+                repository: $[variables.acrContainerRegistry]/$[variables.acrContainerRepositoryHarvester]
