@@ -24,7 +24,7 @@ variables:
       value: ''  
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'
-  - name : acrContainerRegistry
+  - name : acrContainerRegistryServiceConnection
     value: acr-AZR-NCE-SND1
   - name : containerRespository
     value: 'defra/ncea-harvester-service'
@@ -67,7 +67,7 @@ stages:
               parameters:
                 envName: sandbox
                 releaseName: ncea-harvester-sandbox
-                aksServiceConnection: $(aksServiceConnection)
+                aksServiceConnection: aksServiceConn-AZR-NCE-SND1
 
 - stage: 'dev'
   displayName: 'Deploy to Dev'
@@ -79,8 +79,6 @@ stages:
       vmImage: 'ubuntu-latest'
     variables:
       - template: templates/variables-dev.yml
-      - name : aksServiceConnection
-        value: aksServiceConn-AZR-NCE-SND1
     environment: dev 
     strategy:
       runOnce:
@@ -90,4 +88,4 @@ stages:
               parameters:
                 envName: dev
                 releaseName: ncea-harvester-dev
-                aksServiceConnection: $(aksServiceConnection)
+                aksServiceConnection: aksServiceConn-AZR-NCE-SND1
