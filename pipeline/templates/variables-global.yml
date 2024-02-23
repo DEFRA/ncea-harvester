@@ -3,20 +3,30 @@ variables:
     value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   - name : isPullRequest
     value: $[eq(variables['Build.Reason'], 'PullRequest')]
-  - ${{ if eq(variables.isPullRequest, 'true') }}:
-    - name : branchSource
-      value: $(System.PullRequest.SourceBranch)
-  - ${{ else }}:
-    - name : branchSource
-      value: $[replace(variables['Build.SourceBranch'], 'refs/heads/', ''
+
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/features/') }}:
+    - name : branchName
+      value: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/') }}:
+    - name : branchName
+      value: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
+    - name : branchName
+      value: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    - name : branchName
+      value: 'master'
+  
   - name : branch
-    value: $[replace(variables['branchSource'], '/', '-')]
+    value: $[replace(variables['branchName'], '/', '-')]
+
   - ${{ if eq(variables.isMain, 'false') }}:
     - name : artifactNameSuffix
       value: _$(branch)
   - ${{ else }}:
     - name : artifactNameSuffix
       value: ''
+
   - name : chartPath
     value: 'src/ncea-harvester/ncea-harvester'
   - name : imageTag
