@@ -91,8 +91,3 @@ Before proceeding, ensure you have the following installed:
         - *jnccSchedule*
         - *medinSchedule*
         - *serviceAccountHarvester*
-
-
-
-
-
