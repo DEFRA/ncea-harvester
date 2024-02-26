@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using Microsoft.Extensions.Options;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
@@ -14,24 +13,24 @@ public class JnccProcessor : IProcessor
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
     private readonly ILogger _logger;
-    private readonly HarvesterConfigurations _harvesterConfigurations;
+    private readonly HarvesterConfiguration _harvesterConfiguration;
 
     public JnccProcessor(IApiClient apiClient, 
         IServiceBusService serviceBusService, 
         IBlobService blobService,
         ILogger<JnccProcessor> logger,
-        IOptions<HarvesterConfigurations> harvesterConfigurations)
+        HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
-        _harvesterConfigurations = harvesterConfigurations.Value;
-        _apiClient.CreateClient(_harvesterConfigurations.Processor.DataSourceApiBase);
+        _harvesterConfiguration = harvesterConfiguration;
+        _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
         _serviceBusService = serviceBusService;
         _logger = logger;
         _blobService = blobService;
     }
     public async Task Process()
     {
-        var responseHtmlString = await _apiClient.GetAsync(_harvesterConfigurations.Processor.DataSourceApiUrl);
+        var responseHtmlString = await _apiClient.GetAsync(_harvesterConfiguration.DataSourceApiUrl);
         var documentLinks = GetDocumentLinks(responseHtmlString);
         await SendMetaDataToServiceBus(documentLinks);
     }
@@ -46,7 +45,7 @@ public class JnccProcessor : IProcessor
                 var metaDataXmlString = await _apiClient.GetAsync(apiUrl);
                 await _serviceBusService.SendMessageAsync(metaDataXmlString);
                 var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-                var dataSourceName = _harvesterConfigurations.Processor.ProcessorType.ToString().ToLowerInvariant();
+                var dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
                 await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, Path.GetFileName(documentLink), dataSourceName), CancellationToken.None);                
             } catch (Exception ex)
             {

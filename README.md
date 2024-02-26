@@ -71,3 +71,23 @@ Before proceeding, ensure you have the following installed:
         "Default": "Information"
         }
     }`
+
+    ***Pipeline Variables***
+    Variable Groups
+    - pipelineVariables
+        - *acrConatinerRegistry*
+        - *acrContainerRepositoryHarvester*
+        - *acrName*
+        - *sonarCloudOrganization*
+        - *sonarProjectKeyHarvester*
+        - *sonarProjectNameHarvester*
+    - azureVariables-[dev/test/sandbox/...]
+        - *aksNamespace*
+        - *blobStorageUri*
+        - *keyVaultUri*
+        - *serviceBusHostName*
+    - *harvesterServiceVariables-[dev/test/sandbox/...]*
+        - *containerRepostitoryFullPath*
+        - *jnccSchedule*
+        - *medinSchedule*
+        - *serviceAccountHarvester*

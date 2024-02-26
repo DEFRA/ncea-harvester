@@ -1,0 +1,43 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: nceapocsbox.azurecr.io/defra/ncea-harvester-service
+  tag: 20240223.39_feature-310693-create-heml-chart
+  imagePullPolicy: IfNotPresent
+
+serviceAccount:
+  name: serviceaccount-nceaharvester-sbox
+
+env:
+  serviceBusHostName: nceapocsbox.servicebus.windows.net
+  keyVaultUri: https://nceapocsbox.vault.azure.net/
+  blobStorageUri: https://nceapocsbox.blob.core.windows.net
+
+jobs:    
+  # cron job configurations for medin data source
+  medin:    
+    env:
+    - name: DataSource
+      value: "medin"
+
+    schedule: "*/1 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+    imagePullSecrets: []
+  
+  # cron job configurations for jncc data source
+  jncc:    
+    env:
+    - name: DataSource
+      value: "jncc"
+    
+    schedule: "*/1 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+    imagePullSecrets: []
+  
