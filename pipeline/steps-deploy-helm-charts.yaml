@@ -28,20 +28,20 @@ steps:
   inputs:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceConnection: ${{ parameters.aksServiceConnection }}
+    releaseName: ${{ parameters.releaseName }}
     namespace: $(aksNamespace)
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
     valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
     overrideValues: |
-        image.repository=$(containerRepositoryFullPath)
+        'image.repository=$(containerRepositoryFullPath)
         image.tag=$(imageTag)
         serviceAccount.name=$(serviceAccountHarvester)
         env.serviceBusHostName=$(serviceBusHostName)
         env.keyVaultUri=$(keyVaultUri)
         env.blobStorageUri=$(blobStorageUri)
-        jobs.medin.schedule='$(medinSchedule)'
-        jobs.jncc.schedule='$(jnccSchedule)'
+        jobs.medin.schedule=$(medinSchedule)
+        jobs.jncc.schedule=$(jnccSchedule)'
     install: true
     force: true
-    releaseName: ${{ parameters.releaseName }}
