@@ -24,7 +24,7 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+        _logger.LogInformation("Ncea Metadata Harvesting started at: {time}", DateTimeOffset.Now);
 
         using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
         {
@@ -33,5 +33,7 @@ public class Worker : BackgroundService
             _logger.LogInformation("Metadata harversting completed");
             _telemetryClient.TrackEvent("Harvesting completed");
         }
+
+        _logger.LogInformation("Ncea Metadata Harvesting ended at: {time}", DateTimeOffset.Now);
     }
 }
