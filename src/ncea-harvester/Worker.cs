@@ -10,16 +10,22 @@ namespace Ncea.Harvester;
 public class Worker : BackgroundService
 {    
     private readonly ILogger _logger;
-    private readonly TelemetryClient _telemetryClient;
-    private readonly HarvesterConfiguration _harvesterConfiguration;
     private readonly IProcessor _processor;
+    private readonly TelemetryClient _telemetryClient;
+    private readonly HarvesterConfiguration _harvesterConfiguration;    
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-    public Worker(ILogger<Worker> logger, HarvesterConfiguration harvesterConfiguration, IProcessor processor, TelemetryClient telemetryClient)
-    {
-        _logger = logger;
+    public Worker(HarvesterConfiguration harvesterConfiguration, 
+        IProcessor processor, 
+        TelemetryClient telemetryClient,         
+        IHostApplicationLifetime hostApplicationLifetime,
+        ILogger<Worker> logger)
+    {        
         _harvesterConfiguration = harvesterConfiguration;
         _processor = processor;
         _telemetryClient = telemetryClient;
+        _hostApplicationLifetime = hostApplicationLifetime;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,9 +35,18 @@ public class Worker : BackgroundService
         using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
         {
             _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
-            await _processor.Process();
-            _logger.LogInformation("Metadata harversting completed");
-            _telemetryClient.TrackEvent("Harvesting completed");
+
+            try
+            {
+                await _processor.Process();
+            }
+            finally
+            {
+                _logger.LogInformation("Metadata harversting completed");
+                _telemetryClient.TrackEvent("Harvesting completed");
+
+                _hostApplicationLifetime.StopApplication();
+            }
         }
 
         _logger.LogInformation("Ncea Metadata Harvesting ended at: {time}", DateTimeOffset.Now);
