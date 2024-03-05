@@ -71,7 +71,7 @@ public class MedinProcessor : IProcessor
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occured while harvesting source: {_dataSourceName}, file-id: {documentFileIdentifier}");
+                _logger.LogError(ex, $"Error occured while harvesting source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
             }
         }
     }
