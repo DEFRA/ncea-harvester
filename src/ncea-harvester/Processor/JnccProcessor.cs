@@ -3,6 +3,7 @@ using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -82,6 +83,7 @@ public class JnccProcessor : IProcessor
         return documentLinks;
     }
 
+    [ExcludeFromCodeCoverage]
     private static string? GetFileIdentifier(string xmlString)
     {
         //Xml string to XElement Conversion
