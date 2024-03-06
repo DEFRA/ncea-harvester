@@ -82,11 +82,13 @@ public class MedinProcessor : IProcessor
         if ((responseXml == null) || !hasNextRecords) 
             return metadataList;
 
-        
-        string gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
-        metadataList = responseXml.Descendants()
-                               .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
-                                           && n.Name.LocalName == "MD_Metadata").ToList();
+        var gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
+        var cswNamespace = responseXml.Root!.GetNamespaceOfPrefix("csw")!;
+        metadataList = responseXml.Descendants(cswNamespace + "SearchResults")
+            .Elements()
+            .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString && n.Name.LocalName == "MD_Metadata")
+            .ToList();
+
         return (metadataList.Count > 0 ? metadataList : new List<XElement>());
     }
 
