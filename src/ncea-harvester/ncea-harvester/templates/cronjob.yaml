@@ -23,6 +23,9 @@ spec:
     spec:
       template:
         metadata:
+          annotations:
+            rollme: {{ randAlphaNum 5 | quote }}
+            timestamp: {{ now | date "20060102150405" | quote }}
           labels:
             app: {{ include "cronjobs.releaseName" $ }}
             cron: {{ $jobname }}

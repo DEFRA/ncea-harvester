@@ -9,6 +9,7 @@ namespace Ncea.Harvester.Processors;
 
 public class MedinProcessor : IProcessor
 {
+    private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
     private readonly IServiceBusService _serviceBusService;
     private readonly IBlobService _blobService;
@@ -27,6 +28,8 @@ public class MedinProcessor : IProcessor
         _serviceBusService = serviceBusService;
         _logger = logger;
         _blobService = blobService;
+
+        _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
     public async Task Process()
     {
@@ -53,41 +56,45 @@ public class MedinProcessor : IProcessor
         
         foreach (var metaDataXmlNode in metaDataXmlNodes)
         {
+            var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+
             try
             {
                 string? metaDataXmlString = metaDataXmlNode.ToString();
+                metaDataXmlString = string.Concat("<?xml version=\"1.0\" encoding=\"utf-8\"?>", metaDataXmlString);
                 await _serviceBusService.SendMessageAsync(metaDataXmlString);
-                var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-                var dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
 
-                var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+                var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));                
                 var documentFileName = string.Concat(documentFileIdentifier, ".xml");
-                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, dataSourceName), CancellationToken.None);
+
+                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occured while sending message to harvester queue");
+                _logger.LogError(ex, "Error occured while harvesting source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
             }
         }
     }
 
     private static List<XElement>? GetMetadataList(XDocument? responseXml, bool hasNextRecords)
     {
-        List<XElement> metadataList = new List<XElement>();
+        var metadataList = new List<XElement>();
         if ((responseXml == null) || !hasNextRecords) 
             return metadataList;
 
-        
-        string gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
-        metadataList = responseXml.Descendants()
-                               .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
-                                           && n.Name.LocalName == "MD_Metadata").ToList();
+        var gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
+        var cswNamespace = responseXml.Root!.GetNamespaceOfPrefix("csw")!;
+        metadataList = responseXml.Descendants(cswNamespace + "SearchResults")
+            .Elements()
+            .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString && n.Name.LocalName == "MD_Metadata")
+            .ToList();
+
         return (metadataList.Count > 0 ? metadataList : new List<XElement>());
     }
 
     private static string? GetFileIdentifier(XElement xmlElement)
     {
-        string gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
+        var gmdNameSpaceString = "http://www.isotc211.org/2005/gmd";
         var fileIdentifierXmlElement = xmlElement.Descendants()
                                .FirstOrDefault(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString
                                            && n.Name.LocalName == "fileIdentifier");
@@ -114,7 +121,7 @@ public class MedinProcessor : IProcessor
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
         var responseXmlString = await _apiClient.GetAsync(apiUrl);
-        XDocument responseXml = XDocument.Parse(responseXmlString);
+        var responseXml = XDocument.Parse(responseXmlString);
         return responseXml;
     }
 }

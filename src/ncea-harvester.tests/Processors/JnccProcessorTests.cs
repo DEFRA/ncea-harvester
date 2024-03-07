@@ -87,4 +87,48 @@ public class JnccProcessorTests
         var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService,logger, harvesterConfiguration);
         await Assert.ThrowsAsync<HttpRequestException>(() => jnccService.Process());
     }
+
+    [Fact]
+    public async Task Process_ShouldThrowException()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.GetServiceBusWithError(out Mock<ServiceBusSender> mockServiceBusSender);
+        var expectedData = "<html><body><a href=\"a.xml\">a</a><a href=\"b.xml\">b</a></body></html>";
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(expectedData),
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
+
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<BlobClient> mockBlobClient);
+        var mockLogger = new Mock<ILogger<JnccProcessor>>(MockBehavior.Strict);
+        mockLogger.Setup(x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+            )
+        );
+
+        // Act
+        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, mockLogger.Object, harvesterConfiguration);
+        await jnccService.Process();
+
+        // Assert
+        mockLogger.Verify(
+            m => m.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(2),
+            It.IsAny<string>()
+        );
+    }
 }

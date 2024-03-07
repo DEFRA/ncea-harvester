@@ -12,6 +12,7 @@ using Ncea.Harvester.Constants;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;
+using Microsoft.Extensions.Azure;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -31,7 +32,7 @@ var harvsesterConfigurations = configuration.GetSection("HarvesterConfigurations
 ConfigureKeyVault(configuration, builder);
 ConfigureLogging(builder);
 await ConfigureBlobStorage(configuration, builder, dataSourceName);
-await ConfigureServiceBusQueue(configuration, builder, dataSourceName);
+await ConfigureServiceBusQueue(configuration, builder);
 ConfigureServices(builder);
 ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 
@@ -51,22 +52,37 @@ static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterCo
     }
 }
 
-static async Task ConfigureServiceBusQueue(IConfigurationRoot configuration, HostApplicationBuilder builder, string dataSourceName)
+static async Task ConfigureServiceBusQueue(IConfigurationRoot configuration, HostApplicationBuilder builder)
 {
+    var harvesterQueueName = configuration.GetValue<string>("HarvesterQueueName");
+    var mapperQueueName = configuration.GetValue<string>("MapperQueueName");
+
     var servicebusHostName = configuration.GetValue<string>("ServiceBusHostName");
-    builder.Services.AddSingleton(x => new ServiceBusClient(servicebusHostName, new DefaultAzureCredential()));   
 
     var createQueue = configuration.GetValue<bool>("DynamicQueueCreation");
     if (createQueue)
     {
-        var queueName = $"{dataSourceName}-harvester-queue";
         var servicebusAdminClient = new ServiceBusAdministrationClient(servicebusHostName, new DefaultAzureCredential());
-        bool queueExists = await servicebusAdminClient.QueueExistsAsync(queueName);
-        if (!queueExists)
+        bool harvesterQueueExists = await servicebusAdminClient.QueueExistsAsync(harvesterQueueName);
+        if (!harvesterQueueExists)
         {
-            await servicebusAdminClient.CreateQueueAsync(queueName);
+            await servicebusAdminClient.CreateQueueAsync(harvesterQueueName);
+        }
+        bool mapperQueueExists = await servicebusAdminClient.QueueExistsAsync(mapperQueueName);
+        if (!mapperQueueExists)
+        {
+            await servicebusAdminClient.CreateQueueAsync(mapperQueueName);
         }
     }
+
+    builder.Services.AddAzureClients(builder =>
+    {
+        builder.AddServiceBusClientWithNamespace(servicebusHostName);
+        builder.UseCredential(new DefaultAzureCredential());
+        builder.AddClient<ServiceBusSender, ServiceBusClientOptions>(
+            (_, _, provider) => provider.GetService<ServiceBusClient>()!.CreateSender(harvesterQueueName))
+        .WithName(harvesterQueueName);
+    });
 }
 
 static void ConfigureKeyVault(IConfigurationRoot configuration, HostApplicationBuilder builder)
