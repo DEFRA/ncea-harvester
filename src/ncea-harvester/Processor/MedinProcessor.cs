@@ -38,21 +38,14 @@ public class MedinProcessor : IProcessor
         var totalRecords = 0;
         var hasNextRecords = true;
 
-        try
+        while (hasNextRecords)
         {
-            while (hasNextRecords)
-            {
-                var responseXml = await GetMedinData(startPosition, maxRecords);
-                startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
-                var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
-                await SendMetaDataToServiceBus(metaDataXmlNodes);
+            var responseXml = await GetMedinData(startPosition, maxRecords);
+            startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
+            var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
+            await SendMetaDataToServiceBus(metaDataXmlNodes);
 
-                if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occured while harvesting source: {_dataSourceName}", _dataSourceName);
+            if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
         }
     }
 
