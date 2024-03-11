@@ -38,14 +38,21 @@ public class MedinProcessor : IProcessor
         var totalRecords = 0;
         var hasNextRecords = true;
 
-        while (hasNextRecords)
+        try
         {
-            var responseXml = await GetMedinData(startPosition, maxRecords);
-            startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
-            var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
-            await SendMetaDataToServiceBus(metaDataXmlNodes);
+            while (hasNextRecords)
+            {
+                var responseXml = await GetMedinData(startPosition, maxRecords);
+                startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
+                var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
+                await SendMetaDataToServiceBus(metaDataXmlNodes);
 
-            if(startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
+                if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occured while harvesting source: {_dataSourceName}", _dataSourceName);
         }
     }
 
@@ -56,10 +63,11 @@ public class MedinProcessor : IProcessor
         
         foreach (var metaDataXmlNode in metaDataXmlNodes)
         {
-            var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+            var documentFileIdentifier = string.Empty;
 
             try
             {
+                documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
                 string? metaDataXmlString = metaDataXmlNode.ToString();
                 metaDataXmlString = string.Concat("<?xml version=\"1.0\" encoding=\"utf-8\"?>", metaDataXmlString);
                 await _serviceBusService.SendMessageAsync(metaDataXmlString);
@@ -89,7 +97,7 @@ public class MedinProcessor : IProcessor
             .Where(n => n.Name.Namespace.NamespaceName == gmdNameSpaceString && n.Name.LocalName == "MD_Metadata")
             .ToList();
 
-        return (metadataList.Count > 0 ? metadataList : new List<XElement>());
+        return metadataList.Count > 0 ? metadataList : [];
     }
 
     private static string? GetFileIdentifier(XElement xmlElement)
