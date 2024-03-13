@@ -51,10 +51,10 @@ ConfigureServices(builder);
 logger.LogInformation("Configure Processor");
 ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 
-logger.LogInformation("Bing access test...");
-var httpClient1 = new HttpClient();
-var res1 = await httpClient1.GetAsync("https://bing.com");
-logger.LogInformation("Calling bing completed with status:" + res1.StatusCode);
+//logger.LogInformation("Bing access test...");
+//var httpClient1 = new HttpClient();
+//var res1 = await httpClient1.GetAsync("https://bing.com");
+//logger.LogInformation("Calling bing completed with status:" + res1.StatusCode);
 
 //logger.LogInformation("Medin access test...");
 //var httpClient2 = new HttpClient();
