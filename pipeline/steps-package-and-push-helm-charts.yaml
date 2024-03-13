@@ -9,6 +9,16 @@ steps:
     chartVersion: $(Build.BuildNumber)
     destination: $(Build.ArtifactStagingDirectory)
 
+- task: HelmDeploy@0
+  displayName: Helm save
+  inputs:
+    command: save
+    chartNameForACR: 'charts/$(acrContainerRepositoryHarvester):$(Build.BuildNumber)'
+    chartPathForACR: $(chartPath)
+    azureSubscriptionEndpointForACR: $(acrArmServiceConnection)
+    azureResourceGroupForACR: $(acrResourceGroupName)
+    azureContainerRegistry: $(acrConatinerRegistry)
+
 - task: PublishPipelineArtifact@1
   condition: and(succeeded(), or(eq(variables['isMain'], 'true'), eq(variables['isPullRequest'], 'true')))
   inputs:

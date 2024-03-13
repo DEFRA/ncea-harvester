@@ -11,6 +11,8 @@ variables:
   - template: templates/variables-global.yml
   - name : acrContainerRegistryServiceConnection
     value: acr-AZR-NCE-DEV-TEMP
+  - name : acrArmServiceConnection
+    value: AZR-NCE-DEV1
   - name : deployToDev
     value: true
   - name : deplyToTest
