@@ -56,15 +56,15 @@ var httpClient1 = new HttpClient();
 var res1 = await httpClient1.GetAsync("https://bing.com");
 logger.LogInformation("Calling bing completed with status:" + res1.StatusCode);
 
-logger.LogInformation("Medin access test...");
-var httpClient2 = new HttpClient();
-var res2 = await httpClient2.GetAsync("https://portal.medin.org.uk");
-logger.LogInformation("Calling Medin completed with status:" + res2.StatusCode);
+//logger.LogInformation("Medin access test...");
+//var httpClient2 = new HttpClient();
+//var res2 = await httpClient2.GetAsync("https://portal.medin.org.uk");
+//logger.LogInformation("Calling Medin completed with status:" + res2.StatusCode);
 
-logger.LogInformation("Jncc access test...");
-var httpClient3 = new HttpClient();
-var res3 = await httpClient3.GetAsync("https://data.jncc.gov.uk");
-logger.LogInformation("Calling Jncc completed with status:" + res3.StatusCode);
+//logger.LogInformation("Jncc access test...");
+//var httpClient3 = new HttpClient();
+//var res3 = await httpClient3.GetAsync("https://data.jncc.gov.uk");
+//logger.LogInformation("Calling Jncc completed with status:" + res3.StatusCode);
 
 logger.LogInformation("Build Host");
 var host = builder.Build();
