@@ -33,7 +33,7 @@ public class MedinProcessor : IProcessor
     }
     public async Task Process()
     {
-        Console.WriteLine("Inside JNCC Processor");
+        Console.WriteLine("Inside Medin Processor");
         var startPosition = 1;
         var maxRecords = 100;
         var totalRecords = 0;
@@ -119,10 +119,14 @@ public class MedinProcessor : IProcessor
 
     private async Task<XDocument> GetMedinData(int startPosition, int maxRecords)
     {
+        Console.WriteLine("Inside GetMedinData");
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
+        Console.WriteLine("API URL: " + apiUrl);
         var responseXmlString = await _apiClient.GetAsync(apiUrl);
+        Console.WriteLine("Response: " + responseXmlString);
         var responseXml = XDocument.Parse(responseXmlString);
+        Console.WriteLine(responseXml);
         return responseXml;
     }
 }
