@@ -26,7 +26,6 @@ jobs:
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
-    imagePullSecrets: []
   
   # cron job configurations for jncc data source
   jncc:    
@@ -39,5 +38,4 @@ jobs:
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
-    imagePullSecrets: []
   

@@ -21,6 +21,12 @@ var configuration = new ConfigurationBuilder()
                                 .Build();
 
 var builder = Host.CreateApplicationBuilder(args);
+var logger = LoggerFactory.Create(config =>
+{
+    config.AddConsole();
+    config.AddConfiguration(builder.Configuration.GetSection("Logging"));
+}).CreateLogger("Program");
+
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddHttpClient();
 
@@ -29,14 +35,22 @@ var dataSourceName = Enum.Parse(typeof(ProcessorType), dataSource!, true).ToStri
 var processorType = (ProcessorType)Enum.Parse(typeof(ProcessorType), dataSource!, true);
 var harvsesterConfigurations = configuration.GetSection("HarvesterConfigurations").Get<List<HarvesterConfiguration>>()!;
 
+logger.LogInformation("Configure KeyVault");
 ConfigureKeyVault(configuration, builder);
+logger.LogInformation("Configure Logging");
 ConfigureLogging(builder);
+logger.LogInformation("Configure BlobStorage");
 await ConfigureBlobStorage(configuration, builder, dataSourceName);
+logger.LogInformation("Configure Servicebus Queue");
 await ConfigureServiceBusQueue(configuration, builder);
+logger.LogInformation("Configure Services");
 ConfigureServices(builder);
+logger.LogInformation("Configure Processor");
 ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 
+logger.LogInformation("Build Host");
 var host = builder.Build();
+logger.LogInformation("Host Run");
 host.Run();
 
 static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterConfiguration> harvsesterConfigurations, ProcessorType processorType)
