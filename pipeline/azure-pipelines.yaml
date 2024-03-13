@@ -73,10 +73,7 @@ stages:
               parameters:
                 envName: dev
                 releaseName: ncea-harvester-dev
-                # aksServiceConnection: aksServiceConn-AZR-NCE-SND1
                 armServiceConnection: AZR-NCE-DEV1
-                aksResourceGroupName: DEVNCEINFRG1401
-                aksClusterName: DEVNCEINFAK1401
 
 - stage: 'test'
   displayName: 'Deploy to test'
@@ -85,7 +82,7 @@ stages:
   jobs:
   - deployment: Deploy
     pool:
-      vmImage: 'ubuntu-latest'
+      name: DEFRA-COMMON-ubuntu2204-SSV3
     variables:
       - template: templates/variables-test.yml
     environment: test 
@@ -95,9 +92,6 @@ stages:
           steps:
             - template: steps-deploy-helm-charts.yaml
               parameters:
-                envName: dev
+                envName: test
                 releaseName: ncea-harvester-test
-                # aksServiceConnection: aksServiceConn-AZR-NCE-SND1
-                armServiceConnection: AZR-NCE-DEV1
-                aksResourceGroupName: DEVNCEINFRG1401
-                aksClusterName: DEVNCEINFAK1401
+                armServiceConnection: AZR-NCE-TEST1

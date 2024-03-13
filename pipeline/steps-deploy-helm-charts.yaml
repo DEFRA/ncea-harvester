@@ -3,13 +3,7 @@ parameters:
     type: string
   - name: releaseName
     type: string
-  # - name: aksServiceConnection
-  #   type: string
   - name: armServiceConnection
-    type: string
-  - name: aksResourceGroupName
-    type: string
-  - name: aksClusterName
     type: string
 
 steps:
@@ -36,15 +30,10 @@ steps:
   displayName: 'Helm Deploy'
   condition: succeeded()
   inputs:
-    # connectionType: 'Kubernetes Service Connection'
-    # kubernetesServiceConnection: ${{ parameters.aksServiceConnection }}
     connectionType: Azure Resource Manager
-    azureSubscriptionEndpoint: AZR-NCE-DEV1
-    azureResourceGroup: DEVNCEINFRG1401
-    kubernetesCluster : DEVNCEINFAK1401
-    # azureSubscriptionEndpoint: ${{ parameters.armServiceConnection }}
-    # azureResourceGroup: ${{ parameters.aksResourceGroupName }}
-    # kubernetesCluster : ${{ parameters.aksClusterName }}
+    azureSubscriptionEndpoint: ${{ parameters.armServiceConnection }}
+    azureResourceGroup: $(aksResourceGroupName)
+    kubernetesCluster : $(aksClusterName)
     releaseName: ${{ parameters.releaseName }}
     namespace: $(aksNamespace)
     command: 'upgrade'
