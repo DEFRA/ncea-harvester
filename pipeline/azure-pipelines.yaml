@@ -94,4 +94,4 @@ stages:
               parameters:
                 envName: test
                 releaseName: ncea-harvester-test
-                armServiceConnection: AZR-NCE-TEST1
+                armServiceConnection: AZR-NCE-DEV1
