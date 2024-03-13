@@ -21,11 +21,16 @@ public class ApiClient: IApiClient
     public async Task<string> GetAsync(string apiUrl)
     {
         Console.WriteLine("Inside ApiClient GetAsync");
+        Console.WriteLine("Host URL: " + _httpClient.BaseAddress);
         var response = await _httpClient.GetAsync(apiUrl);
-
         response.EnsureSuccessStatusCode();
 
-        Console.WriteLine(response.StatusCode);
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Api call failed");
+        }
+
+        Console.WriteLine("Status Code:" + response.StatusCode);
         return await response.Content.ReadAsStringAsync();
     }
 
