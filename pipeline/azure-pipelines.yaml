@@ -61,7 +61,7 @@ stages:
   jobs:
   - deployment: Deploy
     pool:
-      vmImage: 'ubuntu-latest'
+      name: DEFRA-COMMON-ubuntu2204-SSV3
     variables:
       - template: templates/variables-dev.yml
     environment: dev 
