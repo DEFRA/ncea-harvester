@@ -36,6 +36,7 @@ public class JnccProcessor : IProcessor
     }
     public async Task Process()
     {
+        Console.WriteLine("Inside JNCC Processor");
         var responseHtmlString = await _apiClient.GetAsync(_harvesterConfiguration.DataSourceApiUrl);
         var documentLinks = GetDocumentLinks(responseHtmlString);
         await SendMetaDataToServiceBus(documentLinks);

@@ -33,6 +33,7 @@ public class MedinProcessor : IProcessor
     }
     public async Task Process()
     {
+        Console.WriteLine("Inside JNCC Processor");
         var startPosition = 1;
         var maxRecords = 100;
         var totalRecords = 0;

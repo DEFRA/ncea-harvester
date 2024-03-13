@@ -30,6 +30,7 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Console.WriteLine("Inside Worker");
         _logger.LogInformation("Ncea Metadata Harvesting started at: {time}", DateTimeOffset.Now);
 
         using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
