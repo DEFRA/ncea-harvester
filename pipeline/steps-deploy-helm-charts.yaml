@@ -34,7 +34,7 @@ steps:
   inputs:
     # connectionType: 'Kubernetes Service Connection'
     # kubernetesServiceConnection: ${{ parameters.aksServiceConnection }}
-    connectionType: 'Azure Resource Manager'
+    connectionType: Azure Resource Manager
     azureSubscriptionEndpoint: ${{ parameters.armServiceConnection }}
     azureResourceGroup: ${{ parameters.aksResourceGroupName }}
     kubernetesCluster : ${{ parameters.aksClusterName }}
