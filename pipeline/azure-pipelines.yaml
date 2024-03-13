@@ -13,6 +13,8 @@ variables:
     value: acr-AZR-NCE-DEV-TEMP
   - name : deployToDev
     value: true
+  - name : deplyToTest
+    value: false
 
 stages:
 - stage: 'Build'
@@ -79,7 +81,7 @@ stages:
 - stage: 'test'
   displayName: 'Deploy to test'
   dependsOn: dev
-  condition:  succeeded()
+  condition: and(succeeded(), eq(variables.deployToTest, true))
   jobs:
   - deployment: Deploy
     pool:
@@ -95,4 +97,7 @@ stages:
               parameters:
                 envName: dev
                 releaseName: ncea-harvester-test
-                aksServiceConnection: aksServiceConn-AZR-NCE-SND1
+                # aksServiceConnection: aksServiceConn-AZR-NCE-SND1
+                armServiceConnection: AZR-NCE-DEV1
+                aksResourceGroupName: DEVNCEINFRG1401
+                aksClusterName: DEVNCEINFAK1401
