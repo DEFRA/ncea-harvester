@@ -41,6 +41,11 @@ public class Worker : BackgroundService
             {
                 await _processor.Process();
             }
+            catch(Exception Ex)
+            {
+                Console.WriteLine("Error occured while harvesting metadata from {source}", _harvesterConfiguration.ProcessorType);
+                _logger.LogError(Ex, "Error occured while harvesting metadata from {source}", _harvesterConfiguration.ProcessorType);
+            }
             finally
             {
                 _logger.LogInformation("Metadata harversting completed");

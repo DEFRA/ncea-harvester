@@ -42,6 +42,7 @@ public class MedinProcessor : IProcessor
         while (hasNextRecords)
         {
             var responseXml = await GetMedinData(startPosition, maxRecords);
+            Console.WriteLine("After GetMedinData");
             startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
             var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
             await SendMetaDataToServiceBus(metaDataXmlNodes);
