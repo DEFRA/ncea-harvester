@@ -1,5 +1,6 @@
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.IdentityModel.Abstractions;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using System.Diagnostics.CodeAnalysis;
@@ -51,6 +52,7 @@ public class Worker : BackgroundService
                 _logger.LogInformation("Metadata harversting completed");
                 _telemetryClient.TrackEvent("Harvesting completed");
 
+                await _telemetryClient.FlushAsync(stoppingToken);
                 _hostApplicationLifetime.StopApplication();
             }
         }
