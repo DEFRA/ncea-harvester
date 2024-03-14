@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Abstractions;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 
 namespace Ncea.Harvester;
 
@@ -37,6 +38,14 @@ public class Worker : BackgroundService
         using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
         {
             _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
+            
+            var httpClient = new HttpClient();
+            _logger.LogWarning("A sample warning message. By default, logs with severity Warning or higher is captured by Application Insights");
+            _logger.LogInformation("Calling bing.com");
+            Console.WriteLine("Calling bing");
+            var res = await httpClient.GetAsync("https://bing.com");
+            Console.WriteLine("Response from bing: " + res.StatusCode);
+            _logger.LogInformation("Calling bing completed with status:" + res.StatusCode);
 
             try
             {
