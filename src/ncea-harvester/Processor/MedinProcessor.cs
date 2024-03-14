@@ -120,10 +120,8 @@ public class MedinProcessor : IProcessor
     private async Task<XDocument> GetMedinData(int startPosition, int maxRecords)
     {        
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
-        apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
-        //.LogDebug("API URL: " + apiUrl);
-        var responseXmlString = await _apiClient.GetAsync(apiUrl);
-        //_logger.LogDebug("Response: " + responseXmlString);
+        apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));        
+        var responseXmlString = await _apiClient.GetAsync(apiUrl);        
         var responseXml = XDocument.Parse(responseXmlString);
         return responseXml;
     }
