@@ -1,10 +1,8 @@
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.IdentityModel.Abstractions;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
 
 namespace Ncea.Harvester;
 
@@ -32,19 +30,18 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Console.WriteLine("Inside Worker");
         _logger.LogInformation("Ncea Metadata Harvesting started at: {time}", DateTimeOffset.Now);
 
         using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
         {
             _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
-            
-            var httpClient = new HttpClient();
+
+            HttpClientHandler clientHandler = new HttpClientHandler();
+            clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+            var httpClient = new HttpClient(clientHandler);
             _logger.LogWarning("A sample warning message. By default, logs with severity Warning or higher is captured by Application Insights");
             _logger.LogInformation("Calling bing.com");
-            Console.WriteLine("Calling bing");
             var res = await httpClient.GetAsync("https://bing.com");
-            Console.WriteLine("Response from bing: " + res.StatusCode);
             _logger.LogInformation("Calling bing completed with status:" + res.StatusCode);
 
             try

@@ -33,7 +33,7 @@ public class MedinProcessor : IProcessor
     }
     public async Task Process()
     {
-        Console.WriteLine("Inside Medin Processor");
+        _logger.LogDebug("Inside Medin Processor");
         var startPosition = 1;
         var maxRecords = 100;
         var totalRecords = 0;
@@ -42,7 +42,7 @@ public class MedinProcessor : IProcessor
         while (hasNextRecords)
         {
             var responseXml = await GetMedinData(startPosition, maxRecords);
-            Console.WriteLine("After GetMedinData");
+            _logger.LogDebug("After GetMedinData");
             startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
             var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
             await SendMetaDataToServiceBus(metaDataXmlNodes);
@@ -119,15 +119,13 @@ public class MedinProcessor : IProcessor
     }
 
     private async Task<XDocument> GetMedinData(int startPosition, int maxRecords)
-    {
-        Console.WriteLine("Inside GetMedinData");
+    {        
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
-        Console.WriteLine("API URL: " + apiUrl);
+        _logger.LogDebug("API URL: " + apiUrl);
         var responseXmlString = await _apiClient.GetAsync(apiUrl);
-        Console.WriteLine("Response: " + responseXmlString);
+        _logger.LogDebug("Response: " + responseXmlString);
         var responseXml = XDocument.Parse(responseXmlString);
-        Console.WriteLine(responseXml);
         return responseXml;
     }
 }

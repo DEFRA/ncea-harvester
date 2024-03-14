@@ -13,9 +13,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.Extensions.Azure;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.DependencyInjection;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -24,6 +21,7 @@ var configuration = new ConfigurationBuilder()
                                 .Build();
 
 var builder = Host.CreateApplicationBuilder(args);
+
 var logger = LoggerFactory.Create(config =>
 {
     config.AddConsole();
@@ -38,17 +36,11 @@ var dataSourceName = Enum.Parse(typeof(ProcessorType), dataSource!, true).ToStri
 var processorType = (ProcessorType)Enum.Parse(typeof(ProcessorType), dataSource!, true);
 var harvsesterConfigurations = configuration.GetSection("HarvesterConfigurations").Get<List<HarvesterConfiguration>>()!;
 
-logger.LogInformation("Configure KeyVault");
 ConfigureKeyVault(configuration, builder);
-logger.LogInformation("Configure Logging");
 ConfigureLogging(builder);
-logger.LogInformation("Configure BlobStorage");
 await ConfigureBlobStorage(configuration, builder, dataSourceName);
-logger.LogInformation("Configure Servicebus Queue");
 await ConfigureServiceBusQueue(configuration, builder);
-logger.LogInformation("Configure Services");
 ConfigureServices(builder);
-logger.LogInformation("Configure Processor");
 ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 
 //logger.LogInformation("Bing access test...");
@@ -66,9 +58,8 @@ ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 //var res3 = await httpClient3.GetAsync("https://data.jncc.gov.uk");
 //logger.LogInformation("Calling Jncc completed with status:" + res3.StatusCode);
 
-logger.LogInformation("Build Host");
+
 var host = builder.Build();
-logger.LogInformation("Host Run");
 host.Run();
 
 static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterConfiguration> harvsesterConfigurations, ProcessorType processorType)

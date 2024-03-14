@@ -1,4 +1,5 @@
 ﻿using Ncea.Harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Processors;
 using System.Text;
 
 namespace Ncea.Harvester.Infrastructure;
@@ -7,9 +8,11 @@ public class ApiClient: IApiClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private HttpClient _httpClient = new HttpClient();
-    public ApiClient(IHttpClientFactory httpClientFactory)
+    private readonly ILogger<ApiClient> _logger;
+    public ApiClient(IHttpClientFactory httpClientFactory, ILogger<ApiClient> logger)
     {
         _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     public void CreateClient(string BaseUrl)
@@ -20,17 +23,15 @@ public class ApiClient: IApiClient
 
     public async Task<string> GetAsync(string apiUrl)
     {
-        Console.WriteLine("Inside ApiClient GetAsync");
-        Console.WriteLine("Host URL: " + _httpClient.BaseAddress);
         var response = await _httpClient.GetAsync(apiUrl);
         response.EnsureSuccessStatusCode();
 
         if (!response.IsSuccessStatusCode)
         {
-            Console.WriteLine("Api call failed");
+            _logger.LogDebug("Api call failed");
         }
 
-        Console.WriteLine("Status Code:" + response.StatusCode);
+        _logger.LogDebug("Status Code:" + response.StatusCode);
         return await response.Content.ReadAsStringAsync();
     }
 
