@@ -95,6 +95,7 @@ spec:
 {{ toYaml . | indent 12 }}
           {{- end }}
           restartPolicy: {{ $job.restartPolicy }}
+          dnsPolicy: Default
           {{- with $job.volumes }}
           volumes:
 {{ toYaml . | indent 12 }}
