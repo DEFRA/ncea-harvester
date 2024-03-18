@@ -2,7 +2,6 @@
 using Moq;
 using Moq.Protected;
 using Ncea.Harvester.Infrastructure;
-using Ncea.Harvester.Processors;
 
 namespace Ncea.Harvester.Tests.Clients;
 
@@ -35,7 +34,7 @@ public static class ApiClientForTests
         .Returns(_httpClient);
 
         var logger = new Logger<ApiClient>(new LoggerFactory());
-        var apiClient = new ApiClient(_httpClientFactoryMock.Object, logger);
+        var apiClient = new ApiClient(_httpClientFactoryMock.Object);
         apiClient.CreateClient("https://baseUri");
 
         return apiClient;

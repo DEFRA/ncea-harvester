@@ -21,13 +21,6 @@ var configuration = new ConfigurationBuilder()
                                 .Build();
 
 var builder = Host.CreateApplicationBuilder(args);
-
-var logger = LoggerFactory.Create(config =>
-{
-    config.AddConsole();
-    config.AddConfiguration(builder.Configuration.GetSection("Logging"));
-}).CreateLogger("Program");
-
 builder.Services.AddHostedService<Worker>();
 
 var dataSource = configuration.GetValue<string>("DataSource");

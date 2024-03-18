@@ -32,8 +32,7 @@ public class MedinProcessor : IProcessor
         _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
     public async Task Process()
-    {
-        //_logger.LogDebug("Inside Medin Processor");
+    {        
         var startPosition = 1;
         var maxRecords = 100;
         var totalRecords = 0;

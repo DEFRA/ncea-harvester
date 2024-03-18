@@ -36,21 +36,12 @@ public class Worker : BackgroundService
         {
             _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
 
-            HttpClientHandler clientHandler = new HttpClientHandler();
-            clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
-            var httpClient = new HttpClient(clientHandler);
-            _logger.LogWarning("A sample warning message. By default, logs with severity Warning or higher is captured by Application Insights");
-            _logger.LogInformation("Calling bing.com");
-            var res = await httpClient.GetAsync("https://bing.com");
-            _logger.LogInformation("Calling bing completed with status:" + res.StatusCode);
-
             try
             {
                 await _processor.Process();
             }
             catch(Exception Ex)
             {
-                Console.WriteLine("Error occured while harvesting metadata from {source}", _harvesterConfiguration.ProcessorType);
                 _logger.LogError(Ex, "Error occured while harvesting metadata from {source}", _harvesterConfiguration.ProcessorType);
             }
             finally
