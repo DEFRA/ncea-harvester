@@ -32,8 +32,7 @@ public static class ApiClientForTests
         _httpClientFactoryMock
             .Setup(f => f.CreateClient(It.IsAny<string>()))
         .Returns(_httpClient);
-
-        var logger = new Logger<ApiClient>(new LoggerFactory());
+        
         var apiClient = new ApiClient(_httpClientFactoryMock.Object);
         apiClient.CreateClient("https://baseUri");
 

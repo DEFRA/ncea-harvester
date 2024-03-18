@@ -32,7 +32,7 @@ public class MedinProcessor : IProcessor
         _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
     public async Task Process()
-    {        
+    {
         var startPosition = 1;
         var maxRecords = 100;
         var totalRecords = 0;
@@ -118,10 +118,10 @@ public class MedinProcessor : IProcessor
     }
 
     private async Task<XDocument> GetMedinData(int startPosition, int maxRecords)
-    {        
+    {
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
-        apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));        
-        var responseXmlString = await _apiClient.GetAsync(apiUrl);        
+        apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
+        var responseXmlString = await _apiClient.GetAsync(apiUrl);
         var responseXml = XDocument.Parse(responseXmlString);
         return responseXml;
     }
