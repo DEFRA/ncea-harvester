@@ -13,7 +13,10 @@ steps:
     buildType: 'current'
     artifact: charts
 
-- task: ExtractFileDestinationFolder: true
+- task: ExtractFiles@1
+  inputs:
+    archiveFilePatterns: '$(Pipeline.Workspace)/charts/*.tgz'
+    cleanDestinationFolder: true
     overwriteExistingFiles: true
     destinationFolder: '$(Pipeline.Workspace)/chart'
 
