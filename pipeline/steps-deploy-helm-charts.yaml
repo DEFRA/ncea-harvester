@@ -1,6 +1,4 @@
 parameters:
-  - name: envName
-    type: string
   - name: releaseName
     type: string
   - name: armServiceConnection
@@ -15,10 +13,7 @@ steps:
     buildType: 'current'
     artifact: charts
 
-- task: ExtractFiles@1
-  inputs:
-    archiveFilePatterns: '$(Pipeline.Workspace)/charts/*.tgz'
-    cleanDestinationFolder: true
+- task: ExtractFileDestinationFolder: true
     overwriteExistingFiles: true
     destinationFolder: '$(Pipeline.Workspace)/chart'
 
@@ -39,7 +34,7 @@ steps:
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
-    valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
+    valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.yaml
     overrideValues: |
         image.repository=$(containerRepositoryFullPath)
         image.tag=$(imageTag)
