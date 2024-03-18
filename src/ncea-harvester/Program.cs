@@ -22,7 +22,6 @@ var configuration = new ConfigurationBuilder()
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
-builder.Services.AddHttpClient();
 
 var dataSource = configuration.GetValue<string>("DataSource");
 var dataSourceName = Enum.Parse(typeof(ProcessorType), dataSource!, true).ToString()!.ToLowerInvariant();
@@ -49,6 +48,10 @@ static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterCo
     {
         builder.Services.AddSingleton(typeof(IProcessor), type);
         builder.Services.AddSingleton(typeof(HarvesterConfiguration), harvsesterConfiguration);
+        builder.Services.AddHttpClient(harvsesterConfiguration.DataSourceApiBase).ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+        });
     }
 }
 
@@ -103,7 +106,7 @@ static void ConfigureLogging(HostApplicationBuilder builder)
                 configureApplicationInsightsLoggerOptions: (options) => { }
             );
         loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(null, LogLevel.Information);
-
+        loggingBuilder.AddConsole();
     });
     builder.Services.AddApplicationInsightsTelemetryWorkerService();
     builder.Services.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) =>

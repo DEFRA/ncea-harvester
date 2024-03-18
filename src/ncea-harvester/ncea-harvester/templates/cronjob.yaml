@@ -95,10 +95,11 @@ spec:
 {{ toYaml . | indent 12 }}
           {{- end }}
           restartPolicy: {{ $job.restartPolicy }}
+          dnsPolicy: Default
           {{- with $job.volumes }}
           volumes:
 {{ toYaml . | indent 12 }}
           {{- end }}
-  schedule: {{ $job.schedule | quote }}
+  schedule: {{ $job.schedule | quote | replace "|" " " }}
   successfulJobsHistoryLimit: {{ $job.successfulJobsHistoryLimit }}
 {{- end }}

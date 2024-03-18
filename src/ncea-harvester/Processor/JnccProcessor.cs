@@ -85,8 +85,7 @@ public class JnccProcessor : IProcessor
 
     [ExcludeFromCodeCoverage]
     private static string? GetFileIdentifier(string xmlString)
-    {
-        //Xml string to XElement Conversion
+    {        
         var xmlDoc = new XmlDocument();
         xmlDoc.LoadXml(xmlString);
         var xDoc = XDocument.Load(xmlDoc!.CreateNavigator()!.ReadSubtree());

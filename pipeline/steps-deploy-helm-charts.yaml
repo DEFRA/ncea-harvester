@@ -1,9 +1,7 @@
 parameters:
-  - name: envName
-    type: string
   - name: releaseName
     type: string
-  - name: aksServiceConnection
+  - name: armServiceConnection
     type: string
 
 steps:
@@ -20,20 +18,26 @@ steps:
     archiveFilePatterns: '$(Pipeline.Workspace)/charts/*.tgz'
     cleanDestinationFolder: true
     overwriteExistingFiles: true
-    destinationFolder: '$(Pipeline.Workspace)/chart' 
+    destinationFolder: '$(Pipeline.Workspace)/chart'
+
+- task: KubeloginInstaller@0
+  inputs:
+    kubeloginVersion: 'latest'
 
 - task: HelmDeploy@0
   displayName: 'Helm Deploy'
   condition: succeeded()
   inputs:
-    connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceConnection: ${{ parameters.aksServiceConnection }}
+    connectionType: Azure Resource Manager
+    azureSubscriptionEndpoint: ${{ parameters.armServiceConnection }}
+    azureResourceGroup: $(aksResourceGroupName)
+    kubernetesCluster : $(aksClusterName)
     releaseName: ${{ parameters.releaseName }}
     namespace: $(aksNamespace)
     command: 'upgrade'
     chartType: 'FilePath'
     chartPath: '$(Pipeline.Workspace)/ncea-harvester-$(Build.BuildNumber).tgz'
-    valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.${{ parameters.envName }}.yaml
+    valueFile: $(Pipeline.Workspace)/chart/ncea-harvester/values/values.yaml
     overrideValues: |
         image.repository=$(containerRepositoryFullPath)
         image.tag=$(imageTag)
@@ -41,5 +45,7 @@ steps:
         env.serviceBusHostName=$(serviceBusHostName)
         env.keyVaultUri=$(keyVaultUri)
         env.blobStorageUri=$(blobStorageUri)
+        jobs.medin.schedule=$(medinSchedule)
+        jobs.jncc.schedule=$(jnccSchedule)
     install: true
     force: true

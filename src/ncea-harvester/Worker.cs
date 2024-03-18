@@ -40,11 +40,16 @@ public class Worker : BackgroundService
             {
                 await _processor.Process();
             }
+            catch(Exception Ex)
+            {
+                _logger.LogError(Ex, "Error occured while harvesting metadata from {source}", _harvesterConfiguration.ProcessorType);
+            }
             finally
             {
                 _logger.LogInformation("Metadata harversting completed");
                 _telemetryClient.TrackEvent("Harvesting completed");
 
+                await _telemetryClient.FlushAsync(stoppingToken);
                 _hostApplicationLifetime.StopApplication();
             }
         }

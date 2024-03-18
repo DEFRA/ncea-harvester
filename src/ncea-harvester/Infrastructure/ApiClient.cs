@@ -14,7 +14,7 @@ public class ApiClient: IApiClient
 
     public void CreateClient(string BaseUrl)
     {
-        _httpClient = _httpClientFactory.CreateClient();
+        _httpClient = _httpClientFactory.CreateClient(BaseUrl);
         _httpClient.BaseAddress = new Uri(BaseUrl);
     }
 
