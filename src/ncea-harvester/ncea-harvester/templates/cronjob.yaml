@@ -100,6 +100,6 @@ spec:
           volumes:
 {{ toYaml . | indent 12 }}
           {{- end }}
-  schedule: {{ $job.schedule | quote | replace "/" " " }}
+  schedule: {{ $job.schedule | quote | replace "|" " " }}
   successfulJobsHistoryLimit: {{ $job.successfulJobsHistoryLimit }}
 {{- end }}
