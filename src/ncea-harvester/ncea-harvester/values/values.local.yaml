@@ -3,7 +3,7 @@
 
 image:
   repository: nceapocsbox.azurecr.io/defra/ncea-harvester-service
-  tag: 20240307.2_feature-308798-minor-fix
+  tag: 20240311.4_feature-308798-hotfix
   imagePullPolicy: IfNotPresent
 
 serviceAccount:
@@ -21,7 +21,7 @@ jobs:
     - name: DataSource
       value: "medin"
 
-    schedule: "*/1 * * * *"
+    schedule: "0 * * * *"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
@@ -34,7 +34,7 @@ jobs:
     - name: DataSource
       value: "jncc"
     
-    schedule: "* 12 * * *"
+    schedule: "0 * * * *"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
