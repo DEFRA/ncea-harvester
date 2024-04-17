@@ -20,6 +20,17 @@ steps:
     overwriteExistingFiles: true
     destinationFolder: '$(Pipeline.Workspace)/chart'
 
+- task: HelmDeploy@0
+  displayName: Helm lint
+  condition: succeeded()
+  inputs:
+    connectionType: Azure Resource Manager
+    azureSubscriptionEndpoint: ${{ parameters.armServiceConnection }}
+    azureResourceGroup: $(aksResourceGroupName)
+    kubernetesCluster : $(aksClusterName)
+    command: lint
+    arguments: '$(Pipeline.Workspace)/chart/ncea-harvester'
+
 - task: KubeloginInstaller@0
   inputs:
     kubeloginVersion: 'latest'
