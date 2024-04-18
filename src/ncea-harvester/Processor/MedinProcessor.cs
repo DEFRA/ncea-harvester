@@ -1,4 +1,5 @@
-﻿using Ncea.Harvester.Infrastructure.Contracts;
+﻿using ncea.harvester.BusinessExceptions;
+using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
@@ -41,39 +42,78 @@ public class MedinProcessor : IProcessor
         while (hasNextRecords)
         {
             var responseXml = await GetMedinData(startPosition, maxRecords);
-            startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml);
+            startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml!);
             var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
-            await SendMetaDataToServiceBus(metaDataXmlNodes);
+
+            if (metaDataXmlNodes != null)
+            {
+                foreach (var metaDataXmlNode in metaDataXmlNodes)
+                {
+                    var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+
+                    if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+                    {
+                        string metaDataXmlString = await SendServiceBusMessage(documentFileIdentifier, metaDataXmlNode);
+                        await SaveMetadataXml(documentFileIdentifier, metaDataXmlString);
+                    }
+                    else
+                    {
+                        _logger.LogError("File Identifier missing");
+                    }
+                }
+            }            
 
             if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
         }
     }
 
-    private async Task SendMetaDataToServiceBus(IEnumerable<XElement>? metaDataXmlNodes)
+    private async Task<XDocument?> GetMedinData(int startPosition, int maxRecords)
     {
-        if (metaDataXmlNodes == null || !metaDataXmlNodes.Any()) 
-          return; 
+        XDocument? responseDocument = null;
+        var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
+        apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
         
-        foreach (var metaDataXmlNode in metaDataXmlNodes)
+        try
+        {            
+            var responseXmlString = await _apiClient.GetAsync(apiUrl);
+            responseDocument = XDocument.Parse(responseXmlString);
+        }
+        catch (DataSourceConnectionException ex)
         {
-            var documentFileIdentifier = string.Empty;
+            _logger.LogError(ex, "Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}", _dataSourceName, startPosition);
+            throw;
+        }
+        return responseDocument;
+    }
 
-            try
-            {
-                documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
-                string? metaDataXmlString = metaDataXmlNode.ToString();
-                metaDataXmlString = string.Concat("<?xml version=\"1.0\" encoding=\"utf-8\"?>", metaDataXmlString);
-                await _serviceBusService.SendMessageAsync(metaDataXmlString);
+    private async Task<string> SendServiceBusMessage(string documentFileIdentifier, XElement metaDataXmlNode)
+    {
+        string? metaDataXmlString = metaDataXmlNode.ToString();
+        metaDataXmlString = string.Concat("<?xml version=\"1.0\" encoding=\"utf-8\"?>", metaDataXmlString);
+        try
+        {
+            await _serviceBusService.SendMessageAsync(metaDataXmlString);
+        }
+        catch(MessageQueueTransportException ex)
+        {
+            _logger.LogError(ex, "Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
+        }        
+        return metaDataXmlString;
+    }
 
-                var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));                
-                var documentFileName = string.Concat(documentFileIdentifier, ".xml");
+    private async Task SaveMetadataXml(string? documentFileIdentifier, string metaDataXmlString)
+    {
+        var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
+        var documentFileName = string.Concat(documentFileIdentifier, ".xml");
 
-                await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occured while harvesting source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
-            }
+        try
+        {
+            await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
+        }
+        catch(SaveMetadataFileException ex) 
+        {
+            _logger.LogError(ex, "Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
+
         }
     }
 
@@ -115,14 +155,5 @@ public class MedinProcessor : IProcessor
         bool hasTotalRecords = Int32.TryParse(totalRecordAttribute, out totalRecords);
         hasNextRecords = (hasTotalRecords && hasNextRecords && nextRecord > 0);
         return nextRecord;
-    }
-
-    private async Task<XDocument> GetMedinData(int startPosition, int maxRecords)
-    {
-        var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
-        apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
-        var responseXmlString = await _apiClient.GetAsync(apiUrl);
-        var responseXml = XDocument.Parse(responseXmlString);
-        return responseXml;
-    }
+    }    
 }
