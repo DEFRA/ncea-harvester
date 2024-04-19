@@ -1,4 +1,4 @@
-﻿namespace ncea.harvester.BusinessExceptions;
+﻿namespace Ncea.Harvester.BusinessExceptions;
 
 public abstract class BusinessException : Exception
 {

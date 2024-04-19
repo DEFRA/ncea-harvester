@@ -2,7 +2,7 @@
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
-using ncea.harvester.BusinessExceptions;
+using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Constants;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors;

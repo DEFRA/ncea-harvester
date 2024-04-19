@@ -1,6 +1,6 @@
 ﻿using Azure;
 using Azure.Messaging.ServiceBus;
-using ncea.harvester.BusinessExceptions;
+using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
