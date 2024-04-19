@@ -97,7 +97,7 @@ public class JnccProcessor : IProcessor
         }
     }
 
-    private async Task<string> GetJnccMetadata(string apiUrl, string jnccFileName)
+    public virtual async Task<string> GetJnccMetadata(string apiUrl, string jnccFileName)
     {
         try
         {
