@@ -2,6 +2,7 @@
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Constants;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors;
@@ -88,7 +89,7 @@ public class JnccProcessorTests
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
         // Act & Assert
         var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService,logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<HttpRequestException>(() => jnccService.Process());
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.Process());
     }
 
     [Fact]

@@ -116,7 +116,8 @@ public class MedinProcessor : IProcessor
         {
             var errorMessage = $"Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-        }        
+        }
+
         return metaDataXmlString;
     }
 

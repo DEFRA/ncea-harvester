@@ -47,7 +47,7 @@ public static class ServiceBusServiceForTests
         azureClientFactory.Setup(c => c.CreateClient(It.IsAny<string>())).Returns(mockServiceBusSender.Object);
 
         var service = new ServiceBusService(harvesterConfiguration, configuration.Object, azureClientFactory.Object);
-        mockServiceBusSender.Setup(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), It.IsAny<CancellationToken>())).Throws<Exception>();       
+        mockServiceBusSender.Setup(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), It.IsAny<CancellationToken>())).Throws<ServiceBusException>();       
 
         return service;
     }
