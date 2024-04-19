@@ -91,7 +91,9 @@ public class JnccProcessor : IProcessor
         catch (HttpRequestException ex)
         {
             var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}";
+#pragma warning disable CA2254 // Template should be a static expression
             _logger.LogError(ex, errorMessage, _dataSourceName);
+#pragma warning restore CA2254 // Template should be a static expression
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         catch (TaskCanceledException ex)
@@ -100,12 +102,16 @@ public class JnccProcessor : IProcessor
             if (ex.CancellationToken.IsCancellationRequested)
             {
                 errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}";
+#pragma warning disable CA2254 // Template should be a static expression
                 _logger.LogError(ex, errorMessage, _dataSourceName);
+#pragma warning restore CA2254 // Template should be a static expression
             }
             else
             {
                 errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}";
+#pragma warning disable CA2254 // Template should be a static expression
                 _logger.LogError(ex, errorMessage, _dataSourceName);
+#pragma warning restore CA2254 // Template should be a static expression
             }
 
             throw new DataSourceConnectionException(errorMessage, ex);
