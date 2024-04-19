@@ -5,6 +5,7 @@ using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
+using Ncea.Harvester.Utils;
 using System.Text;
 using System.Xml.Linq;
 
@@ -60,7 +61,7 @@ public class MedinProcessor : IProcessor
                     }
                     else
                     {
-                        _logger.LogError("File Identifier missing");
+                        CustomLogger.LogErrorMessage(_logger, "File Identifier missing", null);
                     }
                 }
             }            
@@ -82,10 +83,8 @@ public class MedinProcessor : IProcessor
         }
         catch (HttpRequestException ex)
         {
-            var errorMessage = "Error occured while harvesting the metadata for Data source: {0}, start position: {startPosition}";
-#pragma warning disable CA2254 // Template should be a static expression
-            _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
-#pragma warning restore CA2254 // Template should be a static expression
+            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         catch (TaskCanceledException ex)
@@ -93,15 +92,13 @@ public class MedinProcessor : IProcessor
             string? errorMessage;
             if (ex.CancellationToken.IsCancellationRequested)
             {
-                errorMessage = "Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+                errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
             }
             else
             {
-                errorMessage = "Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+                errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
             }
-#pragma warning disable CA2254 // Template should be a static expression
-            _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
-#pragma warning restore CA2254 // Template should be a static expression
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         return responseDocument;
@@ -117,7 +114,8 @@ public class MedinProcessor : IProcessor
         }
         catch(ServiceBusException ex)
         {
-            _logger.LogError(ex, "Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
+            var errorMessage = $"Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }        
         return metaDataXmlString;
     }
@@ -133,7 +131,8 @@ public class MedinProcessor : IProcessor
         }
         catch(RequestFailedException ex) 
         {
-            _logger.LogError(ex, "Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
+            var errorMessage = $"Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }
     }
 

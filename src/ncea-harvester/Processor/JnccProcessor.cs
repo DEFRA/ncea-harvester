@@ -6,6 +6,7 @@ using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
+using Ncea.Harvester.Utils;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml;
@@ -57,12 +58,12 @@ public class JnccProcessor : IProcessor
                 }
                 else
                 {
-                    _logger.LogError("File Identifier missing");
+                    CustomLogger.LogErrorMessage(_logger, "File Identifier missing", null);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occured while harvesting source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
+                CustomLogger.LogErrorMessage(_logger, "Error occured while harvesting source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
             }
         }
     }
@@ -77,9 +78,7 @@ public class JnccProcessor : IProcessor
         catch (HttpRequestException ex)
         {
             var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}";
-#pragma warning disable CA2254 // Template should be a static expression
-            _logger.LogError(ex, errorMessage, _dataSourceName);
-#pragma warning restore CA2254 // Template should be a static expression
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         catch (TaskCanceledException ex)
@@ -87,16 +86,13 @@ public class JnccProcessor : IProcessor
             string? errorMessage;
             if (ex.CancellationToken.IsCancellationRequested)
             {
-                errorMessage = "Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}";
+                errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}";
             }
             else
             {
-                errorMessage = "Request timed out while harvesting the metadata for Data source: {_dataSourceName}";
+                errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}";
             }
-
-#pragma warning disable CA2254 // Template should be a static expression
-            _logger.LogError(ex, errorMessage, _dataSourceName);
-#pragma warning restore CA2254 // Template should be a static expression
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
     }
@@ -110,10 +106,8 @@ public class JnccProcessor : IProcessor
         }
         catch (HttpRequestException ex)
         {
-            var errorMessage = "Error occured while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
-#pragma warning disable CA2254 // Template should be a static expression
-            _logger.LogError(ex, errorMessage, _dataSourceName);
-#pragma warning restore CA2254 // Template should be a static expression
+            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         catch (TaskCanceledException ex)
@@ -121,16 +115,13 @@ public class JnccProcessor : IProcessor
             string? errorMessage;
             if (ex.CancellationToken.IsCancellationRequested)
             {
-                errorMessage = "Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
+                errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
             }
             else
             {
-                errorMessage = "Request timed out while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
+                errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
             }
-
-#pragma warning disable CA2254 // Template should be a static expression
-            _logger.LogError(ex, errorMessage, _dataSourceName, jnccFileName);
-#pragma warning restore CA2254 // Template should be a static expression
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
     }
@@ -143,7 +134,7 @@ public class JnccProcessor : IProcessor
         }
         catch (ServiceBusException ex)
         {
-            _logger.LogError(ex, "Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
+            CustomLogger.LogErrorMessage(_logger, $"Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
         }
     }
 
@@ -158,8 +149,7 @@ public class JnccProcessor : IProcessor
         }
         catch (RequestFailedException ex)
         {
-            _logger.LogError(ex, "Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
-
+            CustomLogger.LogErrorMessage(_logger, $"Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
         }
     }
 
@@ -169,7 +159,7 @@ public class JnccProcessor : IProcessor
         var htmlDocument = new HtmlDocument();
         htmlDocument.LoadHtml(responseHtmlString);
 
-        var anchorNodes = htmlDocument?.DocumentNode?.SelectNodes("//a[@href]");
+        var anchorNodes = htmlDocument.DocumentNode?.SelectNodes("//a[@href]");
         if (anchorNodes != null)
         {
             foreach (var anchorNode in anchorNodes)
