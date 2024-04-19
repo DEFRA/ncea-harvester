@@ -94,20 +94,14 @@ public class MedinProcessor : IProcessor
             if (ex.CancellationToken.IsCancellationRequested)
             {
                 errorMessage = "Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
-                #pragma warning disable CA2254 // Template should be a static expression
-            _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
-#pragma warning restore CA2254 // Template should be a static expression
-
             }
             else
             {
                 errorMessage = "Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
-#pragma warning disable CA2254 // Template should be a static expression
-                _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
-#pragma warning restore CA2254 // Template should be a static expression
-
             }
-
+#pragma warning disable CA2254 // Template should be a static expression
+            _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
+#pragma warning restore CA2254 // Template should be a static expression
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         return responseDocument;
