@@ -1,4 +1,6 @@
-﻿using HtmlAgilityPack;
+﻿using Azure;
+using Azure.Messaging.ServiceBus;
+using HtmlAgilityPack;
 using ncea.harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
@@ -86,10 +88,25 @@ public class JnccProcessor : IProcessor
             var responseXmlString = await _apiClient.GetAsync(apiUrl);
             return responseXmlString;
         }
-        catch (DataSourceConnectionException ex)
+        catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Error occured while harvesting the metadata for Data source: {_dataSourceName}, file name: {jnccFileName}", _dataSourceName, jnccFileName);
-            throw;
+            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}";
+            _logger.LogError(ex, errorMessage);
+            throw new DataSourceConnectionException(errorMessage, ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            string? errorMessage;
+            if (ex.CancellationToken.IsCancellationRequested)
+            {
+                errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}";
+            }
+            else
+            {
+                errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}";
+            }
+
+            throw new DataSourceConnectionException(errorMessage, ex);
         }
     }
 
@@ -99,7 +116,7 @@ public class JnccProcessor : IProcessor
         {
             await _serviceBusService.SendMessageAsync(metaDataXmlString);
         }
-        catch (MessageQueueTransportException ex)
+        catch (ServiceBusException ex)
         {
             _logger.LogError(ex, "Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
         }
@@ -114,7 +131,7 @@ public class JnccProcessor : IProcessor
         {
             await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
         }
-        catch (SaveMetadataFileException ex)
+        catch (RequestFailedException ex)
         {
             _logger.LogError(ex, "Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
 

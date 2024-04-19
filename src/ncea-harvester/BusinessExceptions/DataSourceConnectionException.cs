@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace ncea.harvester.BusinessExceptions;
 
-namespace ncea.harvester.BusinessExceptions
+public class DataSourceConnectionException : BusinessException
 {
-    public class DataSourceConnectionException : BusinessException
+    public DataSourceConnectionException(string message, Exception inner)
+        : base(message, inner)
     {
     }
 }

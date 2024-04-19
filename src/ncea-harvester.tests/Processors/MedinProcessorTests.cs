@@ -110,7 +110,7 @@ public class MedinProcessorTests
 
         // Act & Assert
         var medinService = new MedinProcessor(apiClient, serviceBusService, blobService,logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<HttpRequestException>(() => medinService.Process());        
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.Process());        
     }
 
     //[Fact]

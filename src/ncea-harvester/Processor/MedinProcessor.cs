@@ -1,4 +1,6 @@
-﻿using ncea.harvester.BusinessExceptions;
+﻿using Azure;
+using Azure.Messaging.ServiceBus;
+using ncea.harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
@@ -69,19 +71,34 @@ public class MedinProcessor : IProcessor
 
     private async Task<XDocument?> GetMedinData(int startPosition, int maxRecords)
     {
-        XDocument? responseDocument = null;
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
-        
+
+        XDocument? responseDocument;
         try
-        {            
+        {
             var responseXmlString = await _apiClient.GetAsync(apiUrl);
             responseDocument = XDocument.Parse(responseXmlString);
         }
-        catch (DataSourceConnectionException ex)
+        catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}", _dataSourceName, startPosition);
-            throw;
+            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+            _logger.LogError(ex, errorMessage);
+            throw new DataSourceConnectionException(errorMessage, ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            string? errorMessage;
+            if (ex.CancellationToken.IsCancellationRequested)
+            {
+                errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+            }
+            else
+            {
+                errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+            }
+
+            throw new DataSourceConnectionException(errorMessage, ex);
         }
         return responseDocument;
     }
@@ -94,7 +111,7 @@ public class MedinProcessor : IProcessor
         {
             await _serviceBusService.SendMessageAsync(metaDataXmlString);
         }
-        catch(MessageQueueTransportException ex)
+        catch(ServiceBusException ex)
         {
             _logger.LogError(ex, "Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
         }        
@@ -110,10 +127,9 @@ public class MedinProcessor : IProcessor
         {
             await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
         }
-        catch(SaveMetadataFileException ex) 
+        catch(RequestFailedException ex) 
         {
             _logger.LogError(ex, "Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", _dataSourceName, documentFileIdentifier);
-
         }
     }
 
