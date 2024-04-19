@@ -1,6 +1,6 @@
 ﻿namespace Ncea.Harvester.Utils;
 
-public class CustomLogger
+public static class CustomLogger
 {
     public static void LogErrorMessage(ILogger logger, string errorMessage, Exception? exception)
     {
