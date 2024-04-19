@@ -2,16 +2,16 @@
 
 public abstract class BusinessException : Exception
 {
-    public BusinessException()
+    protected BusinessException()
     {
     }
 
-    public BusinessException(string message)
+    protected BusinessException(string message)
         : base(message)
     {
     }
 
-    public BusinessException(string message, Exception inner)
+    protected BusinessException(string message, Exception inner)
         : base(message, inner)
     {
     }

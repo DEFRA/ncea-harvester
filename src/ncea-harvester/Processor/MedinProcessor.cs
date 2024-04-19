@@ -82,8 +82,8 @@ public class MedinProcessor : IProcessor
         }
         catch (HttpRequestException ex)
         {
-            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
-            _logger.LogError(ex, errorMessage);
+            var errorMessage = "Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+            _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         catch (TaskCanceledException ex)
@@ -92,10 +92,12 @@ public class MedinProcessor : IProcessor
             if (ex.CancellationToken.IsCancellationRequested)
             {
                 errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+                _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
             }
             else
             {
                 errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+                _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
             }
 
             throw new DataSourceConnectionException(errorMessage, ex);

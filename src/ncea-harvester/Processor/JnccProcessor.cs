@@ -91,7 +91,7 @@ public class JnccProcessor : IProcessor
         catch (HttpRequestException ex)
         {
             var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}";
-            _logger.LogError(ex, errorMessage);
+            _logger.LogError(ex, errorMessage, _dataSourceName);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         catch (TaskCanceledException ex)
@@ -100,10 +100,12 @@ public class JnccProcessor : IProcessor
             if (ex.CancellationToken.IsCancellationRequested)
             {
                 errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}";
+                _logger.LogError(ex, errorMessage, _dataSourceName);
             }
             else
             {
                 errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}";
+                _logger.LogError(ex, errorMessage, _dataSourceName);
             }
 
             throw new DataSourceConnectionException(errorMessage, ex);
