@@ -82,8 +82,10 @@ public class MedinProcessor : IProcessor
         }
         catch (HttpRequestException ex)
         {
-            var errorMessage = "Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+            var errorMessage = "Error occured while harvesting the metadata for Data source: {0}, start position: {startPosition}";
+#pragma warning disable CA2254 // Template should be a static expression
             _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
+#pragma warning restore CA2254 // Template should be a static expression
             throw new DataSourceConnectionException(errorMessage, ex);
         }
         catch (TaskCanceledException ex)
@@ -91,13 +93,19 @@ public class MedinProcessor : IProcessor
             string? errorMessage;
             if (ex.CancellationToken.IsCancellationRequested)
             {
-                errorMessage = $"Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
-                _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
+                errorMessage = "Request was cancelled while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+                #pragma warning disable CA2254 // Template should be a static expression
+            _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
+#pragma warning restore CA2254 // Template should be a static expression
+
             }
             else
             {
-                errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+                errorMessage = "Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+#pragma warning disable CA2254 // Template should be a static expression
                 _logger.LogError(ex, errorMessage, _dataSourceName, startPosition);
+#pragma warning restore CA2254 // Template should be a static expression
+
             }
 
             throw new DataSourceConnectionException(errorMessage, ex);
