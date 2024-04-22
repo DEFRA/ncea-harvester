@@ -73,7 +73,7 @@ public class JnccProcessorTests
     }
 
     [Fact]
-    public async Task Process_WhenJnccDataSourceApiCallThrowsError_ShouldThrowError()
+    public async Task Process_WhenJnccDataSourceApiCallThrowsHttpException_ShouldThrowError()
     {
         //Arrange
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);

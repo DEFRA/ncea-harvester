@@ -49,21 +49,14 @@ public class JnccProcessor : IProcessor
             var metaDataXmlString = await GetJnccMetadata(apiUrl, documentLink);
             var documentFileIdentifier = GetFileIdentifier(metaDataXmlString);
 
-            try
+            if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
             {
-                if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
-                {
-                    await SendServiceBusMessage(documentFileIdentifier, metaDataXmlString);
-                    await SaveMetadataXml(documentFileIdentifier, metaDataXmlString);
-                }
-                else
-                {
-                    CustomLogger.LogErrorMessage(_logger, "File Identifier missing", null);
-                }
+                await SendServiceBusMessage(documentFileIdentifier, metaDataXmlString);
+                await SaveMetadataXml(documentFileIdentifier, metaDataXmlString);
             }
-            catch (Exception ex)
+            else
             {
-                CustomLogger.LogErrorMessage(_logger, "Error occured while harvesting source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
+                CustomLogger.LogErrorMessage(_logger, "File Identifier missing", null);
             }
         }
     }
