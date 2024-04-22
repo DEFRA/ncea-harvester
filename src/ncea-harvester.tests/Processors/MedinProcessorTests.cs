@@ -218,10 +218,6 @@ public class MedinProcessorTests
     {
         //Arrange
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
-        var httpResponse = new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.InternalServerError
-        };
         var apiClient = ApiClientForTests.GetWithError(true);
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
 
@@ -241,10 +237,6 @@ public class MedinProcessorTests
     {
         //Arrange
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
-        var httpResponse = new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.InternalServerError
-        };
         var apiClient = ApiClientForTests.GetWithError(false);
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
 

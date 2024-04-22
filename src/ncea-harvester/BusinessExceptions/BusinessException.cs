@@ -1,5 +1,8 @@
-﻿namespace Ncea.Harvester.BusinessExceptions;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace Ncea.Harvester.BusinessExceptions;
+
+[ExcludeFromCodeCoverage]
 public abstract class BusinessException : Exception
 {
     protected BusinessException()
