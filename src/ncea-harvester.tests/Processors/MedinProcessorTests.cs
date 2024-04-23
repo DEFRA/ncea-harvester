@@ -1,10 +1,13 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Storage.Blobs;
+using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Constants;
+using Ncea.Harvester.Infrastructure;
 using Ncea.Harvester.Models;
+using Ncea.Harvester.Processor;
 using Ncea.Harvester.Processors;
 using Ncea.Harvester.Tests.Clients;
 using System.Net;
@@ -45,8 +48,10 @@ public class MedinProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<MedinProcessor>(new LoggerFactory());
-        // Act
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
+        
+            // Act
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await medinService.Process();
 
         // Assert
@@ -88,8 +93,10 @@ public class MedinProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
+
         // Act
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
         await medinService.Process();
 
         //Assert
@@ -127,9 +134,10 @@ public class MedinProcessorTests
                                                       out Mock<BlobContainerClient> mockBlobContainerClient,
                                                       out Mock<BlobClient> mockBlobClient);
         var loggerMock = new Mock<ILogger<MedinProcessor>>();
+        var orchestrationservice = new OrchestrationService(blobServiceMock, serviceBusService, loggerMock.Object);
 
         // Act
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobServiceMock, loggerMock.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, loggerMock.Object, harvesterConfiguration);
         await medinService.Process();
 
         // Assert
@@ -174,8 +182,10 @@ public class MedinProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
+
         // Act
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
         await medinService.Process();
 
         //Assert
@@ -207,9 +217,10 @@ public class MedinProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<MedinProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.Process());        
     }
 
@@ -225,10 +236,11 @@ public class MedinProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<MedinProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
 
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.Process());
     }
 
@@ -244,10 +256,11 @@ public class MedinProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<MedinProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
 
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.Process());
     }
 
@@ -292,9 +305,10 @@ public class MedinProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
 
         // Act
-        var medinService = new MedinProcessor(apiClient, serviceBusService, blobService, mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
         await medinService.Process();
 
         //Assert

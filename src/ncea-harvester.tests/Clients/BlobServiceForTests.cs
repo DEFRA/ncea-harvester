@@ -1,13 +1,8 @@
 ﻿using Azure;
-using Azure.Messaging.ServiceBus;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Configuration;
 using Moq;
-using Ncea.Harvester.Constants;
 using Ncea.Harvester.Infrastructure;
-using Ncea.Harvester.Models;
 
 namespace Ncea.Harvester.Tests.Clients;
 

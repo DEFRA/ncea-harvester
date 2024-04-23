@@ -1,10 +1,13 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Storage.Blobs;
+using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Constants;
+using Ncea.Harvester.Infrastructure;
 using Ncea.Harvester.Models;
+using Ncea.Harvester.Processor;
 using Ncea.Harvester.Processors;
 using Ncea.Harvester.Tests.Clients;
 using System.Net;
@@ -30,9 +33,10 @@ public class JnccProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
 
         // Act
-        var jnccMockService = new Mock<JnccProcessor>(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, logger, harvesterConfiguration);
         jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(metaDataXmlStr));
         await jnccMockService.Object.Process();
 
@@ -60,9 +64,10 @@ public class JnccProcessorTests
                                                       out Mock<BlobContainerClient> mockBlobContainerClient,
                                                       out Mock<BlobClient> mockBlobClient);
         var loggerMock = new Mock<ILogger<JnccProcessor>>();
+        var orchestrationservice = new OrchestrationService(blobServiceMock, serviceBusService, loggerMock.Object);
 
         // Act
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobServiceMock, loggerMock.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, loggerMock.Object, harvesterConfiguration);
         await jnccService.Process();
 
         // Assert
@@ -87,8 +92,9 @@ public class JnccProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService,logger, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice,logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.Process());
     }
 
@@ -103,8 +109,9 @@ public class JnccProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.Process());
     }
 
@@ -119,8 +126,9 @@ public class JnccProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.Process());
     }
 
@@ -150,9 +158,10 @@ public class JnccProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
 
         // Act
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
         await jnccService.Process();
 
         // Assert
@@ -195,9 +204,10 @@ public class JnccProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
 
         // Act
-        var jnccMockService = new Mock<JnccProcessor>(apiClient, serviceBusService, blobService, mockLogger.Object, harvesterConfiguration);
+        var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
         jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(metaDataXmlStr));
         await jnccMockService.Object.Process();
 
@@ -241,9 +251,10 @@ public class JnccProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
 
         // Act
-        var jnccMockService = new Mock<JnccProcessor>(apiClient, serviceBusService, blobService, mockLogger.Object, harvesterConfiguration);
+        var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
         jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(metaDataXmlStr));
         await jnccMockService.Object.Process();
 
@@ -276,8 +287,9 @@ public class JnccProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>()));
     }
 
@@ -292,8 +304,9 @@ public class JnccProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>()));
     }
 
@@ -308,8 +321,9 @@ public class JnccProcessorTests
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<JnccProcessor>(new LoggerFactory());
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, serviceBusService, blobService, logger, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>()));
     }
 

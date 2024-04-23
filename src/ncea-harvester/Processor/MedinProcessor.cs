@@ -1,13 +1,9 @@
-﻿using Azure;
-using Azure.Messaging.ServiceBus;
-using Ncea.Harvester.BusinessExceptions;
+﻿using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
-using Ncea.Harvester.Infrastructure.Models.Requests;
-using Ncea.Harvester.Infrastructure.Models.Responses;
 using Ncea.Harvester.Models;
+using Ncea.Harvester.Processor.Contracts;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
-using System.Text;
 using System.Xml.Linq;
 
 namespace Ncea.Harvester.Processors;
@@ -16,26 +12,25 @@ public class MedinProcessor : IProcessor
 {
     private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
-    private readonly IServiceBusService _serviceBusService;
-    private readonly IBlobService _blobService;
-    private readonly ILogger<MedinProcessor> _logger;
+    private readonly IOrchestrationService _orchestrationService;
+    private readonly ILogger _logger;
     private readonly HarvesterConfiguration _harvesterConfiguration;
 
+
     public MedinProcessor(IApiClient apiClient,
-        IServiceBusService serviceBusService,
-        IBlobService blobService,
+        IOrchestrationService orchestrationService,
         ILogger<MedinProcessor> logger,
         HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
         _harvesterConfiguration = harvesterConfiguration;
-        _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
-        _serviceBusService = serviceBusService;
+        _orchestrationService = orchestrationService;
         _logger = logger;
-        _blobService = blobService;
 
+        _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
         _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
+
     public async Task Process()
     {
         var startPosition = 1;
@@ -60,7 +55,7 @@ public class MedinProcessor : IProcessor
 
                     if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
                     {                        
-                        var response = await SaveMetadataXml(documentFileIdentifier, metaDataXmlString);
+                        var response = await _orchestrationService.SaveHarvestedXml(_dataSourceName ,documentFileIdentifier, metaDataXmlString);
                         harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, response.BlobUrl, metaDataXmlString, response.ErrorMessage));
                     }
                     else
@@ -75,7 +70,7 @@ public class MedinProcessor : IProcessor
             if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
         }
 
-        await SendMessagesToHarvestedQueue(harvestedFiles);
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles);
     }
 
     private static string GetMetadataXmlString(XElement metaDataXmlNode)
@@ -84,54 +79,7 @@ public class MedinProcessor : IProcessor
         metaDataXmlString = string.Concat("<?xml version=\"1.0\" encoding=\"utf-8\"?>", metaDataXmlString);
         return metaDataXmlString;
     }
-
-    private async Task SendMessagesToHarvestedQueue(List<HarvestedFile> harvestedFiles)
-    {
-        foreach(var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.BlobUrl)))
-        {
-            var response = await SendServiceBusMessage(harvestedFile.FileIdentifier, harvestedFile.FileContent);
-            harvestedFile.ErrorMessage = response.ErrorMessage;
-        }
-    }
-
-    private async Task<SaveBlobResponse> SaveMetadataXml(string documentFileIdentifier, string metaDataXmlString)
-    {
-        var blobUrl = string.Empty;
-        var errorMessageBase = "Error occured while saving the file to the blob storage";
-        var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-        var documentFileName = string.Concat(documentFileIdentifier, ".xml");
-
-        try
-        {
-            blobUrl = await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
-        }
-        catch(RequestFailedException ex) 
-        {
-            var errorMessage = $"{errorMessageBase}: for datasource: {_dataSourceName}, file-id: {documentFileIdentifier}";
-            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-        }
-
-        return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
-    }
-
-    private async Task<SendMessageResponse> SendServiceBusMessage(string documentFileIdentifier, string metaDataXmlString)
-    {
-        var errorMessageBase = "Error occured while sending message to harvested-queue";
-        try
-        {
-            await _serviceBusService.SendMessageAsync(metaDataXmlString);
-
-            return new SendMessageResponse(documentFileIdentifier, true, string.Empty);
-        }
-        catch (ServiceBusException ex)
-        {
-            var errorMessage = $"{errorMessageBase}: for datasource: {_dataSourceName}, file-id: {documentFileIdentifier}";
-            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);            
-        }
-
-        return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
-    }
-
+    
     private async Task<XDocument?> GetMedinData(int startPosition, int maxRecords)
     {
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
