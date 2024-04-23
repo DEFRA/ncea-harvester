@@ -4,6 +4,7 @@ using HtmlAgilityPack;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
+using Ncea.Harvester.Infrastructure.Models.Responses;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
@@ -43,6 +44,8 @@ public class JnccProcessor : IProcessor
         var responseHtmlString = await GetJnccData(_harvesterConfiguration.DataSourceApiUrl);
         var documentLinks = GetDocumentLinks(responseHtmlString);
 
+        var harvestedFiles = new List<HarvestedFile>();
+
         foreach (var documentLink in documentLinks)
         {
             var apiUrl = "/waf/" + documentLink;
@@ -51,15 +54,67 @@ public class JnccProcessor : IProcessor
 
             if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
             {
-                await SendServiceBusMessage(documentFileIdentifier, metaDataXmlString);
-                await SaveMetadataXml(documentFileIdentifier, metaDataXmlString);
+                var response = await SaveMetadataXml(documentFileIdentifier, metaDataXmlString);
+                harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, response.BlobUrl, metaDataXmlString, response.ErrorMessage));
             }
             else
             {
-                CustomLogger.LogErrorMessage(_logger, "File Identifier missing", null);
+                var errorMessage = "File Identifier not exists";
+                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage));
+                CustomLogger.LogErrorMessage(_logger, errorMessage, null);
             }
         }
+
+        await SendMessagesToHarvestedQueue(harvestedFiles);
     }
+
+    private async Task SendMessagesToHarvestedQueue(List<HarvestedFile> harvestedFiles)
+    {
+        foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.BlobUrl)))
+        {
+            var response = await SendServiceBusMessage(harvestedFile.FileIdentifier, harvestedFile.FileContent);
+            harvestedFile.ErrorMessage = response.ErrorMessage;
+        }
+    }
+
+    private async Task<SaveBlobResponse> SaveMetadataXml(string documentFileIdentifier, string metaDataXmlString)
+    {
+        var blobUrl = string.Empty;
+        var errorMessageBase = "Error occured while saving the file to the blob storage";
+        var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
+        var documentFileName = string.Concat(documentFileIdentifier, ".xml");
+
+        try
+        {
+            blobUrl = await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
+        }
+        catch (RequestFailedException ex)
+        {
+            var errorMessage = $"{errorMessageBase}: for datasource: {_dataSourceName}, file-id: {documentFileIdentifier}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
+        }
+
+        return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
+    }
+
+    private async Task<SendMessageResponse> SendServiceBusMessage(string documentFileIdentifier, string metaDataXmlString)
+    {
+        var errorMessageBase = "Error occured while sending message to harvested-queue";
+        try
+        {
+            await _serviceBusService.SendMessageAsync(metaDataXmlString);
+
+            return new SendMessageResponse(documentFileIdentifier, true, string.Empty);
+        }
+        catch (ServiceBusException ex)
+        {
+            var errorMessage = $"{errorMessageBase}: for datasource: {_dataSourceName}, file-id: {documentFileIdentifier}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
+        }
+
+        return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
+    }
+
 
     private async Task<string> GetJnccData(string apiUrl)
     {
@@ -116,33 +171,6 @@ public class JnccProcessor : IProcessor
             }
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
-        }
-    }
-
-    private async Task SendServiceBusMessage(string documentFileIdentifier, string metaDataXmlString)
-    {
-        try
-        {
-            await _serviceBusService.SendMessageAsync(metaDataXmlString);
-        }
-        catch (ServiceBusException ex)
-        {
-            CustomLogger.LogErrorMessage(_logger, $"Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
-        }
-    }
-
-    private async Task SaveMetadataXml(string? documentFileIdentifier, string metaDataXmlString)
-    {
-        var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-        var documentFileName = string.Concat(documentFileIdentifier, ".xml");
-
-        try
-        {
-            await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
-        }
-        catch (RequestFailedException ex)
-        {
-            CustomLogger.LogErrorMessage(_logger, $"Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
         }
     }
 
