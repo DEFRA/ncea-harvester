@@ -23,7 +23,7 @@ public class OrchestrationService : IOrchestrationService
         _logger = logger;
     }
 
-    public async Task<SaveBlobResponse> SaveHarvestedXml(string documentFileIdentifier, string dataSourceName, string metaDataXmlString)
+    public async Task<SaveBlobResponse> SaveHarvestedXml(string dataSourceName, string documentFileIdentifier, string metaDataXmlString)
     {
         var blobUrl = string.Empty;
         var errorMessageBase = "Error occured while saving the file to the blob storage";
