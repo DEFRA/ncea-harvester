@@ -1,7 +1,6 @@
 ﻿using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
-using Ncea.Harvester.Processor.Contracts;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
 using System.Xml.Linq;
@@ -39,6 +38,8 @@ public class MedinProcessor : IProcessor
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
 
         await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+
+        _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
     }
 
     private async Task HarvestMedinMetadata(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)

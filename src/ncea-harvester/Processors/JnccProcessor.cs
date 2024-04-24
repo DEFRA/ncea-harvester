@@ -2,7 +2,6 @@
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
-using Ncea.Harvester.Processor.Contracts;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
 using System.Diagnostics.CodeAnalysis;
@@ -43,6 +42,8 @@ public class JnccProcessor : IProcessor
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
 
         await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+
+        _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
     }
 
     private async Task HarvestJnccMetadataFiles(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)

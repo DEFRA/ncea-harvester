@@ -4,12 +4,11 @@ using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Models.Responses;
 using Ncea.Harvester.Models;
-using Ncea.Harvester.Processor.Contracts;
-using Ncea.Harvester.Processors;
+using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
 using System.Text;
 
-namespace Ncea.Harvester.Processor;
+namespace Ncea.Harvester.Processors;
 
 public class OrchestrationService : IOrchestrationService
 {
@@ -53,14 +52,14 @@ public class OrchestrationService : IOrchestrationService
         try
         {
             blobUrl = await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, dataSourceName), cancellationToken);
+            return new SaveBlobResponse(documentFileIdentifier, blobUrl, string.Empty);
         }
         catch (RequestFailedException ex)
         {
             var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-        }
-
-        return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
+            return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
+        }        
     }
 
     private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string documentFileIdentifier, string dataSourceName, string metaDataXmlString, CancellationToken cancellationToken)
@@ -76,8 +75,7 @@ public class OrchestrationService : IOrchestrationService
         {
             var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-        }
-
-        return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
+            return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
+        }        
     }
 }

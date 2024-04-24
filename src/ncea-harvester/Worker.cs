@@ -48,7 +48,7 @@ public class Worker : BackgroundService
             }
             finally
             {
-                _logger.LogInformation("Metadata harversting completed");
+                _logger.LogInformation("Metadata harversting ended for {source}", _harvesterConfiguration.ProcessorType);
                 _telemetryClient.TrackEvent("Harvesting completed");
 
                 await _telemetryClient.FlushAsync(stoppingToken);

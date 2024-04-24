@@ -1,7 +1,6 @@
-﻿using Ncea.Harvester.Infrastructure.Models.Responses;
-using Ncea.Harvester.Models;
+﻿using Ncea.Harvester.Models;
 
-namespace Ncea.Harvester.Processor.Contracts
+namespace Ncea.Harvester.Processors.Contracts
 {
     public interface IOrchestrationService
     {
