@@ -31,7 +31,7 @@ public class MedinProcessor : IProcessor
         _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
 
-    public async Task Process()
+    public async Task ProcessAsync(CancellationToken cancellationToken)
     {
         var startPosition = 1;
         var maxRecords = 100;
@@ -42,7 +42,7 @@ public class MedinProcessor : IProcessor
 
         while (hasNextRecords)
         {
-            var responseXml = await GetMedinData(startPosition, maxRecords);
+            var responseXml = await GetMedinData(startPosition, maxRecords, cancellationToken);
             startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml!);
             var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
 
@@ -55,7 +55,7 @@ public class MedinProcessor : IProcessor
 
                     if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
                     {                        
-                        var response = await _orchestrationService.SaveHarvestedXml(_dataSourceName ,documentFileIdentifier, metaDataXmlString);
+                        var response = await _orchestrationService.SaveHarvestedXml(_dataSourceName ,documentFileIdentifier, metaDataXmlString, cancellationToken);
                         harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, response.BlobUrl, metaDataXmlString, response.ErrorMessage));
                     }
                     else
@@ -70,7 +70,7 @@ public class MedinProcessor : IProcessor
             if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
         }
 
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles);
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
     }
 
     private static string GetMetadataXmlString(XElement metaDataXmlNode)
@@ -80,7 +80,7 @@ public class MedinProcessor : IProcessor
         return metaDataXmlString;
     }
     
-    private async Task<XDocument?> GetMedinData(int startPosition, int maxRecords)
+    private async Task<XDocument?> GetMedinData(int startPosition, int maxRecords, CancellationToken cancellationToken)
     {
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
@@ -88,7 +88,7 @@ public class MedinProcessor : IProcessor
         XDocument? responseDocument;
         try
         {
-            var responseXmlString = await _apiClient.GetAsync(apiUrl);
+            var responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
             responseDocument = XDocument.Parse(responseXmlString);
         }
         catch (HttpRequestException ex)

@@ -39,7 +39,7 @@ public class Worker : BackgroundService
 
             try
             {
-                await _processor.Process();
+                await _processor.ProcessAsync(stoppingToken);
             }
             catch(Exception Ex)
             {

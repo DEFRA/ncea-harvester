@@ -18,20 +18,20 @@ public class ApiClient: IApiClient
         _httpClient.BaseAddress = new Uri(BaseUrl);
     }
 
-    public async Task<string> GetAsync(string apiUrl)
+    public async Task<string> GetAsync(string apiUrl, CancellationToken cancellationToken)
     {
         var response = await _httpClient.GetAsync(apiUrl);
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
-    public async Task<string>PostAsync(string apiUrl, string requestData)
+    public async Task<string>PostAsync(string apiUrl, string requestData, CancellationToken cancellationToken)
     {
         var content = new StringContent(requestData, Encoding.UTF8);
         var response = await _httpClient.PostAsync(apiUrl, content);
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 }

@@ -50,7 +50,7 @@ public class MedinProcessorTests
         
             // Act
         var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await medinService.Process();
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
         mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(2));
@@ -95,7 +95,7 @@ public class MedinProcessorTests
 
         // Act
         var medinService = new MedinProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
-        await medinService.Process();
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         //Assert
         mockLogger.Verify(
@@ -136,7 +136,7 @@ public class MedinProcessorTests
 
         // Act
         var medinService = new MedinProcessor(apiClient, orchestrationservice, loggerMock.Object, harvesterConfiguration);
-        await medinService.Process();
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
         mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Never);
@@ -184,7 +184,7 @@ public class MedinProcessorTests
 
         // Act
         var medinService = new MedinProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
-        await medinService.Process();
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         //Assert
         mockLogger.Verify(
@@ -219,7 +219,7 @@ public class MedinProcessorTests
 
         // Act & Assert
         var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.Process());        
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));        
     }
 
     [Fact]
@@ -239,7 +239,7 @@ public class MedinProcessorTests
 
         // Act & Assert
         var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.Process());
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -259,7 +259,7 @@ public class MedinProcessorTests
 
         // Act & Assert
         var medinService = new MedinProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.Process());
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -307,7 +307,7 @@ public class MedinProcessorTests
 
         // Act
         var medinService = new MedinProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
-        await medinService.Process();
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         //Assert
         mockLogger.Verify(

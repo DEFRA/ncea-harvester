@@ -35,8 +35,8 @@ public class JnccProcessorTests
 
         // Act
         var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(metaDataXmlStr));
-        await jnccMockService.Object.Process();
+        jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(metaDataXmlStr));
+        await jnccMockService.Object.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
         mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(2));
@@ -66,7 +66,7 @@ public class JnccProcessorTests
 
         // Act
         var jnccService = new JnccProcessor(apiClient, orchestrationservice, loggerMock.Object, harvesterConfiguration);
-        await jnccService.Process();
+        await jnccService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
         mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Never);
@@ -93,7 +93,7 @@ public class JnccProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
         var jnccService = new JnccProcessor(apiClient, orchestrationservice,logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.Process());
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class JnccProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
         var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.Process());
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class JnccProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
         var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.Process());
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class JnccProcessorTests
 
         // Act
         var jnccService = new JnccProcessor(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
-        await jnccService.Process();
+        await jnccService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
         mockLogger.Verify(
@@ -206,8 +206,8 @@ public class JnccProcessorTests
 
         // Act
         var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
-        jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(metaDataXmlStr));
-        await jnccMockService.Object.Process();
+        jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(metaDataXmlStr));
+        await jnccMockService.Object.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
         mockLogger.Verify(
@@ -253,8 +253,8 @@ public class JnccProcessorTests
 
         // Act
         var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, mockLogger.Object, harvesterConfiguration);
-        jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(metaDataXmlStr));
-        await jnccMockService.Object.Process();
+        jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(metaDataXmlStr));
+        await jnccMockService.Object.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
         mockLogger.Verify(
@@ -288,7 +288,7 @@ public class JnccProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
         var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>()));
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>(), It.IsNotNull<CancellationToken>()));
     }
 
     [Fact]
@@ -305,7 +305,7 @@ public class JnccProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
         var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>()));
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>(), It.IsNotNull<CancellationToken>()));
     }
 
     [Fact]
@@ -322,7 +322,7 @@ public class JnccProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, logger);
         // Act & Assert
         var jnccService = new JnccProcessor(apiClient, orchestrationservice, logger, harvesterConfiguration);
-        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>()));
+        await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>(), It.IsNotNull<CancellationToken>()));
     }
 
 }

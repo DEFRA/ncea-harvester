@@ -23,7 +23,7 @@ public class OrchestrationService : IOrchestrationService
         _logger = logger;
     }
 
-    public async Task<SaveBlobResponse> SaveHarvestedXml(string dataSourceName, string documentFileIdentifier, string metaDataXmlString)
+    public async Task<SaveBlobResponse> SaveHarvestedXml(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
     {
         var blobUrl = string.Empty;
         var errorMessageBase = "Error occured while saving the file to the blob storage";
@@ -32,7 +32,7 @@ public class OrchestrationService : IOrchestrationService
 
         try
         {
-            blobUrl = await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, dataSourceName), CancellationToken.None);
+            blobUrl = await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, dataSourceName), cancellationToken);
         }
         catch (RequestFailedException ex)
         {
@@ -43,21 +43,21 @@ public class OrchestrationService : IOrchestrationService
         return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
     }
 
-    public async Task SendMessagesToHarvestedQueue(string dataSourceName, List<HarvestedFile> harvestedFiles)
+    public async Task SendMessagesToHarvestedQueue(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
     {
         foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.BlobUrl)))
         {
-            var response = await SendMessageToHarvestedQueue(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent);
+            var response = await SendMessageToHarvestedQueue(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
             harvestedFile.ErrorMessage = response.ErrorMessage;
         }
     }
 
-    private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string documentFileIdentifier, string dataSourceName, string metaDataXmlString)
+    private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string documentFileIdentifier, string dataSourceName, string metaDataXmlString, CancellationToken cancellationToken)
     {
         var errorMessageBase = "Error occured while sending message to harvested-queue";
         try
         {
-            await _serviceBusService.SendMessageAsync(new SendMessageRequest(dataSourceName, documentFileIdentifier, metaDataXmlString), CancellationToken.None);
+            await _serviceBusService.SendMessageAsync(new SendMessageRequest(dataSourceName, documentFileIdentifier, metaDataXmlString), cancellationToken);
 
             return new SendMessageResponse(documentFileIdentifier, true, string.Empty);
         }

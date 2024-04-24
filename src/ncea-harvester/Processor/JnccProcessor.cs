@@ -33,9 +33,9 @@ public class JnccProcessor : IProcessor
         _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
 
-    public async Task Process()
+    public async Task ProcessAsync(CancellationToken cancellationToken)
     {
-        var responseHtmlString = await GetJnccData(_harvesterConfiguration.DataSourceApiUrl);
+        var responseHtmlString = await GetJnccData(_harvesterConfiguration.DataSourceApiUrl, cancellationToken);
         var documentLinks = GetDocumentLinks(responseHtmlString);
 
         var harvestedFiles = new List<HarvestedFile>();
@@ -43,12 +43,12 @@ public class JnccProcessor : IProcessor
         foreach (var documentLink in documentLinks)
         {
             var apiUrl = "/waf/" + documentLink;
-            var metaDataXmlString = await GetJnccMetadata(apiUrl, documentLink);
+            var metaDataXmlString = await GetJnccMetadata(apiUrl, documentLink, cancellationToken);
             var documentFileIdentifier = GetFileIdentifier(metaDataXmlString);
 
             if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
             {
-                var response = await _orchestrationService.SaveHarvestedXml(_dataSourceName, documentFileIdentifier, metaDataXmlString);
+                var response = await _orchestrationService.SaveHarvestedXml(_dataSourceName, documentFileIdentifier, metaDataXmlString, cancellationToken);
                 harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, response.BlobUrl, metaDataXmlString, response.ErrorMessage));
             }
             else
@@ -59,14 +59,14 @@ public class JnccProcessor : IProcessor
             }
         }
 
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles);
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
     } 
 
-    private async Task<string> GetJnccData(string apiUrl)
+    private async Task<string> GetJnccData(string apiUrl, CancellationToken cancellationToken)
     {
         try
         {
-            var responseXmlString = await _apiClient.GetAsync(apiUrl);
+            var responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
             return responseXmlString;
         }
         catch (HttpRequestException ex)
@@ -91,11 +91,11 @@ public class JnccProcessor : IProcessor
         }
     }
 
-    public virtual async Task<string> GetJnccMetadata(string apiUrl, string jnccFileName)
+    public virtual async Task<string> GetJnccMetadata(string apiUrl, string jnccFileName, CancellationToken cancellationToken)
     {
         try
         {
-            var responseXmlString = await _apiClient.GetAsync(apiUrl);
+            var responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
             return responseXmlString;
         }
         catch (HttpRequestException ex)

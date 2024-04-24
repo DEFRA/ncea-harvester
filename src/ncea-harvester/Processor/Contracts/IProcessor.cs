@@ -2,5 +2,5 @@
 
 public interface IProcessor
 {
-    Task Process();
+    Task ProcessAsync(CancellationToken cancellationToken);
 }
