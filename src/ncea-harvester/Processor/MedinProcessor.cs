@@ -16,7 +16,6 @@ public class MedinProcessor : IProcessor
     private readonly ILogger _logger;
     private readonly HarvesterConfiguration _harvesterConfiguration;
 
-
     public MedinProcessor(IApiClient apiClient,
         IOrchestrationService orchestrationService,
         ILogger<MedinProcessor> logger,
@@ -33,12 +32,21 @@ public class MedinProcessor : IProcessor
 
     public async Task ProcessAsync(CancellationToken cancellationToken)
     {
+        var harvestedFiles = new List<HarvestedFile>();
+
+        await HarvestMedinMetadata(harvestedFiles, cancellationToken);
+
+        await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
+
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+    }
+
+    private async Task HarvestMedinMetadata(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    {
         var startPosition = 1;
         var maxRecords = 100;
         var totalRecords = 0;
         var hasNextRecords = true;
-
-        var harvestedFiles = new List<HarvestedFile>();
 
         while (hasNextRecords)
         {
@@ -54,9 +62,8 @@ public class MedinProcessor : IProcessor
                     var metaDataXmlString = GetMetadataXmlString(metaDataXmlNode);
 
                     if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
-                    {                        
-                        var response = await _orchestrationService.SaveHarvestedXml(_dataSourceName ,documentFileIdentifier, metaDataXmlString, cancellationToken);
-                        harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, response.BlobUrl, metaDataXmlString, response.ErrorMessage));
+                    {
+                        harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty));
                     }
                     else
                     {
@@ -65,12 +72,10 @@ public class MedinProcessor : IProcessor
                         CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                     }
                 }
-            }            
+            }
 
             if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
         }
-
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
     }
 
     private static string GetMetadataXmlString(XElement metaDataXmlNode)

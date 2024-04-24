@@ -35,10 +35,19 @@ public class JnccProcessor : IProcessor
 
     public async Task ProcessAsync(CancellationToken cancellationToken)
     {
-        var responseHtmlString = await GetJnccData(_harvesterConfiguration.DataSourceApiUrl, cancellationToken);
-        var documentLinks = GetDocumentLinks(responseHtmlString);
-
         var harvestedFiles = new List<HarvestedFile>();
+
+        await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);
+
+        await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
+
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+    }
+
+    private async Task HarvestJnccMetadataFiles(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    {
+        var responseHtmlString = await GetJnccDataMaster(_harvesterConfiguration.DataSourceApiUrl, cancellationToken);
+        var documentLinks = GetDocumentLinks(responseHtmlString);
 
         foreach (var documentLink in documentLinks)
         {
@@ -48,8 +57,7 @@ public class JnccProcessor : IProcessor
 
             if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
             {
-                var response = await _orchestrationService.SaveHarvestedXml(_dataSourceName, documentFileIdentifier, metaDataXmlString, cancellationToken);
-                harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, response.BlobUrl, metaDataXmlString, response.ErrorMessage));
+                harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty));
             }
             else
             {
@@ -58,11 +66,9 @@ public class JnccProcessor : IProcessor
                 CustomLogger.LogErrorMessage(_logger, errorMessage, null);
             }
         }
+    }
 
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
-    } 
-
-    private async Task<string> GetJnccData(string apiUrl, CancellationToken cancellationToken)
+    private async Task<string> GetJnccDataMaster(string apiUrl, CancellationToken cancellationToken)
     {
         try
         {

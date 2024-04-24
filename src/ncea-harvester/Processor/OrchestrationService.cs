@@ -5,6 +5,7 @@ using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Models.Responses;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processor.Contracts;
+using Ncea.Harvester.Processors;
 using Ncea.Harvester.Utils;
 using System.Text;
 
@@ -16,14 +17,33 @@ public class OrchestrationService : IOrchestrationService
     private readonly IServiceBusService _serviceBusService;
     private readonly ILogger _logger;
 
-    public OrchestrationService(IBlobService blobService, IServiceBusService serviceBusService, ILogger logger)
+    public OrchestrationService(IBlobService blobService, IServiceBusService serviceBusService, ILogger<OrchestrationService> logger)
     {
         _blobService = blobService;
         _serviceBusService = serviceBusService;
         _logger = logger;
     }
+    
+    public async Task SaveHarvestedXmlFiles(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    {
+        foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.FileIdentifier)))
+        {
+            var response = await SaveHarvestedXml(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
+            harvestedFile.BlobUrl = response.BlobUrl;
+            harvestedFile.ErrorMessage = response.ErrorMessage;
+        }
+    }
 
-    public async Task<SaveBlobResponse> SaveHarvestedXml(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
+    public async Task SendMessagesToHarvestedQueue(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    {
+        foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.BlobUrl)))
+        {
+            var response = await SendMessageToHarvestedQueue(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
+            harvestedFile.ErrorMessage = response.ErrorMessage;
+        }
+    }
+
+    private async Task<SaveBlobResponse> SaveHarvestedXml(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
     {
         var blobUrl = string.Empty;
         var errorMessageBase = "Error occured while saving the file to the blob storage";
@@ -41,15 +61,6 @@ public class OrchestrationService : IOrchestrationService
         }
 
         return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
-    }
-
-    public async Task SendMessagesToHarvestedQueue(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
-    {
-        foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.BlobUrl)))
-        {
-            var response = await SendMessageToHarvestedQueue(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
-            harvestedFile.ErrorMessage = response.ErrorMessage;
-        }
     }
 
     private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string documentFileIdentifier, string dataSourceName, string metaDataXmlString, CancellationToken cancellationToken)

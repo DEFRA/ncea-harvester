@@ -13,6 +13,8 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.Extensions.Azure;
+using Ncea.Harvester.Processor.Contracts;
+using Ncea.Harvester.Processor;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -132,6 +134,7 @@ static void ConfigureServices(HostApplicationBuilder builder)
     builder.Services.AddSingleton<IServiceBusService, ServiceBusService>();
     builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
     builder.Services.AddSingleton<IBlobService, BlobService>();
+    builder.Services.AddSingleton<IOrchestrationService, OrchestrationService>();
 }
 
 [ExcludeFromCodeCoverage]
