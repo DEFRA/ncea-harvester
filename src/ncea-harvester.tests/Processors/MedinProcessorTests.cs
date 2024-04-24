@@ -1,11 +1,9 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Storage.Blobs;
-using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Constants;
-using Ncea.Harvester.Infrastructure;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processor;
 using Ncea.Harvester.Processors;
