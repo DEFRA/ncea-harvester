@@ -57,7 +57,7 @@ public class OrchestrationService : IOrchestrationService
         var errorMessageBase = "Error occured while sending message to harvested-queue";
         try
         {
-            await _serviceBusService.SendMessageAsync(metaDataXmlString);
+            await _serviceBusService.SendMessageAsync(new SendMessageRequest(dataSourceName, documentFileIdentifier, metaDataXmlString), CancellationToken.None);
 
             return new SendMessageResponse(documentFileIdentifier, true, string.Empty);
         }
