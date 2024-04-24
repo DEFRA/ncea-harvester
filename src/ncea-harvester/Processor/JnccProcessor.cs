@@ -6,6 +6,7 @@ using Ncea.Harvester.Processor.Contracts;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -53,18 +54,27 @@ public class JnccProcessor : IProcessor
         {
             var apiUrl = "/waf/" + documentLink;
             var metaDataXmlString = await GetJnccMetadata(apiUrl, documentLink, cancellationToken);
-            var documentFileIdentifier = GetFileIdentifier(metaDataXmlString);
-
-            if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+            if (!string.IsNullOrEmpty(metaDataXmlString))
             {
-                harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty));
+                var documentFileIdentifier = GetFileIdentifier(metaDataXmlString);
+
+                if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+                {
+                    harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty));
+                }
+                else
+                {
+                    var errorMessage = "File Identifier not exists";
+                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage));
+                    CustomLogger.LogErrorMessage(_logger, errorMessage, null);
+                }
             }
             else
             {
-                var errorMessage = "File Identifier not exists";
-                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage));
+                var errorMessage = $"File not found exception : file-id : {documentLink}";
+                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, string.Empty, errorMessage));
                 CustomLogger.LogErrorMessage(_logger, errorMessage, null);
-            }
+            }            
         }
     }
 
@@ -99,16 +109,20 @@ public class JnccProcessor : IProcessor
 
     public virtual async Task<string> GetJnccMetadata(string apiUrl, string jnccFileName, CancellationToken cancellationToken)
     {
+        var responseXmlString = string.Empty;
         try
         {
-            var responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
+            responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
             return responseXmlString;
         }
         catch (HttpRequestException ex)
         {
             var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            throw new DataSourceConnectionException(errorMessage, ex);
+            if (ex.StatusCode != HttpStatusCode.NotFound)
+            {
+                throw new DataSourceConnectionException(errorMessage, ex);
+            }            
         }
         catch (TaskCanceledException ex)
         {
@@ -124,6 +138,8 @@ public class JnccProcessor : IProcessor
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
+
+        return responseXmlString;
     }
 
     private static List<string> GetDocumentLinks(string responseHtmlString)

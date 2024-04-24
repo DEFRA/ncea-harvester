@@ -21,6 +21,6 @@ public class ServiceBusService : IServiceBusService
         var messageInBytes = Encoding.UTF8.GetBytes(request.Message);
         var serviceBusMessage = new ServiceBusMessage(messageInBytes);
         serviceBusMessage.ApplicationProperties.Add("DataSource", request.DataSourceName);
-        await _sender.SendMessageAsync(serviceBusMessage);
+        await _sender.SendMessageAsync(serviceBusMessage, cancellationToken);
     }
 }
