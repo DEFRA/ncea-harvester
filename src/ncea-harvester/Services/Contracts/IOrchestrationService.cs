@@ -1,6 +1,6 @@
 ﻿using Ncea.Harvester.Models;
 
-namespace Ncea.Harvester.Processors.Contracts
+namespace ncea.harvester.Services.Contracts
 {
     public interface IOrchestrationService
     {

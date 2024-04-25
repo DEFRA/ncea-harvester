@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
@@ -39,9 +40,13 @@ public class JnccProcessor : IProcessor
 
         await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);
 
+        //TO-DO: backup the blobs from previous run
+
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
 
         await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+
+        //TO-DO: delete the blobs from previous run
 
         _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
     }

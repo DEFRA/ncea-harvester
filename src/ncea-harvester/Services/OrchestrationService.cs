@@ -1,14 +1,14 @@
 ﻿using Azure;
 using Azure.Messaging.ServiceBus;
+using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Models.Responses;
 using Ncea.Harvester.Models;
-using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
 using System.Text;
 
-namespace Ncea.Harvester.Processors;
+namespace ncea.harvester.Services;
 
 public class OrchestrationService : IOrchestrationService
 {
@@ -22,7 +22,7 @@ public class OrchestrationService : IOrchestrationService
         _serviceBusService = serviceBusService;
         _logger = logger;
     }
-    
+
     public async Task SaveHarvestedXmlFiles(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
     {
         foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.FileIdentifier)))
@@ -59,7 +59,7 @@ public class OrchestrationService : IOrchestrationService
             var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
-        }        
+        }
     }
 
     private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string documentFileIdentifier, string dataSourceName, string metaDataXmlString, CancellationToken cancellationToken)
@@ -76,6 +76,6 @@ public class OrchestrationService : IOrchestrationService
             var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
-        }        
+        }
     }
 }
