@@ -40,9 +40,13 @@ public class MedinProcessor : IProcessor
 
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
 
-        //TO-DO: delete the blobs and file share from previous run
+        //TO-DO: delete the blobs from previous run (back-up)
 
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);        
+        //TO-DO: backup the enriched files in FileShare from previous run
+
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+
+        //TO-DO: delete the enriched files in FileShare from previous run (back-up)
 
         _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
     }
