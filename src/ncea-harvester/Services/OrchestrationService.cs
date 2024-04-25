@@ -62,7 +62,7 @@ public class OrchestrationService : IOrchestrationService
         }
     }
 
-    private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string documentFileIdentifier, string dataSourceName, string metaDataXmlString, CancellationToken cancellationToken)
+    private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
     {
         var errorMessageBase = "Error occured while sending message to harvested-queue";
         try
