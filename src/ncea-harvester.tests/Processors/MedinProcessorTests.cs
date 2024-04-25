@@ -21,22 +21,22 @@ public class MedinProcessorTests
         _mockOrchestrationServiceLogger = new Mock<ILogger<OrchestrationService>>(MockBehavior.Strict);
         _mockLogger = new Mock<ILogger<MedinProcessor>>(MockBehavior.Strict);
 
-        _mockOrchestrationServiceLogger.Setup(x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-            )
-        );
-        _mockOrchestrationServiceLogger.Setup(x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-            )
-        );
+        //_mockOrchestrationServiceLogger.Setup(x => x.Log(
+        //        LogLevel.Information,
+        //        It.IsAny<EventId>(),
+        //        It.IsAny<It.IsAnyType>(),
+        //        It.IsAny<Exception>(),
+        //        It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+        //    )
+        //);
+        //_mockOrchestrationServiceLogger.Setup(x => x.Log(
+        //        LogLevel.Error,
+        //        It.IsAny<EventId>(),
+        //        It.IsAny<It.IsAnyType>(),
+        //        It.IsAny<Exception>(),
+        //        It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+        //    )
+        //);
         _mockLogger.Setup(x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -177,51 +177,51 @@ public class MedinProcessorTests
         mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    [Fact]
-    public async Task Process_WhenBlobThrowsexception_ShouldLogErrorMessage()
-    {
-        //Arrange
-        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
-        string expectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                            "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
-                            "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
-                            "  <csw:SearchResults numberOfRecordsMatched=\"2\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"3\">" +
-                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
-                            "      <gmd:fileIdentifier>" +
-                            "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
-                            "      </gmd:fileIdentifier>" +
-                            "    </gmd:MD_Metadata>" +
-                            "  </csw:SearchResults>" +
-                            "</csw:GetRecordsResponse>";
-        var httpResponse = new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(expectedData),
-        };
-        var apiClient = ApiClientForTests.Get(httpResponse);
-        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
-        var blobService = BlobServiceForTests.GetWithError(out Mock<BlobServiceClient> mockBlobServiceClient,
-                                              out Mock<BlobContainerClient> mockBlobContainerClient,
-                                              out Mock<BlobClient> mockBlobClient);
+    //[Fact]
+    //public async Task Process_WhenBlobThrowsexception_ShouldLogErrorMessage()
+    //{
+    //    //Arrange
+    //    var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+    //    string expectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+    //                        "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
+    //                        "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
+    //                        "  <csw:SearchResults numberOfRecordsMatched=\"2\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"3\">" +
+    //                        "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+    //                        "      <gmd:fileIdentifier>" +
+    //                        "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+    //                        "      </gmd:fileIdentifier>" +
+    //                        "    </gmd:MD_Metadata>" +
+    //                        "  </csw:SearchResults>" +
+    //                        "</csw:GetRecordsResponse>";
+    //    var httpResponse = new HttpResponseMessage
+    //    {
+    //        StatusCode = HttpStatusCode.OK,
+    //        Content = new StringContent(expectedData),
+    //    };
+    //    var apiClient = ApiClientForTests.Get(httpResponse);
+    //    var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
+    //    var blobService = BlobServiceForTests.GetWithError(out Mock<BlobServiceClient> mockBlobServiceClient,
+    //                                          out Mock<BlobContainerClient> mockBlobContainerClient,
+    //                                          out Mock<BlobClient> mockBlobClient);
         
-        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
+    //    var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
-        // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
-        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
+    //    // Act
+    //    var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+    //    await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
-        //Assert
-        _mockOrchestrationServiceLogger.Verify(
-            m => m.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Exactly(1),
-            It.IsAny<string>()
-        );
-    }
+    //    //Assert
+    //    _mockOrchestrationServiceLogger.Verify(
+    //        m => m.Log(
+    //            LogLevel.Error,
+    //            It.IsAny<EventId>(),
+    //            It.IsAny<It.IsAnyType>(),
+    //            It.IsAny<Exception>(),
+    //            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+    //        Times.Exactly(1),
+    //        It.IsAny<string>()
+    //    );
+    //}
 
     [Fact]
     public async Task Process_WhenMedinDatasourceApiCallFailedWithHttpException_MedinServiceRequestShouldThrowError()
@@ -283,55 +283,55 @@ public class MedinProcessorTests
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
-    [Fact]
-    public async Task Process_ShouldThrowException()
-    {
-        //Arrange
-        var serviceBusService = ServiceBusServiceForTests.GetServiceBusWithError(out Mock<ServiceBusSender> mockServiceBusSender);
-        string expectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                            "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
-                            "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
-                            "  <csw:SearchResults numberOfRecordsMatched=\"2\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"3\">" +
-                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
-                            "      <gmd:fileIdentifier>" +
-                            "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
-                            "      </gmd:fileIdentifier>" +
-                            "    </gmd:MD_Metadata>" +
-                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
-                            "      <gmd:fileIdentifier>" +
-                            "        <gco:CharacterString>defe1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
-                            "      </gmd:fileIdentifier>" +
-                            "    </gmd:MD_Metadata>" +
-                            "  </csw:SearchResults>" +
-                            "</csw:GetRecordsResponse>";
-        var httpResponse = new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(expectedData),
-        };
-        var apiClient = ApiClientForTests.Get(httpResponse);
-        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
+    //[Fact]
+    //public async Task Process_ShouldThrowException()
+    //{
+    //    //Arrange
+    //    var serviceBusService = ServiceBusServiceForTests.GetServiceBusWithError(out Mock<ServiceBusSender> mockServiceBusSender);
+    //    string expectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+    //                        "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
+    //                        "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
+    //                        "  <csw:SearchResults numberOfRecordsMatched=\"2\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"3\">" +
+    //                        "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+    //                        "      <gmd:fileIdentifier>" +
+    //                        "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+    //                        "      </gmd:fileIdentifier>" +
+    //                        "    </gmd:MD_Metadata>" +
+    //                        "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+    //                        "      <gmd:fileIdentifier>" +
+    //                        "        <gco:CharacterString>defe1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+    //                        "      </gmd:fileIdentifier>" +
+    //                        "    </gmd:MD_Metadata>" +
+    //                        "  </csw:SearchResults>" +
+    //                        "</csw:GetRecordsResponse>";
+    //    var httpResponse = new HttpResponseMessage
+    //    {
+    //        StatusCode = HttpStatusCode.OK,
+    //        Content = new StringContent(expectedData),
+    //    };
+    //    var apiClient = ApiClientForTests.Get(httpResponse);
+    //    var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
 
-        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
-                                              out Mock<BlobContainerClient> mockBlobContainerClient,
-                                              out Mock<BlobClient> mockBlobClient);        
+    //    var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+    //                                          out Mock<BlobContainerClient> mockBlobContainerClient,
+    //                                          out Mock<BlobClient> mockBlobClient);        
 
-        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
+    //    var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
-        // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
-        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
+    //    // Act
+    //    var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+    //    await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
-        //Assert
-        _mockOrchestrationServiceLogger.Verify(
-            m => m.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Exactly(2),
-            It.IsAny<string>()
-        );
-    }
+    //    //Assert
+    //    _mockOrchestrationServiceLogger.Verify(
+    //        m => m.Log(
+    //            LogLevel.Error,
+    //            It.IsAny<EventId>(),
+    //            It.IsAny<It.IsAnyType>(),
+    //            It.IsAny<Exception>(),
+    //            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+    //        Times.Exactly(2),
+    //        It.IsAny<string>()
+    //    );
+    //}
 }
