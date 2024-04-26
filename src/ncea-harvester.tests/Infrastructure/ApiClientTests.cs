@@ -15,7 +15,7 @@ public class ApiClientTests
 
         
         // Act
-        var result = await apiClient.GetAsync("/apiurl");
+        var result = await apiClient.GetAsync("/apiurl", It.IsAny<CancellationToken>());
 
         // Assert
         Assert.Equal(expectedData, result);
@@ -33,7 +33,7 @@ public class ApiClientTests
 
 
         // Act & Assert
-        await Assert.ThrowsAsync<HttpRequestException>(() => apiClient.GetAsync(It.IsAny<string>()));
+        await Assert.ThrowsAsync<HttpRequestException>(() => apiClient.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class ApiClientTests
 
 
         // Act
-        var result = await apiClient.PostAsync("/apiurl", "test-request");
+        var result = await apiClient.PostAsync("/apiurl", "test-request", It.IsAny<CancellationToken>());
 
         // Assert
         Assert.Equal(expectedData, result);
@@ -63,7 +63,7 @@ public class ApiClientTests
 
 
         // Act & Assert
-        await Assert.ThrowsAsync<HttpRequestException>(() => apiClient.PostAsync(It.IsAny<string>(), "test-request"));
+        await Assert.ThrowsAsync<HttpRequestException>(() => apiClient.PostAsync(It.IsAny<string>(), "test-request", It.IsAny<CancellationToken>()));
     }
 
     private static void GetSuccessResponse(out string expectedData, out HttpResponseMessage response)

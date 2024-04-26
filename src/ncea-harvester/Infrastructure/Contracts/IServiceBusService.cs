@@ -1,6 +1,8 @@
-﻿namespace Ncea.Harvester.Infrastructure.Contracts;
+﻿using Ncea.Harvester.Infrastructure.Models.Requests;
+
+namespace Ncea.Harvester.Infrastructure.Contracts;
 
 public interface IServiceBusService
 {
-    Task SendMessageAsync(string message);
+    Task SendMessageAsync(SendMessageRequest request, CancellationToken cancellationToken);
 }

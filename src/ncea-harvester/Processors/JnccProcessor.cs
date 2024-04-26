@@ -1,14 +1,12 @@
-﻿using Azure;
-using Azure.Messaging.ServiceBus;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
+using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
-using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Utils;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+using System.Net;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -18,54 +16,79 @@ public class JnccProcessor : IProcessor
 {
     private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
-    private readonly IServiceBusService _serviceBusService;
-    private readonly IBlobService _blobService;
+    private readonly IOrchestrationService _orchestrationService;
     private readonly ILogger _logger;
     private readonly HarvesterConfiguration _harvesterConfiguration;
 
     public JnccProcessor(IApiClient apiClient,
-        IServiceBusService serviceBusService,
-        IBlobService blobService,
+        IOrchestrationService orchestrationService,
         ILogger<JnccProcessor> logger,
         HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
-        _harvesterConfiguration = harvesterConfiguration;
-        _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
-        _serviceBusService = serviceBusService;
+        _harvesterConfiguration = harvesterConfiguration;        
+        _orchestrationService = orchestrationService;
         _logger = logger;
-        _blobService = blobService;
 
+        _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
         _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
-    public async Task Process()
+
+    public async Task ProcessAsync(CancellationToken cancellationToken)
     {
-        var responseHtmlString = await GetJnccData(_harvesterConfiguration.DataSourceApiUrl);
+        var harvestedFiles = new List<HarvestedFile>();
+
+        await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);
+
+        //TO-DO: backup the blobs from previous run
+
+        await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
+
+        //TO-DO: delete the blobs from previous run
+
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);        
+
+        _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
+    }
+
+    private async Task HarvestJnccMetadataFiles(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    {
+        var responseHtmlString = await GetJnccDataMaster(_harvesterConfiguration.DataSourceApiUrl, cancellationToken);
         var documentLinks = GetDocumentLinks(responseHtmlString);
 
         foreach (var documentLink in documentLinks)
         {
             var apiUrl = "/waf/" + documentLink;
-            var metaDataXmlString = await GetJnccMetadata(apiUrl, documentLink);
-            var documentFileIdentifier = GetFileIdentifier(metaDataXmlString);
-
-            if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+            var metaDataXmlString = await GetJnccMetadata(apiUrl, documentLink, cancellationToken);
+            if (!string.IsNullOrEmpty(metaDataXmlString))
             {
-                await SendServiceBusMessage(documentFileIdentifier, metaDataXmlString);
-                await SaveMetadataXml(documentFileIdentifier, metaDataXmlString);
+                var documentFileIdentifier = GetFileIdentifier(metaDataXmlString);
+
+                if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+                {
+                    harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty));
+                }
+                else
+                {
+                    var errorMessage = "File Identifier not exists";
+                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage));
+                    CustomLogger.LogErrorMessage(_logger, errorMessage, null);
+                }
             }
             else
             {
-                CustomLogger.LogErrorMessage(_logger, "File Identifier missing", null);
-            }
+                var errorMessage = $"File not found exception : file-id : {documentLink}";
+                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, string.Empty, errorMessage));
+                CustomLogger.LogErrorMessage(_logger, errorMessage, null);
+            }            
         }
     }
 
-    private async Task<string> GetJnccData(string apiUrl)
+    private async Task<string> GetJnccDataMaster(string apiUrl, CancellationToken cancellationToken)
     {
         try
         {
-            var responseXmlString = await _apiClient.GetAsync(apiUrl);
+            var responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
             return responseXmlString;
         }
         catch (HttpRequestException ex)
@@ -90,18 +113,22 @@ public class JnccProcessor : IProcessor
         }
     }
 
-    public virtual async Task<string> GetJnccMetadata(string apiUrl, string jnccFileName)
+    public virtual async Task<string> GetJnccMetadata(string apiUrl, string jnccFileName, CancellationToken cancellationToken)
     {
+        var responseXmlString = string.Empty;
         try
         {
-            var responseXmlString = await _apiClient.GetAsync(apiUrl);
+            responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
             return responseXmlString;
         }
         catch (HttpRequestException ex)
         {
             var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            throw new DataSourceConnectionException(errorMessage, ex);
+            if (ex.StatusCode != HttpStatusCode.NotFound)
+            {
+                throw new DataSourceConnectionException(errorMessage, ex);
+            }            
         }
         catch (TaskCanceledException ex)
         {
@@ -117,33 +144,8 @@ public class JnccProcessor : IProcessor
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
-    }
 
-    private async Task SendServiceBusMessage(string documentFileIdentifier, string metaDataXmlString)
-    {
-        try
-        {
-            await _serviceBusService.SendMessageAsync(metaDataXmlString);
-        }
-        catch (ServiceBusException ex)
-        {
-            CustomLogger.LogErrorMessage(_logger, $"Error occured while sending message to harvested-queue for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
-        }
-    }
-
-    private async Task SaveMetadataXml(string? documentFileIdentifier, string metaDataXmlString)
-    {
-        var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
-        var documentFileName = string.Concat(documentFileIdentifier, ".xml");
-
-        try
-        {
-            await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, _dataSourceName), CancellationToken.None);
-        }
-        catch (RequestFailedException ex)
-        {
-            CustomLogger.LogErrorMessage(_logger, $"Error occured while saving the file to the blob storage for Data source: {_dataSourceName}, file-id: {documentFileIdentifier}", ex);
-        }
+        return responseXmlString;
     }
 
     private static List<string> GetDocumentLinks(string responseHtmlString)
