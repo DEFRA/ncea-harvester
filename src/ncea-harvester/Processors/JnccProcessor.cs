@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using ncea.harvester.Services;
 using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Infrastructure.Contracts;
@@ -17,17 +18,23 @@ public class JnccProcessor : IProcessor
     private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
     private readonly IOrchestrationService _orchestrationService;
+    private readonly IBackUpService _backUpService;
+    private readonly IDeletionService _deletionService;
     private readonly ILogger _logger;
     private readonly HarvesterConfiguration _harvesterConfiguration;
 
     public JnccProcessor(IApiClient apiClient,
         IOrchestrationService orchestrationService,
+        IBackUpService backUpService,
+        IDeletionService deletionService,
         ILogger<JnccProcessor> logger,
         HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
         _harvesterConfiguration = harvesterConfiguration;        
         _orchestrationService = orchestrationService;
+        _backUpService = backUpService;
+        _deletionService = deletionService;
         _logger = logger;
 
         _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
@@ -40,13 +47,17 @@ public class JnccProcessor : IProcessor
 
         await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);
 
-        //TO-DO: backup the blobs from previous run
+        await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
 
-        //TO-DO: delete the blobs from previous run
+        await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);        
+        _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
+
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+
+        _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
 
         _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
     }

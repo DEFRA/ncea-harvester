@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
 using ncea.harvester.Services;
+using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Constants;
 using Ncea.Harvester.Models;
@@ -16,6 +17,8 @@ public class MedinProcessorTests
 {
     private readonly Mock<ILogger<MedinProcessor>> _mockLogger;
     private readonly Mock<ILogger<OrchestrationService>> _mockOrchestrationServiceLogger;
+    private readonly Mock<IBackUpService> _backUpServiceMock;
+    private readonly Mock<IDeletionService> _deletionServiceMock;
 
     public MedinProcessorTests()
     {
@@ -37,6 +40,11 @@ public class MedinProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+
+        _backUpServiceMock = new Mock<IBackUpService>();
+        _backUpServiceMock.Setup(x => x.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(true));
+        _deletionServiceMock = new Mock<IDeletionService>();
+        _deletionServiceMock.Setup(x => x.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(true));
     }
 
     [Fact]
@@ -73,7 +81,7 @@ public class MedinProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
             // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
@@ -110,7 +118,7 @@ public class MedinProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         //Assert
@@ -151,7 +159,7 @@ public class MedinProcessorTests
         var orchestrationservice = new OrchestrationService(blobServiceMock, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, loggerMock.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, loggerMock.Object, harvesterConfiguration);
         await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
@@ -179,7 +187,7 @@ public class MedinProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));        
     }
 
@@ -198,7 +206,7 @@ public class MedinProcessorTests
 
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
@@ -217,7 +225,7 @@ public class MedinProcessorTests
 
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 }

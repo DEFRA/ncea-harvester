@@ -13,17 +13,23 @@ public class MedinProcessor : IProcessor
     private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
     private readonly IOrchestrationService _orchestrationService;
+    private readonly IBackUpService _backUpService;
+    private readonly IDeletionService _deletionService;
     private readonly ILogger _logger;
     private readonly HarvesterConfiguration _harvesterConfiguration;
 
     public MedinProcessor(IApiClient apiClient,
         IOrchestrationService orchestrationService,
+        IBackUpService backUpService,
+        IDeletionService deletionService,
         ILogger<MedinProcessor> logger,
         HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
         _harvesterConfiguration = harvesterConfiguration;
         _orchestrationService = orchestrationService;
+        _backUpService = backUpService;
+        _deletionService = deletionService;
         _logger = logger;
 
         _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
@@ -34,20 +40,19 @@ public class MedinProcessor : IProcessor
     {
         var harvestedFiles = new List<HarvestedFile>();
 
+        //Medin Metadata xml content
         await HarvestMedinMetadata(harvestedFiles, cancellationToken);
 
-        //TO-DO: backup the blobs from previous run
-
+        //Save files in blob storage
+        await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
+        await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
-        //TO-DO: delete the blobs from previous run (back-up)
-
-        //TO-DO: backup the enriched files in FileShare from previous run
-
+        //Send messages to harvested-queue
+        _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
         await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
-
-        //TO-DO: delete the enriched files in FileShare from previous run (back-up)
-
+        _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
+        
         _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
     }
 
