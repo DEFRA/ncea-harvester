@@ -52,11 +52,14 @@ steps:
     overrideValues: |
         image.repository=$(containerRepositoryFullPath)
         image.tag=$(imageTag)
+        jobs.medin.schedule=$(medinSchedule)
+        jobs.jncc.schedule=$(jnccSchedule)
         serviceAccount.name=$(serviceAccountHarvester)
         env.serviceBusHostName=$(serviceBusHostName)
         env.keyVaultUri=$(keyVaultUri)
         env.blobStorageUri=$(blobStorageUri)
-        jobs.medin.schedule=$(medinSchedule)
-        jobs.jncc.schedule=$(jnccSchedule)
+        pv.storageAccountResourceGroup=$(storageAccountResourceGroup)
+        pv.storageAccountName=$(storageAccountName)
+        pv.storageAccountFilePrivateEndpointFqdn=$(storageAccountFilePrivateEndpointFqdn)
     install: true
     force: true
