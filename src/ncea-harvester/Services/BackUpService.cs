@@ -1,5 +1,6 @@
 ﻿using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Infrastructure.Models.Requests;
 
 namespace ncea.harvester.Services;
 
@@ -28,9 +29,9 @@ public class BackUpService : IBackUpService
         }
     }
 
-    public Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
+    public async Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSource, dataSource), cancellationToken);
     }
 
     /// <summary>

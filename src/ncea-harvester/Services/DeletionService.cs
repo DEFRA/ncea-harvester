@@ -25,8 +25,8 @@ public class DeletionService : IDeletionService
         }
     }
 
-    public Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
+    public async Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _blobService.DeleteBlobsAsync(dataSource, cancellationToken);
     }
 }
