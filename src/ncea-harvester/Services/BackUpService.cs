@@ -22,9 +22,9 @@ public class BackUpService : IBackUpService
     public void BackUpEnrichedXmlFilesCreatedInPreviousRun(string dataSource)
     {
         var dirPath = Path.Combine(_fileSharePath, dataSource);
-        var backupDirPath = Path.Combine(_fileSharePath, $"{dataSource}_backup");
+        var backupDirName = $"{dataSource}_backup";
 
-        RenameFolder(dirPath, backupDirPath);
+        RenameFolder(dirPath, backupDirName);
 
         if (!Directory.Exists(dirPath))
         {
@@ -34,9 +34,10 @@ public class BackUpService : IBackUpService
 
     public async Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
     {
+        var backupConatinerName = $"{dataSource}_backup";
         try
         {
-            await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSource, dataSource), cancellationToken);
+            await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSource, backupConatinerName), cancellationToken);
         }
         catch (RequestFailedException ex)
         {
