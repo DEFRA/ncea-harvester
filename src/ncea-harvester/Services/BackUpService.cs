@@ -19,13 +19,18 @@ public class BackUpService : IBackUpService
         _logger = logger;
     }
 
-    public void BackUpEnrichedXmlFilesCreatedInPreviousRun(string dataSource)
+    public void BackUpEnrichedXmlFilesCreatedInPreviousRun(string dataSourceName)
     {
-        var dirPath = Path.Combine(_fileSharePath, dataSource);
-        var backupDirName = $"{dataSource}_backup";
-
         try
         {
+            if (string.IsNullOrWhiteSpace(dataSourceName))
+            {
+                throw new ArgumentException($"One of the given argument is not valid - dataSourceName : {dataSourceName}");
+            }
+
+            var dirPath = Path.Combine(_fileSharePath, dataSourceName);
+            var backupDirName = $"{dataSourceName}_backup";
+
             RenameFolder(dirPath, backupDirName);
 
             if (!Directory.Exists(dirPath))
@@ -35,7 +40,7 @@ public class BackUpService : IBackUpService
         }
         catch (Exception ex)
         {
-            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSource}";
+            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSourceName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }
 
@@ -64,12 +69,6 @@ public class BackUpService : IBackUpService
     /// <returns>Returns true if rename is successfull</returns>
     private static void RenameFolder(string dataSourceEnrichedXmlDirectoryPath, string newBackUpFolderName)
     {
-        if (string.IsNullOrWhiteSpace(dataSourceEnrichedXmlDirectoryPath) 
-            || string.IsNullOrWhiteSpace(newBackUpFolderName))
-        {
-            throw new ArgumentException($"One of the given argument is not valid - dataSourceEnrichedXmlDirectoryPath : {dataSourceEnrichedXmlDirectoryPath}, newBackUpFolderName : {newBackUpFolderName}");
-        }
-
         var oldDirectory = new DirectoryInfo(dataSourceEnrichedXmlDirectoryPath);
 
         if (!oldDirectory.Exists)
