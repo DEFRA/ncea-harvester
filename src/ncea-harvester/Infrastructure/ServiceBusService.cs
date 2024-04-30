@@ -2,27 +2,25 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Azure;
 using Ncea.Harvester.Infrastructure.Contracts;
-using Ncea.Harvester.Models;
+using Ncea.Harvester.Infrastructure.Models.Requests;
 
 namespace Ncea.Harvester.Infrastructure;
 
 public class ServiceBusService : IServiceBusService
 {
     private readonly ServiceBusSender _sender;
-    private readonly HarvesterConfiguration _harvesterConfiguration;
 
-    public ServiceBusService(HarvesterConfiguration harvesterConfiguration, IConfiguration configuration, IAzureClientFactory<ServiceBusSender> serviceBusSenderFactory)
+    public ServiceBusService(IConfiguration configuration, IAzureClientFactory<ServiceBusSender> serviceBusSenderFactory)
     {
         var queueName = configuration.GetValue<string>("HarvesterQueueName");
         _sender = serviceBusSenderFactory.CreateClient(queueName);
-        _harvesterConfiguration = harvesterConfiguration;
     }
 
-    public async Task SendMessageAsync(string message)
+    public async Task SendMessageAsync(SendMessageRequest request, CancellationToken cancellationToken)
     {
-        var messageInBytes = Encoding.UTF8.GetBytes(message);
+        var messageInBytes = Encoding.UTF8.GetBytes(request.Message);
         var serviceBusMessage = new ServiceBusMessage(messageInBytes);
-        serviceBusMessage.ApplicationProperties.Add("DataSource", _harvesterConfiguration.ProcessorType.ToString());
-        await _sender.SendMessageAsync(serviceBusMessage);
+        serviceBusMessage.ApplicationProperties.Add("DataSource", request.DataSourceName);
+        await _sender.SendMessageAsync(serviceBusMessage, cancellationToken);
     }
 }

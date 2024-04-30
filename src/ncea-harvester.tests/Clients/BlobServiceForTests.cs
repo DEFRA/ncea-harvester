@@ -45,6 +45,43 @@ public static class BlobServiceForTests
         return service;
     }
 
+
+    public static BlobService GetWithError(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                  out Mock<BlobContainerClient> mockBlobContainerClient,
+                                  out Mock<BlobClient> mockBlobClient)
+    {
+        mockBlobServiceClient = new Mock<BlobServiceClient>();
+        mockBlobContainerClient = new Mock<BlobContainerClient>();
+        mockBlobClient = new Mock<BlobClient>();
+        mockBlobClient.Setup(x => x.Uri).Returns(new Uri(new Uri("https://base-uri-blob-storage"), "relative-uri-blob-storage"));
+
+        var blobContainerInfo = BlobsModelFactory.BlobContainerInfo(It.IsAny<ETag>(), It.IsAny<DateTimeOffset>());
+        var mockContainerResponse = Response.FromValue(blobContainerInfo, new Mock<Response>().Object);
+
+        mockBlobServiceClient.Setup(x => x.GetBlobContainerClient(It.IsAny<string>())).Returns(mockBlobContainerClient.Object);
+        mockBlobContainerClient.Setup(x => x.GetBlobClient(It.IsAny<string>())).Returns(mockBlobClient.Object);
+        var page = Page<BlobItem>.FromValues(BlobItems, continuationToken: null, new Mock<Response>().Object);
+
+        mockBlobContainerClient.Setup<Task<Response<BlobContainerInfo>>>(x =>
+            x.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), It.IsAny<IDictionary<string, string>>(),
+            It.IsAny<BlobContainerEncryptionScopeOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockContainerResponse);
+        mockBlobContainerClient.Setup(x =>
+            x.DeleteBlobIfExistsAsync(It.IsAny<string>(), It.IsAny<DeleteSnapshotsOption>(),
+            It.IsAny<BlobRequestConditions>(), It.IsAny<CancellationToken>())).ReturnsAsync(Response.FromValue<bool>(true, new Mock<Response>().Object));
+        mockBlobClient.Setup(x =>
+            x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(),
+            It.IsAny<CancellationToken>())).ThrowsAsync(new RequestFailedException("Exception"));
+        var mockBlobItem = AsyncPageable<BlobItem>.FromPages(new[] { page });
+        mockBlobContainerClient.Setup(x =>
+            x.GetBlobsAsync(It.IsAny<BlobTraits>(), It.IsAny<BlobStates>(),
+            It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(mockBlobItem);
+
+        var service = new BlobService(mockBlobServiceClient.Object);
+
+        return service;
+    }
+
     public static Response<BlobContentInfo> AddBlobItem(BlobItem blobItem)
     {
         var blobContentInfo = new Mock<BlobContentInfo>();

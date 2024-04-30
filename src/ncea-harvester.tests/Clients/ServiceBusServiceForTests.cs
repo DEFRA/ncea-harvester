@@ -25,7 +25,7 @@ public static class ServiceBusServiceForTests
         var azureClientFactory = new Mock<IAzureClientFactory<ServiceBusSender>>();
         azureClientFactory.Setup(c => c.CreateClient(It.IsAny<string>())).Returns(mockServiceBusSender.Object);
 
-        var service = new ServiceBusService(harvesterConfiguration, configuration.Object, azureClientFactory.Object);        
+        var service = new ServiceBusService(configuration.Object, azureClientFactory.Object);        
 
         return service;
     }
@@ -46,8 +46,8 @@ public static class ServiceBusServiceForTests
         var azureClientFactory = new Mock<IAzureClientFactory<ServiceBusSender>>();
         azureClientFactory.Setup(c => c.CreateClient(It.IsAny<string>())).Returns(mockServiceBusSender.Object);
 
-        var service = new ServiceBusService(harvesterConfiguration, configuration.Object, azureClientFactory.Object);
-        mockServiceBusSender.Setup(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), It.IsAny<CancellationToken>())).Throws<Exception>();       
+        var service = new ServiceBusService(configuration.Object, azureClientFactory.Object);
+        mockServiceBusSender.Setup(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), It.IsAny<CancellationToken>())).Throws<ServiceBusException>();       
 
         return service;
     }

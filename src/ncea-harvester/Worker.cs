@@ -2,6 +2,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
+using Ncea.Harvester.Utils;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Ncea.Harvester;
@@ -38,15 +39,16 @@ public class Worker : BackgroundService
 
             try
             {
-                await _processor.Process();
+                await _processor.ProcessAsync(stoppingToken);
             }
             catch(Exception Ex)
             {
-                _logger.LogError(Ex, "Error occured while harvesting metadata from {source}", _harvesterConfiguration.ProcessorType);
+                var errorMessage = $"Error occured while harvesting metadata from {_harvesterConfiguration.ProcessorType}";
+                CustomLogger.LogErrorMessage(_logger, errorMessage, Ex);
             }
             finally
             {
-                _logger.LogInformation("Metadata harversting completed");
+                _logger.LogInformation("Metadata harversting ended for {source}", _harvesterConfiguration.ProcessorType);
                 _telemetryClient.TrackEvent("Harvesting completed");
 
                 await _telemetryClient.FlushAsync(stoppingToken);

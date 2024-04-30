@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Moq;
+﻿using Moq;
 using Moq.Protected;
 using Ncea.Harvester.Infrastructure;
 
@@ -33,6 +32,42 @@ public static class ApiClientForTests
             .Setup(f => f.CreateClient(It.IsAny<string>()))
         .Returns(_httpClient);
         
+        var apiClient = new ApiClient(_httpClientFactoryMock.Object);
+        apiClient.CreateClient("https://baseUri");
+
+        return apiClient;
+    }
+
+    public static ApiClient GetWithError(bool IsCancellationRequested)
+    {
+        MockRepository _mockRepository;
+        Mock<HttpMessageHandler> _handlerMock;
+        Mock<IHttpClientFactory> _httpClientFactoryMock;
+        HttpClient _httpClient;
+
+        _mockRepository = new(MockBehavior.Default);
+        _handlerMock = _mockRepository.Create<HttpMessageHandler>();
+        _httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        _httpClient = new(_handlerMock.Object);
+
+        var tokenSource = new CancellationTokenSource();
+        
+        if(IsCancellationRequested)
+          tokenSource.Cancel();
+        
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ThrowsAsync(new TaskCanceledException(null, null, tokenSource.Token));
+
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+        .Returns(_httpClient);
+
         var apiClient = new ApiClient(_httpClientFactoryMock.Object);
         apiClient.CreateClient("https://baseUri");
 
