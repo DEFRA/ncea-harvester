@@ -60,3 +60,15 @@ steps:
         jobs.jncc.schedule=$(jnccSchedule)
     install: true
     force: true
+
+- task: HelmDeploy@0
+  displayName: 'Helm Rollback'
+  condition: failed()
+  inputs:
+    connectionType: Azure Resource Manager
+    azureSubscriptionEndpoint: ${{ parameters.armServiceConnection }}
+    azureResourceGroup: $(aksResourceGroupName)
+    kubernetesCluster : $(aksClusterName)
+    namespace: $(aksNamespace)
+    command: 'rollback'
+    arguments: ${{ parameters.releaseName }} --timeout=30m --debug
