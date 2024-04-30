@@ -15,6 +15,8 @@ using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.Extensions.Azure;
 using ncea.harvester.Services.Contracts;
 using ncea.harvester.Services;
+using ncea.harvester.Infrastructure.Contracts;
+using ncea.harvester.Infrastructure;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -141,6 +143,7 @@ static void ConfigureServices(HostApplicationBuilder builder)
     builder.Services.AddSingleton<IServiceBusService, ServiceBusService>();
     builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
     builder.Services.AddSingleton<IBlobService, BlobService>();
+    builder.Services.AddSingleton<IBlobBatchClientWrapper, BlobBatchClientWrapper>();
     builder.Services.AddSingleton<IOrchestrationService, OrchestrationService>();
     builder.Services.AddSingleton<IBackUpService, BackUpService>();
     builder.Services.AddSingleton<IDeletionService, DeletionService>();

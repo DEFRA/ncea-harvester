@@ -3,15 +3,17 @@ using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using ncea.harvester.Infrastructure.Contracts;
 
 namespace Ncea.Harvester.Infrastructure;
 
 public class BlobService : IBlobService
 {
     private readonly BlobServiceClient _blobServiceClient;
+    private readonly IBlobBatchClientWrapper _blobBatchClient;
 
-    public BlobService(BlobServiceClient blobServiceClient) =>
-        (_blobServiceClient) = (blobServiceClient);
+    public BlobService(BlobServiceClient blobServiceClient, IBlobBatchClientWrapper blobBatchClient) =>
+        (_blobServiceClient, _blobBatchClient) = (blobServiceClient, blobBatchClient);
 
     public async Task<string> SaveAsync(SaveBlobRequest request, CancellationToken cancellationToken)
     {
@@ -23,35 +25,29 @@ public class BlobService : IBlobService
 
     public async Task BackUpContainerAsync(BackUpContainerRequest request, CancellationToken cancellationToken)
     {
-        // Create a batch client
-        BlobBatchClient batchClient = _blobServiceClient.GetBlobBatchClient();
-
         // Create a batch
-        BlobBatch batch = batchClient.CreateBatch();
+        BlobBatch batch = _blobBatchClient.CreateBatch();
 
         var sourceContainer = _blobServiceClient.GetBlobContainerClient(request.SourceContainer);
         var targetContainer = _blobServiceClient.GetBlobContainerClient(request.DestinationContainer);
-        targetContainer.CreateIfNotExists();
+        await targetContainer.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
 
         var blobs = sourceContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
         await foreach (BlobItem blob in blobs)
         {
             var blobUri = sourceContainer.GetBlobClient(blob.Name);
             var newBlob = targetContainer.GetBlobClient(blob.Name);
-            await newBlob.StartCopyFromUriAsync(blobUri.Uri);
+            await newBlob.StartCopyFromUriAsync(blobUri.Uri, null, cancellationToken);
             batch.DeleteBlob(request.SourceContainer, blob.Name, DeleteSnapshotsOption.None, null);
         }
 
-        await batchClient.SubmitBatchAsync(batch);
+        await _blobBatchClient.SubmitBatchAsync(batch, true, cancellationToken);
     }
 
     public async Task DeleteBlobsAsync(string containerName, CancellationToken cancellationToken)
     {
-        // Create a batch client
-        BlobBatchClient batchClient = _blobServiceClient.GetBlobBatchClient();
-
         // Create a batch
-        BlobBatch batch = batchClient.CreateBatch();
+        BlobBatch batch = _blobBatchClient.CreateBatch();
 
         var sourceContainer = _blobServiceClient.GetBlobContainerClient(containerName);
         var blobs = sourceContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
@@ -60,6 +56,6 @@ public class BlobService : IBlobService
             batch.DeleteBlob(containerName, blob.Name, DeleteSnapshotsOption.None, null);
         }
 
-        await batchClient.SubmitBatchAsync(batch);
+        await _blobBatchClient.SubmitBatchAsync(batch, true, cancellationToken);
     }
 }

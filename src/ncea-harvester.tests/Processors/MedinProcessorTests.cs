@@ -2,6 +2,7 @@
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ncea.harvester.Infrastructure.Contracts;
 using ncea.harvester.Services;
 using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
@@ -77,6 +78,7 @@ public class MedinProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
@@ -111,8 +113,9 @@ public class MedinProcessorTests
         };
         var apiClient = ApiClientForTests.Get(httpResponse);
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
-        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,                                              
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
@@ -154,6 +157,7 @@ public class MedinProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
         var blobServiceMock = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                                       out Mock<BlobContainerClient> mockBlobContainerClient,
+                                                      out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                                       out Mock<BlobClient> mockBlobClient);
         var loggerMock = new Mock<ILogger<MedinProcessor>>();
         var orchestrationservice = new OrchestrationService(blobServiceMock, serviceBusService, _mockOrchestrationServiceLogger.Object);
@@ -183,6 +187,7 @@ public class MedinProcessorTests
 
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
@@ -201,6 +206,7 @@ public class MedinProcessorTests
 
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
@@ -220,6 +226,7 @@ public class MedinProcessorTests
 
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 

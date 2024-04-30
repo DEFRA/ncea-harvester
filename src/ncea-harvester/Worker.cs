@@ -33,7 +33,7 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation("Ncea Metadata Harvesting started at: {time}", DateTimeOffset.Now);
 
-        using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
+        using (_telemetryClient.StartOperation<RequestTelemetry>("harvester-operation"))
         {
             _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
 

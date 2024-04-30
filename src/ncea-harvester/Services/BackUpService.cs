@@ -1,6 +1,8 @@
-﻿using ncea.harvester.Services.Contracts;
+﻿using Azure;
+using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
+using Ncea.Harvester.Utils;
 
 namespace ncea.harvester.Services;
 
@@ -22,7 +24,8 @@ public class BackUpService : IBackUpService
         var dirPath = Path.Combine(_fileSharePath, dataSource);
         var backupDirPath = Path.Combine(_fileSharePath, $"{dataSource}_backup");
 
-        var backupResult = RenameFolder(dirPath, backupDirPath);
+        RenameFolder(dirPath, backupDirPath);
+
         if (!Directory.Exists(dirPath))
         {
             Directory.CreateDirectory(dirPath);
@@ -31,7 +34,15 @@ public class BackUpService : IBackUpService
 
     public async Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
     {
-        await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSource, dataSource), cancellationToken);
+        try
+        {
+            await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSource, dataSource), cancellationToken);
+        }
+        catch (RequestFailedException ex)
+        {
+            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSource}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
+        }
     }
 
     /// <summary>

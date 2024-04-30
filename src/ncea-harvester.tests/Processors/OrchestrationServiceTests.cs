@@ -2,6 +2,7 @@
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ncea.harvester.Infrastructure.Contracts;
 using ncea.harvester.Services;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Tests.Clients;
@@ -17,6 +18,7 @@ public class OrchestrationServiceTests
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<OrchestrationService>(new LoggerFactory());
 
@@ -40,6 +42,7 @@ public class OrchestrationServiceTests
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<OrchestrationService>(new LoggerFactory());
 
@@ -69,6 +72,7 @@ public class OrchestrationServiceTests
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
         var blobService = BlobServiceForTests.GetWithError(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var mockLogger = new Mock<ILogger<OrchestrationService>>(MockBehavior.Strict);
         mockLogger.Setup(x => x.Log(
@@ -117,6 +121,7 @@ public class OrchestrationServiceTests
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<OrchestrationService>(new LoggerFactory());
 
@@ -138,6 +143,7 @@ public class OrchestrationServiceTests
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var logger = new Logger<OrchestrationService>(new LoggerFactory());
 
@@ -165,6 +171,7 @@ public class OrchestrationServiceTests
         var serviceBusService = ServiceBusServiceForTests.GetServiceBusWithError(out Mock<ServiceBusSender> mockServiceBusSender);
         var blobService = BlobServiceForTests.GetWithError(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var mockLogger = new Mock<ILogger<OrchestrationService>>(MockBehavior.Strict);
         mockLogger.Setup(x => x.Log(

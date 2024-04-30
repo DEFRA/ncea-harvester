@@ -1,5 +1,7 @@
-﻿using ncea.harvester.Services.Contracts;
+﻿using Azure;
+using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Utils;
 
 namespace ncea.harvester.Services;
 
@@ -26,7 +28,15 @@ public class DeletionService : IDeletionService
     }
 
     public async Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
-    {
-        await _blobService.DeleteBlobsAsync(dataSource, cancellationToken);
+    {        
+        try
+        {
+            await _blobService.DeleteBlobsAsync(dataSource, cancellationToken);
+        }
+        catch (RequestFailedException ex)
+        {
+            var errorMessage = $"Error occured while performing cleanup operation for datasource: {dataSource}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
+        }
     }
 }

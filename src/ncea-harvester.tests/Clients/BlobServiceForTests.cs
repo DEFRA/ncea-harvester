@@ -1,7 +1,9 @@
 ﻿using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using Moq;
+using ncea.harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure;
 
 namespace Ncea.Harvester.Tests.Clients;
@@ -11,6 +13,7 @@ public static class BlobServiceForTests
     private static List<BlobItem> BlobItems = new List<BlobItem>();
     public static BlobService Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                   out Mock<BlobContainerClient> mockBlobContainerClient,
+                                  out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                   out Mock<BlobClient> mockBlobClient)
     {
         mockBlobServiceClient = new Mock<BlobServiceClient>();
@@ -40,7 +43,13 @@ public static class BlobServiceForTests
             x.GetBlobsAsync(It.IsAny<BlobTraits>(), It.IsAny<BlobStates>(),
             It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(mockBlobItem);
 
-        var service = new BlobService(mockBlobServiceClient.Object);
+        mockBlobBatchClient = new Mock<IBlobBatchClientWrapper>();
+        mockBlobBatchClient.Setup(m => m.CreateBatch())
+            .Returns(new Mock<BlobBatch>().Object);
+        mockBlobBatchClient.Setup(m => m.SubmitBatchAsync(It.IsAny<BlobBatch>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var service = new BlobService(mockBlobServiceClient.Object, mockBlobBatchClient.Object);
 
         return service;
     }
@@ -48,6 +57,7 @@ public static class BlobServiceForTests
 
     public static BlobService GetWithError(out Mock<BlobServiceClient> mockBlobServiceClient,
                                   out Mock<BlobContainerClient> mockBlobContainerClient,
+                                  out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                   out Mock<BlobClient> mockBlobClient)
     {
         mockBlobServiceClient = new Mock<BlobServiceClient>();
@@ -77,7 +87,11 @@ public static class BlobServiceForTests
             x.GetBlobsAsync(It.IsAny<BlobTraits>(), It.IsAny<BlobStates>(),
             It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(mockBlobItem);
 
-        var service = new BlobService(mockBlobServiceClient.Object);
+        mockBlobBatchClient = new Mock<IBlobBatchClientWrapper>();
+        mockBlobBatchClient.Setup(m => m.SubmitBatchAsync(It.IsAny<BlobBatch>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var service = new BlobService(mockBlobServiceClient.Object, mockBlobBatchClient.Object);
 
         return service;
     }
