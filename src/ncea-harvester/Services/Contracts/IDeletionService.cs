@@ -2,6 +2,6 @@
 
 public interface IDeletionService
 {
-    Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken);
-    void DeleteEnrichedXmlFilesCreatedInPreviousRun(string dataSource);
+    Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSourceName, CancellationToken cancellationToken);
+    void DeleteEnrichedXmlFilesCreatedInPreviousRun(string dataSourceName);
 }

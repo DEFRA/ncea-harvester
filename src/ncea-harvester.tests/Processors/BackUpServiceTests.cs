@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using Ncea.Harvester.Infrastructure.Contracts;
-using ncea.harvester.Services.Contracts;
 using ncea.harvester.Services;
 using FluentAssertions;
 using Azure;
@@ -12,7 +11,7 @@ namespace Ncea.Harvester.Tests.Processors;
 
 public class BackUpServiceTests
 {
-    private readonly IBackUpService _backupService;
+    private readonly BackUpService _backupService;
     private readonly IConfiguration _configuration;
     private readonly Mock<IBlobService> _blobServiceMock;
     private readonly Mock<ILogger<BackUpService>> _loggerMock;
@@ -127,8 +126,8 @@ public class BackUpServiceTests
         //Assert
         Directory.Exists(dataSourceDirectoryPath).Should().BeTrue();
         Directory.Exists(backupDirectoryPath).Should().BeTrue();
-        Directory.GetFiles(backupDirectoryPath).Count().Should().Be(0);
-        Directory.GetFiles(dataSourceDirectoryPath).Count().Should().Be(0);
+        Directory.GetFiles(backupDirectoryPath).Length.Should().Be(0);
+        Directory.GetFiles(dataSourceDirectoryPath).Length.Should().Be(0);
     }
 
     [Fact]
@@ -159,8 +158,8 @@ public class BackUpServiceTests
         //Assert
         Directory.Exists(dataSourceDirectoryPath).Should().BeTrue();
         Directory.Exists(backupDirectoryPath).Should().BeTrue();
-        Directory.GetFiles(backupDirectoryPath).Count().Should().Be(2);
-        Directory.GetFiles(dataSourceDirectoryPath).Count().Should().Be(0);
+        Directory.GetFiles(backupDirectoryPath).Length.Should().Be(2);
+        Directory.GetFiles(dataSourceDirectoryPath).Length.Should().Be(0);
     }
 
     [Fact]

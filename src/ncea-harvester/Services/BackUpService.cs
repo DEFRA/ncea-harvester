@@ -47,16 +47,16 @@ public class BackUpService : IBackUpService
        
     }
 
-    public async Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
+    public async Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSourceName, CancellationToken cancellationToken)
     {
-        var backupConatinerName = $"{dataSource}_backup";
+        var backupConatinerName = $"{dataSourceName}_backup";
         try
         {
-            await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSource, backupConatinerName), cancellationToken);
+            await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSourceName, backupConatinerName), cancellationToken);
         }
         catch (RequestFailedException ex)
         {
-            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSource}";
+            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSourceName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }
     }

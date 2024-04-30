@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using FluentAssertions;
 using ncea.harvester.Services;
-using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Azure;
 
@@ -11,7 +10,7 @@ namespace Ncea.Harvester.Tests.Processors;
 
 public class DeletionServiceTests
 {
-    private readonly IDeletionService _deletionService;
+    private readonly DeletionService _deletionService;
     private readonly IConfiguration _configuration;
     private readonly Mock<IBlobService> _blobServiceMock;
     private readonly Mock<ILogger<DeletionService>> _loggerMock;

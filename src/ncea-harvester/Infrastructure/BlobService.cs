@@ -4,8 +4,6 @@ using Ncea.Harvester.Infrastructure.Contracts;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using ncea.harvester.Infrastructure.Contracts;
-using System.Reflection.Metadata;
-using Azure.Core;
 
 namespace Ncea.Harvester.Infrastructure;
 

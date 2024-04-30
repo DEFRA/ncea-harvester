@@ -5,7 +5,6 @@ using Moq;
 using ncea.harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Tests.Clients;
-using System.Threading;
 
 namespace Ncea.Harvester.Tests.Infrastructure;
 

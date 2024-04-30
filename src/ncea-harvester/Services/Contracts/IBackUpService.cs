@@ -2,6 +2,6 @@
 
 public interface IBackUpService
 {
-    Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken);
-    void BackUpEnrichedXmlFilesCreatedInPreviousRun(string dataSource);
+    Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSourceName, CancellationToken cancellationToken);
+    void BackUpEnrichedXmlFilesCreatedInPreviousRun(string dataSourceName);
 }

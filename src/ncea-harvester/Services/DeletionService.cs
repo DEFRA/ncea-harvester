@@ -18,24 +18,24 @@ public class DeletionService : IDeletionService
         _logger = logger;
     }
 
-    public void DeleteEnrichedXmlFilesCreatedInPreviousRun(string dataSource)
+    public void DeleteEnrichedXmlFilesCreatedInPreviousRun(string dataSourceName)
     {
-        var backupDirPath = Path.Combine(_fileSharePath, $"{dataSource}_backup");
+        var backupDirPath = Path.Combine(_fileSharePath, $"{dataSourceName}_backup");
         if (Directory.Exists(backupDirPath))
         {
             Directory.Delete(backupDirPath, true);
         }
     }
 
-    public async Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
+    public async Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSourceName, CancellationToken cancellationToken)
     {        
         try
         {
-            await _blobService.DeleteBlobsAsync(dataSource, cancellationToken);
+            await _blobService.DeleteBlobsAsync(dataSourceName, cancellationToken);
         }
         catch (RequestFailedException ex)
         {
-            var errorMessage = $"Error occured while performing cleanup operation for datasource: {dataSource}";
+            var errorMessage = $"Error occured while performing cleanup operation for datasource: {dataSourceName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }
     }
