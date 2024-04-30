@@ -46,6 +46,62 @@ public class BackUpServiceTests
     }
 
     [Fact]
+    public void BackUpEnrichedXmlFilesCreatedInPreviousRun_WhenDataSourceNameIsNotValid_ThrowAnException()
+    {
+        //Arrange
+        var dataSourceName = string.Empty;       
+
+        //Act
+        _backupService.BackUpEnrichedXmlFilesCreatedInPreviousRun(dataSourceName);
+
+        //Assert
+        _loggerMock.Verify(
+            m => m.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(1),
+            It.IsAny<string>()
+        );
+    }
+
+    [Fact]
+    public void BackUpEnrichedXmlFilesCreatedInPreviousRun_WhenDataSourceDirectoryNotExists_ThrowAnException()
+    {
+        //Arrange
+        var dataSourceName = "test-datasource-1";
+        var dataSourceDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), dataSourceName);
+        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), backupDirectoryName);
+
+        if (Directory.Exists(dataSourceDirectoryPath))
+        {
+            Directory.Delete(dataSourceDirectoryPath, true);
+        }
+        if (Directory.Exists(backupDirectoryPath))
+        {
+            Directory.Delete(backupDirectoryPath, true);
+        }
+
+        //Act
+        _backupService.BackUpEnrichedXmlFilesCreatedInPreviousRun(dataSourceName);
+
+        //Assert
+        _loggerMock.Verify(
+            m => m.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(1),
+            It.IsAny<string>()
+        );
+    }
+
+    [Fact]
     public void BackUpEnrichedXmlFilesCreatedInPreviousRun_WhenNoFilesExists_RenameTheDataSourceFolderAndCreateNewdataSourceFolder()
     {
         //Arrange

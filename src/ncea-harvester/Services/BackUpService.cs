@@ -24,12 +24,22 @@ public class BackUpService : IBackUpService
         var dirPath = Path.Combine(_fileSharePath, dataSource);
         var backupDirName = $"{dataSource}_backup";
 
-        RenameFolder(dirPath, backupDirName);
-
-        if (!Directory.Exists(dirPath))
+        try
         {
-            Directory.CreateDirectory(dirPath);
+            RenameFolder(dirPath, backupDirName);
+
+            if (!Directory.Exists(dirPath))
+            {
+                Directory.CreateDirectory(dirPath);
+            }
         }
+        catch (Exception ex)
+        {
+            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSource}";
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
+        }
+
+       
     }
 
     public async Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSource, CancellationToken cancellationToken)
@@ -49,58 +59,35 @@ public class BackUpService : IBackUpService
     /// <summary>
     /// Renames a folder name
     /// </summary>
-    /// <param name="directory">The full directory of the folder</param>
+    /// <param name="dataSourceEnrichedXmlDirectoryPath">The full directory of the folder</param>
     /// <param name="newFolderName">New name of the folder</param>
     /// <returns>Returns true if rename is successfull</returns>
-    private static bool RenameFolder(string directory, string newFolderName)
+    private static void RenameFolder(string dataSourceEnrichedXmlDirectoryPath, string newBackUpFolderName)
     {
-        try
+        if (string.IsNullOrWhiteSpace(dataSourceEnrichedXmlDirectoryPath) 
+            || string.IsNullOrWhiteSpace(newBackUpFolderName))
         {
-            if (string.IsNullOrWhiteSpace(directory) ||
-                string.IsNullOrWhiteSpace(newFolderName))
-            {
-                return false;
-            }
-
-            var oldDirectory = new DirectoryInfo(directory);
-
-            if (!oldDirectory.Exists)
-            {
-                return false;
-            }
-
-            if (string.Equals(oldDirectory.Name, newFolderName, StringComparison.OrdinalIgnoreCase))
-            {
-                //new folder name is the same with the old one.
-                return false;
-            }
-
-            string newDirectory;
-
-            if (oldDirectory.Parent == null)
-            {
-                //root directory
-                newDirectory = Path.Combine(directory, newFolderName);
-            }
-            else
-            {
-                newDirectory = Path.Combine(oldDirectory.Parent.FullName, newFolderName);
-            }
-
-            if (Directory.Exists(newDirectory))
-            {
-                //target directory already exists
-                return false;
-            }
-
-            oldDirectory.MoveTo(newDirectory);
-
-            return true;
+            throw new ArgumentException($"One of the given argument is not valid - dataSourceEnrichedXmlDirectoryPath : {dataSourceEnrichedXmlDirectoryPath}, newBackUpFolderName : {newBackUpFolderName}");
         }
-        catch
+
+        var oldDirectory = new DirectoryInfo(dataSourceEnrichedXmlDirectoryPath);
+
+        if (!oldDirectory.Exists)
         {
-            //ignored
-            return false;
+            throw new DirectoryNotFoundException($"Given datasouce directory not found {dataSourceEnrichedXmlDirectoryPath}");
         }
+
+        string newDirectory;
+
+        if (oldDirectory.Parent == null)
+        {
+            //root directory
+            newDirectory = Path.Combine(dataSourceEnrichedXmlDirectoryPath, newBackUpFolderName);
+        }
+        else
+        {
+            newDirectory = Path.Combine(oldDirectory.Parent.FullName, newBackUpFolderName);
+        }
+        oldDirectory.MoveTo(newDirectory);
     }
 }
