@@ -26,8 +26,7 @@ public static class BlobServiceForTests
         
         mockBlobServiceClient.Setup(x => x.GetBlobContainerClient(It.IsAny<string>())).Returns(mockBlobContainerClient.Object);
         mockBlobContainerClient.Setup(x => x.GetBlobClient(It.IsAny<string>())).Returns(mockBlobClient.Object);
-        var page = Page<BlobItem>.FromValues(BlobItems, continuationToken: null, new Mock<Response>().Object);
-        
+
         mockBlobContainerClient.Setup<Task<Response<BlobContainerInfo>>>(x =>
             x.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), It.IsAny<IDictionary<string, string>>(),
             It.IsAny<BlobContainerEncryptionScopeOptions>(), It.IsAny<CancellationToken>()))
@@ -37,15 +36,24 @@ public static class BlobServiceForTests
             It.IsAny<BlobRequestConditions>(), It.IsAny<CancellationToken>())).ReturnsAsync(Response.FromValue<bool>(true, new Mock<Response>().Object));
         mockBlobClient.Setup(x => 
             x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), 
-            It.IsAny<CancellationToken>())).Returns(Task.FromResult(AddBlobItem(BlobsModelFactory.BlobItem())));
-        var mockBlobItem = AsyncPageable<BlobItem>.FromPages(new[] { page });
-        mockBlobContainerClient.Setup(x =>
-            x.GetBlobsAsync(It.IsAny<BlobTraits>(), It.IsAny<BlobStates>(),
-            It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(mockBlobItem);
+            It.IsAny<CancellationToken>())).Returns(Task.FromResult(AddBlobItems()));
+
+        var blobList = new BlobItem[]
+        {
+            BlobsModelFactory.BlobItem("Blob1"),
+            BlobsModelFactory.BlobItem("Blob2"),
+            BlobsModelFactory.BlobItem("Blob3")
+        };
+        Page<BlobItem> page = Page<BlobItem>.FromValues(blobList, null, Mock.Of<Response>());
+        AsyncPageable<BlobItem> pageableBlobList = AsyncPageable<BlobItem>.FromPages(new[] { page });
+        mockBlobContainerClient
+            .Setup(m => m.GetBlobsAsync(It.IsAny<BlobTraits>(), It.IsAny<BlobStates>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(pageableBlobList);
 
         mockBlobBatchClient = new Mock<IBlobBatchClientWrapper>();
         mockBlobBatchClient.Setup(m => m.CreateBatch())
             .Returns(new Mock<BlobBatch>().Object);
+
         mockBlobBatchClient.Setup(m => m.SubmitBatchAsync(It.IsAny<BlobBatch>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -96,12 +104,14 @@ public static class BlobServiceForTests
         return service;
     }
 
-    public static Response<BlobContentInfo> AddBlobItem(BlobItem blobItem)
+    public static Response<BlobContentInfo> AddBlobItems()
     {
         var blobContentInfo = new Mock<BlobContentInfo>();
         var mockContentResponse = Response.FromValue(blobContentInfo.Object, new Mock<Response>().Object);
 
-        BlobItems.Add(blobItem);
+        BlobItems.Add(BlobsModelFactory.BlobItem("blob-item-1"));
+        BlobItems.Add(BlobsModelFactory.BlobItem("blob-item-2"));
+        BlobItems.Add(BlobsModelFactory.BlobItem("blob-item-3"));
         return mockContentResponse;
     }
 }

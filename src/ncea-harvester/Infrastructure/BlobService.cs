@@ -4,6 +4,8 @@ using Ncea.Harvester.Infrastructure.Contracts;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using ncea.harvester.Infrastructure.Contracts;
+using System.Reflection.Metadata;
+using Azure.Core;
 
 namespace Ncea.Harvester.Infrastructure;
 
@@ -25,6 +27,7 @@ public class BlobService : IBlobService
 
     public async Task BackUpContainerAsync(BackUpContainerRequest request, CancellationToken cancellationToken)
     {
+        var blobItems = new List<string>();
         // Create a batch
         BlobBatch batch = _blobBatchClient.CreateBatch();
 
@@ -38,7 +41,12 @@ public class BlobService : IBlobService
             var blobUri = sourceContainer.GetBlobClient(blob.Name);
             var newBlob = targetContainer.GetBlobClient(blob.Name);
             await newBlob.StartCopyFromUriAsync(blobUri.Uri, null, cancellationToken);
-            batch.DeleteBlob(request.SourceContainer, blob.Name, DeleteSnapshotsOption.None, null);
+            blobItems.Add(blob.Name);            
+        }
+
+        foreach(var blobItem in blobItems)
+        {
+            batch.DeleteBlob(request.SourceContainer, blobItem, DeleteSnapshotsOption.None, null);
         }
 
         await _blobBatchClient.SubmitBatchAsync(batch, true, cancellationToken);
@@ -46,14 +54,20 @@ public class BlobService : IBlobService
 
     public async Task DeleteBlobsAsync(string containerName, CancellationToken cancellationToken)
     {
+        var blobItems = new List<string>();
         // Create a batch
         BlobBatch batch = _blobBatchClient.CreateBatch();
 
         var sourceContainer = _blobServiceClient.GetBlobContainerClient(containerName);
         var blobs = sourceContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
         await foreach (BlobItem blob in blobs)
-        {            
-            batch.DeleteBlob(containerName, blob.Name, DeleteSnapshotsOption.None, null);
+        {
+            blobItems.Add(blob.Name);
+        }
+
+        foreach (var blobItem in blobItems)
+        {
+            batch.DeleteBlob(containerName, blobItem, DeleteSnapshotsOption.None, null);
         }
 
         await _blobBatchClient.SubmitBatchAsync(batch, true, cancellationToken);
