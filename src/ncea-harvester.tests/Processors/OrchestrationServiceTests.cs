@@ -49,10 +49,10 @@ public class OrchestrationServiceTests
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, logger);
         var harvetsedItemsList = new List<HarvestedFile>
         {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty),
-            new HarvestedFile("test-file-id", string.Empty, "test-file-content", string.Empty),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty)
+            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile("test-file-id", string.Empty, "test-file-content", string.Empty, null),
+            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
         };
 
 
@@ -87,10 +87,10 @@ public class OrchestrationServiceTests
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
         var harvetsedItemsList = new List<HarvestedFile>
         {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty),
-            new HarvestedFile("test-file-id", string.Empty, "test-file-content", string.Empty),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty)
+            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile("test-file-id", string.Empty, "test-file-content", string.Empty, null),
+            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
         };
 
 
@@ -150,10 +150,10 @@ public class OrchestrationServiceTests
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, logger);
         var harvetsedItemsList = new List<HarvestedFile>
         {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty),
-            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", string.Empty),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty)
+            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", string.Empty, null),
+            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
         };
 
 
@@ -194,10 +194,10 @@ public class OrchestrationServiceTests
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
         var harvetsedItemsList = new List<HarvestedFile>
         {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty),
-            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", string.Empty),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty)
+            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", string.Empty, null),
+            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
         };
 
 
