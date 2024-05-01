@@ -2,13 +2,14 @@
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
 using ncea.harvester.Infrastructure.Contracts;
+using ncea.harvester.Extensions;
 
 namespace Ncea.Harvester.Infrastructure;
 
 public class BlobService : IBlobService
 {
+    private const int MaxBatchSize = 256;
     private readonly BlobServiceClient _blobServiceClient;
     private readonly IBlobBatchClientWrapper _blobBatchClient;
 
@@ -25,9 +26,7 @@ public class BlobService : IBlobService
 
     public async Task BackUpContainerAsync(BackUpContainerRequest request, CancellationToken cancellationToken)
     {
-        var blobItems = new List<string>();
-        // Create a batch
-        BlobBatch batch = _blobBatchClient.CreateBatch();
+        var blobItems = new List<string>();        
 
         var sourceContainer = _blobServiceClient.GetBlobContainerClient(request.SourceContainer);
         var targetContainer = _blobServiceClient.GetBlobContainerClient(request.DestinationContainer);
@@ -39,22 +38,15 @@ public class BlobService : IBlobService
             var blobUri = sourceContainer.GetBlobClient(blob.Name);
             var newBlob = targetContainer.GetBlobClient(blob.Name);
             await newBlob.StartCopyFromUriAsync(blobUri.Uri, null, cancellationToken);
-            blobItems.Add(blob.Name);            
+            blobItems.Add(blob.Name);
         }
 
-        foreach(var blobItem in blobItems)
-        {
-            batch.DeleteBlob(request.SourceContainer, blobItem, DeleteSnapshotsOption.None, null);
-        }
-
-        await _blobBatchClient.SubmitBatchAsync(batch, true, cancellationToken);
-    }
+        await DeleteBlobsInBatches(request.SourceContainer, blobItems, cancellationToken);
+    }  
 
     public async Task DeleteBlobsAsync(string containerName, CancellationToken cancellationToken)
     {
         var blobItems = new List<string>();
-        // Create a batch
-        BlobBatch batch = _blobBatchClient.CreateBatch();
 
         var sourceContainer = _blobServiceClient.GetBlobContainerClient(containerName);
         var blobs = sourceContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
@@ -63,11 +55,21 @@ public class BlobService : IBlobService
             blobItems.Add(blob.Name);
         }
 
-        foreach (var blobItem in blobItems)
-        {
-            batch.DeleteBlob(containerName, blobItem, DeleteSnapshotsOption.None, null);
-        }
+        await DeleteBlobsInBatches(containerName, blobItems, cancellationToken);
+        await sourceContainer.DeleteAsync(null, cancellationToken);
+    }
 
-        await _blobBatchClient.SubmitBatchAsync(batch, true, cancellationToken);
+    private async Task DeleteBlobsInBatches(string containerName, List<string> blobItems, CancellationToken cancellationToken)
+    {
+        var batchOfItems = blobItems.Batch(MaxBatchSize);
+        foreach (var batchItem in batchOfItems)
+        {
+            var batch = _blobBatchClient.CreateBatch();
+            foreach (var blobItem in batchItem)
+            {
+                batch.DeleteBlob(containerName, blobItem, DeleteSnapshotsOption.None, null);
+            }
+            await _blobBatchClient.SubmitBatchAsync(batch, true, cancellationToken);
+        }
     }
 }

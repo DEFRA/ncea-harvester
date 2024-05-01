@@ -72,7 +72,7 @@ public class BackUpServiceTests
         //Arrange
         var dataSourceName = "test-datasource-1";
         var dataSourceDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), dataSourceName);
-        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryName = $"{dataSourceName}-backup";
         var backupDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), backupDirectoryName);
 
         if (Directory.Exists(dataSourceDirectoryPath))
@@ -106,7 +106,7 @@ public class BackUpServiceTests
         //Arrange
         var dataSourceName = "test-datasource-1";
         var dataSourceDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), dataSourceName);
-        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryName = $"{dataSourceName}-backup";
         var backupDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), backupDirectoryName);
 
         if (Directory.Exists(dataSourceDirectoryPath))
@@ -136,7 +136,7 @@ public class BackUpServiceTests
         //Arrange
         var dataSourceName = "test-datasource-2";
         var dataSourceDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), dataSourceName);
-        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryName = $"{dataSourceName}-backup";
         var backupDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), backupDirectoryName);
 
         if (Directory.Exists(dataSourceDirectoryPath))
@@ -167,7 +167,7 @@ public class BackUpServiceTests
     {
         //Arrange
         var dataSourceName = "test-datasource";
-        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryName = $"{dataSourceName}-backup";
 
         //Act
         await _backupService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(dataSourceName, CancellationToken.None);
@@ -181,7 +181,7 @@ public class BackUpServiceTests
     {
         //Arrange
         var dataSourceName = "test-datasource";
-        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryName = $"{dataSourceName}-backup";
 
         _blobServiceMock.Setup(x => x.BackUpContainerAsync(It.IsAny<BackUpContainerRequest>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new RequestFailedException(404, "Status: 404 (The specified blob does not exist.)"));

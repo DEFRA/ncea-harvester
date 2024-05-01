@@ -48,7 +48,7 @@ public class DeletionServiceTests
     {
         //Arrange
         var dataSourceName = "test-datasource-3";
-        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryName = $"{dataSourceName}-backup";
         var backupDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), backupDirectoryName);        
         if (Directory.Exists(backupDirectoryPath))
         {
@@ -71,7 +71,7 @@ public class DeletionServiceTests
     {
         //Arrange
         var dataSourceName = "test-datasource-4";
-        var backupDirectoryName = $"{dataSourceName}_backup";
+        var backupDirectoryName = $"{dataSourceName}-backup";
         var backupDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), backupDirectoryName);
         if (Directory.Exists(backupDirectoryPath))
         {
@@ -95,12 +95,13 @@ public class DeletionServiceTests
     {
         //Arrange
         var dataSourceName = "test-datasource";
+        var backupConatinerName = $"{dataSourceName}-backup";
 
         //Act
         await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(dataSourceName, CancellationToken.None);
 
         //Assert
-        _blobServiceMock.Verify(x => x.DeleteBlobsAsync(dataSourceName, CancellationToken.None), Times.Once);
+        _blobServiceMock.Verify(x => x.DeleteBlobsAsync(backupConatinerName, CancellationToken.None), Times.Once);
     }
 
     [Fact]
@@ -108,6 +109,7 @@ public class DeletionServiceTests
     {
         //Arrange
         var dataSourceName = "test-datasource";
+        var backupConatinerName = $"{dataSourceName}-backup";
 
         _blobServiceMock.Setup(x => x.DeleteBlobsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new RequestFailedException(404, "Status: 404 (The specified blob does not exist.)"));
@@ -118,7 +120,7 @@ public class DeletionServiceTests
         await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(dataSourceName, CancellationToken.None);
 
         //Assert
-        _blobServiceMock.Verify(x => x.DeleteBlobsAsync(dataSourceName, CancellationToken.None), Times.Once);
+        _blobServiceMock.Verify(x => x.DeleteBlobsAsync(backupConatinerName, CancellationToken.None), Times.Once);
         _loggerMock.Verify(
             m => m.Log(
                 LogLevel.Error,

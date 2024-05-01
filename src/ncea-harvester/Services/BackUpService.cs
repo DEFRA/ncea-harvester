@@ -29,7 +29,7 @@ public class BackUpService : IBackUpService
             }
 
             var dirPath = Path.Combine(_fileSharePath, dataSourceName);
-            var backupDirName = $"{dataSourceName}_backup";
+            var backupDirName = $"{dataSourceName}-backup";
 
             RenameFolder(dirPath, backupDirName);
 
@@ -49,10 +49,10 @@ public class BackUpService : IBackUpService
 
     public async Task BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSourceName, CancellationToken cancellationToken)
     {
-        var backupConatinerName = $"{dataSourceName}_backup";
+        var backupConatinerName = $"{dataSourceName}-backup";
         try
         {
-            await _blobService.BackUpContainerAsync(new BackUpContainerRequest(dataSourceName, backupConatinerName), cancellationToken);
+            await _blobService.BackUpContainerAsync(new BackUpContainerRequest(sourceContainer: dataSourceName, backupConatinerName), cancellationToken);
         }
         catch (RequestFailedException ex)
         {

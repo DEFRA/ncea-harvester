@@ -33,8 +33,8 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation("Ncea Metadata Harvesting started at: {time}", DateTimeOffset.Now);
 
-        using (_telemetryClient.StartOperation<RequestTelemetry>("harvester-operation"))
-        {
+        //using (_telemetryClient.StartOperation<RequestTelemetry>("harvester-operation"))
+        //{
             _logger.LogInformation("Metadata harversting started for {source}", _harvesterConfiguration.ProcessorType);
 
             try
@@ -49,12 +49,12 @@ public class Worker : BackgroundService
             finally
             {
                 _logger.LogInformation("Metadata harversting ended for {source}", _harvesterConfiguration.ProcessorType);
-                _telemetryClient.TrackEvent("Harvesting completed");
+                //_telemetryClient.TrackEvent("Harvesting completed");
 
-                await _telemetryClient.FlushAsync(stoppingToken);
+                //await _telemetryClient.FlushAsync(stoppingToken);
                 _hostApplicationLifetime.StopApplication();
             }
-        }
+        //}
 
         _logger.LogInformation("Ncea Metadata Harvesting ended at: {time}", DateTimeOffset.Now);
     }

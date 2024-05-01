@@ -20,7 +20,7 @@ public class DeletionService : IDeletionService
 
     public void DeleteEnrichedXmlFilesCreatedInPreviousRun(string dataSourceName)
     {
-        var backupDirPath = Path.Combine(_fileSharePath, $"{dataSourceName}_backup");
+        var backupDirPath = Path.Combine(_fileSharePath, $"{dataSourceName}-backup");
         if (Directory.Exists(backupDirPath))
         {
             Directory.Delete(backupDirPath, true);
@@ -28,10 +28,11 @@ public class DeletionService : IDeletionService
     }
 
     public async Task DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(string dataSourceName, CancellationToken cancellationToken)
-    {        
+    {
+        var backupConatinerName = $"{dataSourceName}-backup";
         try
         {
-            await _blobService.DeleteBlobsAsync(dataSourceName, cancellationToken);
+            await _blobService.DeleteBlobsAsync(backupConatinerName, cancellationToken);
         }
         catch (RequestFailedException ex)
         {
