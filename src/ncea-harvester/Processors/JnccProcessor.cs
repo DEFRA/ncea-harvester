@@ -44,18 +44,17 @@ public class JnccProcessor : IProcessor
     {
         var harvestedFiles = new List<HarvestedFile>();
 
+        // Harvest metadata from datasource
         await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);
 
+        // Backup the meatadata xml blobs from previous run, save the meatadata xml blobs in current run, delete the backed up blobs from previous run
         await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
-
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
-
         await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
+        // Backup the enriched xml files from previous run, send sb message with meatadata xml content from current run, delete the backed up the enriched xml files from previous run
         _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
-
         await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
-
         _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
 
         _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));

@@ -40,15 +40,15 @@ public class MedinProcessor : IProcessor
     {
         var harvestedFiles = new List<HarvestedFile>();
 
-        //Medin Metadata xml content
+        // Harvest metadata from datasource
         await HarvestMedinMetadata(harvestedFiles, cancellationToken);
 
-        //Save files in blob storage
+        // Backup the meatadata xml blobs from previous run, save the meatadata xml blobs in current run, delete the backed up blobs from previous run
         await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
         await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
-        //Send messages to harvested-queue
+        // Backup the enriched xml files from previous run, send sb message with meatadata xml content from current run, delete the backed up the enriched xml files from previous run
         _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
         await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
         _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
