@@ -29,15 +29,16 @@ public class BlobService : IBlobService
         var blobItems = new List<string>();        
 
         var sourceContainer = _blobServiceClient.GetBlobContainerClient(request.SourceContainer);
+        var blobs = sourceContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
+
         var targetContainer = _blobServiceClient.GetBlobContainerClient(request.DestinationContainer);
         await targetContainer.CreateIfNotExistsAsync(PublicAccessType.None, null, null, cancellationToken);
-
-        var blobs = sourceContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
+       
         await foreach (BlobItem blob in blobs)
         {
-            var blobUri = sourceContainer.GetBlobClient(blob.Name);
-            var newBlob = targetContainer.GetBlobClient(blob.Name);
-            await newBlob.StartCopyFromUriAsync(blobUri.Uri, null, cancellationToken);
+            var sourceBlob = sourceContainer.GetBlobClient(blob.Name);
+            var targetBlob = targetContainer.GetBlobClient(blob.Name);
+            await targetBlob.StartCopyFromUriAsync(sourceBlob.Uri, null, cancellationToken);
             blobItems.Add(blob.Name);
         }
 
@@ -48,15 +49,18 @@ public class BlobService : IBlobService
     {
         var blobItems = new List<string>();
 
-        var sourceContainer = _blobServiceClient.GetBlobContainerClient(containerName);
-        var blobs = sourceContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
-        await foreach (BlobItem blob in blobs)
+        var backupContainer = _blobServiceClient.GetBlobContainerClient(containerName);
+        if(await backupContainer.ExistsAsync(cancellationToken))
         {
-            blobItems.Add(blob.Name);
-        }
+            var blobs = backupContainer.GetBlobsAsync(BlobTraits.None, BlobStates.None, "", cancellationToken);
+            await foreach (BlobItem blob in blobs)
+            {
+                blobItems.Add(blob.Name);
+            }
 
-        await DeleteBlobsInBatches(containerName, blobItems, cancellationToken);
-        await sourceContainer.DeleteAsync(null, cancellationToken);
+            await DeleteBlobsInBatches(containerName, blobItems, cancellationToken);
+            await backupContainer.DeleteAsync(null, cancellationToken);
+        }        
     }
 
     private async Task DeleteBlobsInBatches(string containerName, List<string> blobItems, CancellationToken cancellationToken)

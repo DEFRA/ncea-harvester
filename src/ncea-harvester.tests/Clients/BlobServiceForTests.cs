@@ -16,17 +16,21 @@ public static class BlobServiceForTests
                                   out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                   out Mock<BlobClient> mockBlobClient)
     {
-        mockBlobServiceClient = new Mock<BlobServiceClient>();
-        mockBlobContainerClient = new Mock<BlobContainerClient>();
         mockBlobClient = new Mock<BlobClient>();
         mockBlobClient.Setup(x => x.Uri).Returns(new Uri(new Uri("https://base-uri-blob-storage"), "relative-uri-blob-storage"));
-        
+        mockBlobClient.Setup(x =>
+            x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(),
+            It.IsAny<CancellationToken>())).Returns(Task.FromResult(AddBlobItems()));
+
+        mockBlobServiceClient = new Mock<BlobServiceClient>();
+        mockBlobContainerClient = new Mock<BlobContainerClient>();
+
         var blobContainerInfo = BlobsModelFactory.BlobContainerInfo(It.IsAny<ETag>(), It.IsAny<DateTimeOffset>());
         var mockContainerResponse = Response.FromValue(blobContainerInfo, new Mock<Response>().Object);
         
         mockBlobServiceClient.Setup(x => x.GetBlobContainerClient(It.IsAny<string>())).Returns(mockBlobContainerClient.Object);
         mockBlobContainerClient.Setup(x => x.GetBlobClient(It.IsAny<string>())).Returns(mockBlobClient.Object);
-
+        mockBlobContainerClient.Setup(x => x.ExistsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(Response.FromValue<bool>(true, Mock.Of<Response>()));
         mockBlobContainerClient.Setup<Task<Response<BlobContainerInfo>>>(x =>
             x.CreateIfNotExistsAsync(It.IsAny<PublicAccessType>(), It.IsAny<IDictionary<string, string>>(),
             It.IsAny<BlobContainerEncryptionScopeOptions>(), It.IsAny<CancellationToken>()))
@@ -34,9 +38,8 @@ public static class BlobServiceForTests
         mockBlobContainerClient.Setup(x =>
             x.DeleteBlobIfExistsAsync(It.IsAny<string>(), It.IsAny<DeleteSnapshotsOption>(),
             It.IsAny<BlobRequestConditions>(), It.IsAny<CancellationToken>())).ReturnsAsync(Response.FromValue<bool>(true, new Mock<Response>().Object));
-        mockBlobClient.Setup(x => 
-            x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), 
-            It.IsAny<CancellationToken>())).Returns(Task.FromResult(AddBlobItems()));
+
+
 
         var blobList = new BlobItem[]
         {
