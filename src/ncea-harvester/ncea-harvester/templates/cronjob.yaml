@@ -78,10 +78,9 @@ spec:
             resources:
 {{ toYaml . | indent 14 }}
             {{- end }}
-            {{- with $job.volumeMounts }}
             volumeMounts:
-{{ toYaml . | indent 12 }}
-            {{- end }}
+            - mountPath: /metadata-import
+              name: enrichedmetadata
           {{- with $job.nodeSelector }}
           nodeSelector:
 {{ toYaml . | indent 12 }}
@@ -96,10 +95,10 @@ spec:
           {{- end }}
           restartPolicy: {{ $job.restartPolicy }}
           dnsPolicy: Default
-          {{- with $job.volumes }}
           volumes:
-{{ toYaml . | indent 12 }}
-          {{- end }}
+          - name: enrichedmetadata
+            persistentVolumeClaim:
+              claimName: ncea-enricher-fileshare-pvc
   schedule: {{ $job.schedule | quote | replace "|" " " }}
   successfulJobsHistoryLimit: {{ $job.successfulJobsHistoryLimit }}
 {{- end }}

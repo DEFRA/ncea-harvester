@@ -15,6 +15,8 @@ using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.Extensions.Azure;
 using ncea.harvester.Services.Contracts;
 using ncea.harvester.Services;
+using ncea.harvester.Infrastructure.Contracts;
+using ncea.harvester.Infrastructure;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -32,7 +34,7 @@ var harvsesterConfigurations = configuration.GetSection("HarvesterConfigurations
 
 ConfigureKeyVault(configuration, builder);
 ConfigureLogging(builder);
-await ConfigureBlobStorage(configuration, builder, dataSourceName);
+await ConfigureStorage(configuration, builder, dataSourceName);
 await ConfigureServiceBusQueue(configuration, builder);
 ConfigureServices(builder);
 ConfigureProcessor(builder, harvsesterConfigurations, processorType);
@@ -118,7 +120,7 @@ static void ConfigureLogging(HostApplicationBuilder builder)
     });
 }
 
-static async Task ConfigureBlobStorage(IConfigurationRoot configuration, HostApplicationBuilder builder, string dataSourceName)
+static async Task ConfigureStorage(IConfigurationRoot configuration, HostApplicationBuilder builder, string dataSourceName)
 {
     var blobStorageEndpoint = new Uri(configuration.GetValue<string>("BlobStorageUri")!);
     var blobServiceClient = new BlobServiceClient(blobStorageEndpoint, new DefaultAzureCredential());
@@ -126,6 +128,13 @@ static async Task ConfigureBlobStorage(IConfigurationRoot configuration, HostApp
     builder.Services.AddSingleton(x => blobServiceClient);
     BlobContainerClient container = blobServiceClient.GetBlobContainerClient(dataSourceName);
     await container.CreateIfNotExistsAsync();
+
+    var fileSharePath = configuration.GetValue<string>("FileShareName");
+    var dirPath = Path.Combine(fileSharePath!, dataSourceName.ToLowerInvariant());
+    if (!Directory.Exists(dirPath))
+    {
+        Directory.CreateDirectory(dirPath);
+    }
 }
 
 static void ConfigureServices(HostApplicationBuilder builder)
@@ -134,7 +143,10 @@ static void ConfigureServices(HostApplicationBuilder builder)
     builder.Services.AddSingleton<IServiceBusService, ServiceBusService>();
     builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
     builder.Services.AddSingleton<IBlobService, BlobService>();
+    builder.Services.AddSingleton<IBlobBatchClientWrapper, BlobBatchClientWrapper>();
     builder.Services.AddSingleton<IOrchestrationService, OrchestrationService>();
+    builder.Services.AddSingleton<IBackUpService, BackUpService>();
+    builder.Services.AddSingleton<IDeletionService, DeletionService>();
 }
 
 [ExcludeFromCodeCoverage]

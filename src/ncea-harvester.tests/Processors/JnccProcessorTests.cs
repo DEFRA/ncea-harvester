@@ -2,7 +2,9 @@
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ncea.harvester.Infrastructure.Contracts;
 using ncea.harvester.Services;
+using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Constants;
 using Ncea.Harvester.Models;
@@ -15,7 +17,9 @@ namespace Ncea.Harvester.Tests.Processors;
 public class JnccProcessorTests
 {
     private readonly Mock<ILogger<JnccProcessor>> _mockLogger;
-    private readonly Mock<ILogger<OrchestrationService>> _mockOrchestrationServiceLogger;    
+    private readonly Mock<ILogger<OrchestrationService>> _mockOrchestrationServiceLogger;
+    private readonly Mock<IBackUpService> _backUpServiceMock;
+    private readonly Mock<IDeletionService> _deletionServiceMock;
 
     public JnccProcessorTests()
     {
@@ -37,6 +41,14 @@ public class JnccProcessorTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             )
         );
+
+        _backUpServiceMock = new Mock<IBackUpService>();
+        _deletionServiceMock = new Mock<IDeletionService>();
+
+        _backUpServiceMock = new Mock<IBackUpService>();
+        _backUpServiceMock.Setup(x => x.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(true));
+        _deletionServiceMock = new Mock<IDeletionService>();
+        _deletionServiceMock.Setup(x => x.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(true));
     }
 
     [Fact]
@@ -54,12 +66,13 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase="https://base-uri", DataSourceApiUrl="/test-url", ProcessorType= ProcessorType.Jncc, Type=""};
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
 
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act
-        var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccMockService = new Mock<JnccProcessor>(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         jnccMockService.Setup(x => x.GetJnccMetadata(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(metaDataXmlStr));
         await jnccMockService.Object.ProcessAsync(It.IsAny<CancellationToken>());
 
@@ -85,11 +98,12 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobServiceMock = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                                       out Mock<BlobContainerClient> mockBlobContainerClient,
+                                                      out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                                       out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobServiceMock, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await jnccService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
@@ -112,11 +126,12 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
@@ -129,11 +144,12 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
@@ -146,11 +162,12 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
@@ -170,12 +187,13 @@ public class JnccProcessorTests
 
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await jnccService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
@@ -204,12 +222,13 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
 
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>(), It.IsNotNull<CancellationToken>()));
     }
 
@@ -222,11 +241,12 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>(), It.IsNotNull<CancellationToken>()));
     }
 
@@ -239,12 +259,13 @@ public class JnccProcessorTests
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Jncc, Type = "" };
         var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
 
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
         
         // Act & Assert
-        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _mockLogger.Object, harvesterConfiguration);
+        var jnccService = new JnccProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => jnccService.GetJnccMetadata(It.IsNotNull<string>(), It.IsNotNull<string>(), It.IsNotNull<CancellationToken>()));
     }
 

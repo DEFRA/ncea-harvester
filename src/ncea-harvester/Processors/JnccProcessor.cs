@@ -16,18 +16,24 @@ public class JnccProcessor : IProcessor
 {
     private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
+    private readonly IBackUpService _backUpService;
+    private readonly IDeletionService _deletionService;
     private readonly IOrchestrationService _orchestrationService;
-    private readonly ILogger _logger;
     private readonly HarvesterConfiguration _harvesterConfiguration;
+    private readonly ILogger _logger;
 
     public JnccProcessor(IApiClient apiClient,
         IOrchestrationService orchestrationService,
+        IBackUpService backUpService,
+        IDeletionService deletionService,
         ILogger<JnccProcessor> logger,
         HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
-        _harvesterConfiguration = harvesterConfiguration;        
+        _backUpService = backUpService;
+        _deletionService = deletionService;
         _orchestrationService = orchestrationService;
+        _harvesterConfiguration = harvesterConfiguration;
         _logger = logger;
 
         _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
@@ -38,23 +44,30 @@ public class JnccProcessor : IProcessor
     {
         var harvestedFiles = new List<HarvestedFile>();
 
+        // Harvest metadata from datasource
         await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);
 
-        //TO-DO: backup the blobs from previous run
-
+        // Backup the metadata xml blobs from previous run, save the meatadata xml blobs in current run, delete the backed up blobs from previous run
+        await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
+        await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
-        //TO-DO: delete the blobs from previous run
+        _logger.LogInformation("Harvester summary | Total record count : {total} | Saved blob count : {itemsSavedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.BlobUrl)), _dataSourceName);
 
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);        
-
-        _logger.LogInformation("Harvester summary - Total records : {total} | Success : {itemsHarvestedSuccessfully}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)));
+        // Backup the enriched xml files from previous run, send sb message with meatadata xml content from current run, delete the backed up the enriched xml files from previous run
+        _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
+        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+        _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName); 
+        
+        _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
     }
 
     private async Task HarvestJnccMetadataFiles(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
     {
         var responseHtmlString = await GetJnccDataMaster(_harvesterConfiguration.DataSourceApiUrl, cancellationToken);
         var documentLinks = GetDocumentLinks(responseHtmlString);
+
+        _logger.LogInformation("Harvester summary | Total record count : {total} | DataSource : {_dataSourceName}", documentLinks.Count, _dataSourceName);
 
         foreach (var documentLink in documentLinks)
         {
@@ -66,19 +79,19 @@ public class JnccProcessor : IProcessor
 
                 if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
                 {
-                    harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty));
+                    harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty, null));
                 }
                 else
                 {
                     var errorMessage = "File Identifier not exists";
-                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage));
+                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }
             }
             else
             {
                 var errorMessage = $"File not found exception : file-id : {documentLink}";
-                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, string.Empty, errorMessage));
+                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, string.Empty, errorMessage, null));
                 CustomLogger.LogErrorMessage(_logger, errorMessage, null);
             }            
         }

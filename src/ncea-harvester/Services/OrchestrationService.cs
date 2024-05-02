@@ -39,6 +39,7 @@ public class OrchestrationService : IOrchestrationService
         {
             var response = await SendMessageToHarvestedQueue(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
             harvestedFile.ErrorMessage = response.ErrorMessage;
+            harvestedFile.HasMessageSent = response.IsSucceeded;
         }
     }
 
