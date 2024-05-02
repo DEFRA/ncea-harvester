@@ -14,22 +14,6 @@ env:
   keyVaultUri: $(keyVaultUri)
   blobStorageUri: $(blobStorageUri)
 
-pv:
-  storageAccountResourceGroup: $(storageAccountResourceGroup)
-  storageAccountName: $(storageAccountName)
-  storageAccountFilePrivateEndpointFqdn: $(storageAccountFilePrivateEndpointFqdn)
-  enrichedMetadataShareName: metadata-import
-  pvcSize: 10Gi
-
-volumes: 
-- name: enrichedmetadata
-  persistentVolumeClaim:
-    claimName: ncea-enricher-fileshare-pvc
-
-volumeMounts: 
-- mountPath: /metadata-import
-  name: enrichedmetadata
-
 jobs:    
   # cron job configurations for medin data source
   medin:    

@@ -14,22 +14,6 @@ env:
   keyVaultUri: https://devnceinfkvt1401.vault.azure.net/
   blobStorageUri: https://devnceinfst1401.blob.core.windows.net
 
-pv:
-  storageAccountResourceGroup: DEVNCEINFRG1401
-  storageAccountName: devnceinfst1401
-  storageAccountFilePrivateEndpointFqdn: devnceinfst1401.file.core.windows.net
-  enrichedMetadataShareName: metadata-import
-  pvcSize: 10Gi
-
-volumes: 
-- name: enrichedmetadata
-  persistentVolumeClaim:
-    claimName: ncea-enricher-fileshare-pvc
-
-volumeMounts: 
-- mountPath: /metadata-import
-  name: enrichedmetadata
-
 jobs:    
   # cron job configurations for medin data source
   medin:    
