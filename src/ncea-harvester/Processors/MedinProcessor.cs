@@ -56,8 +56,6 @@ public class MedinProcessor : IProcessor
         _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
-
-        _logger.LogInformation("Harvester summary | Total record count : {total} | Success : {itemsHarvestedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)), _dataSourceName);
     }
 
     private async Task HarvestMedinMetadata(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)

@@ -16,11 +16,11 @@ public class JnccProcessor : IProcessor
 {
     private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
-    private readonly IOrchestrationService _orchestrationService;
     private readonly IBackUpService _backUpService;
     private readonly IDeletionService _deletionService;
-    private readonly ILogger _logger;
+    private readonly IOrchestrationService _orchestrationService;
     private readonly HarvesterConfiguration _harvesterConfiguration;
+    private readonly ILogger _logger;
 
     public JnccProcessor(IApiClient apiClient,
         IOrchestrationService orchestrationService,
@@ -30,10 +30,10 @@ public class JnccProcessor : IProcessor
         HarvesterConfiguration harvesterConfiguration)
     {
         _apiClient = apiClient;
-        _harvesterConfiguration = harvesterConfiguration;        
-        _orchestrationService = orchestrationService;
         _backUpService = backUpService;
         _deletionService = deletionService;
+        _orchestrationService = orchestrationService;
+        _harvesterConfiguration = harvesterConfiguration;
         _logger = logger;
 
         _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
@@ -60,8 +60,6 @@ public class JnccProcessor : IProcessor
         _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName); 
         
         _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
-
-        _logger.LogInformation("Harvester summary | Total record count : {total} | Success : {itemsHarvestedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.ErrorMessage)), _dataSourceName);
     }
 
     private async Task HarvestJnccMetadataFiles(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
