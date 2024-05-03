@@ -53,30 +53,34 @@ public class OrchestrationService : IOrchestrationService
         try
         {
             blobUrl = await _blobService.SaveAsync(new SaveBlobRequest(xmlStream, documentFileName, dataSourceName), cancellationToken);
-            return new SaveBlobResponse(documentFileIdentifier, blobUrl, string.Empty);
         }
         catch (RequestFailedException ex)
         {
             var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
-            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            return new SaveBlobResponse(documentFileIdentifier, blobUrl, errorMessageBase);
+            CustomLogger.LogErrorMessage(_logger, errorMessage, ex);            
         }
+
+        return new SaveBlobResponse(documentFileIdentifier, blobUrl, (blobUrl == string.Empty) ? errorMessageBase : string.Empty);
     }
 
     private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
     {
-        var errorMessageBase = "Error occured while sending message to harvested-queue";
+        bool isSuceeded;
+        var errorMessageBase = string.Empty;
+        
         try
         {
             await _serviceBusService.SendMessageAsync(new SendMessageRequest(dataSourceName, documentFileIdentifier, metaDataXmlString), cancellationToken);
-
-            return new SendMessageResponse(documentFileIdentifier, true, string.Empty);
+            isSuceeded = true;
         }
         catch (ServiceBusException ex)
         {
+            errorMessageBase = "Error occured while sending message to harvested-queue";
             var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
         }
+
+        return new SendMessageResponse(documentFileIdentifier, isSuceeded, errorMessageBase);
     }
 }

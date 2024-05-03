@@ -132,7 +132,6 @@ public class JnccProcessor : IProcessor
         try
         {
             responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
-            return responseXmlString;
         }
         catch (HttpRequestException ex)
         {
