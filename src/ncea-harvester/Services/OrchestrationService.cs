@@ -79,6 +79,6 @@ public class OrchestrationService : IOrchestrationService
             return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
         }
 
-        return new SendMessageResponse(documentFileIdentifier, isSuceeded, !isSuceeded ? errorMessageBase : string.Empty);
+        return new SendMessageResponse(documentFileIdentifier, isSuceeded, isSuceeded ? string.Empty : errorMessageBase);
     }
 }
