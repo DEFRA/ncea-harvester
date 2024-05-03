@@ -65,8 +65,9 @@ public class OrchestrationService : IOrchestrationService
 
     private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
     {
-        bool isSuceeded = false;
-        var errorMessageBase = "Error occured while sending message to harvested-queue";
+        bool isSuceeded;
+        var errorMessageBase = string.Empty;
+        
         try
         {
             await _serviceBusService.SendMessageAsync(new SendMessageRequest(dataSourceName, documentFileIdentifier, metaDataXmlString), cancellationToken);
@@ -74,11 +75,12 @@ public class OrchestrationService : IOrchestrationService
         }
         catch (ServiceBusException ex)
         {
+            errorMessageBase = "Error occured while sending message to harvested-queue";
             var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
         }
 
-        return new SendMessageResponse(documentFileIdentifier, isSuceeded, isSuceeded ? string.Empty : errorMessageBase);
+        return new SendMessageResponse(documentFileIdentifier, isSuceeded, errorMessageBase);
     }
 }
