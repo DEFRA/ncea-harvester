@@ -235,4 +235,78 @@ public class MedinProcessorTests
         var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
+
+    [Fact]
+    public async Task Process_WhenValidMedinMetadataIsHarvestedAndOneBatchFails_ShouldSendMessagesToServiceBus()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+        string batch1ExpectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                            "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
+                            "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
+                            "  <csw:SearchResults numberOfRecordsMatched=\"300\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"101\">" +
+                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+                            "      <gmd:fileIdentifier>" +
+                            "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+                            "      </gmd:fileIdentifier>" +
+                            "    </gmd:MD_Metadata>" +
+                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+                            "      <gmd:fileIdentifier>" +
+                            "        <gco:CharacterString>defe1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+                            "      </gmd:fileIdentifier>" +
+                            "    </gmd:MD_Metadata>" +
+                            "  </csw:SearchResults>" +
+                            "</csw:GetRecordsResponse>";        
+
+        string batch3ExpectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                            "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
+                            "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
+                            "  <csw:SearchResults numberOfRecordsMatched=\"300\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"301\">" +
+                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+                            "      <gmd:fileIdentifier>" +
+                            "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+                            "      </gmd:fileIdentifier>" +
+                            "    </gmd:MD_Metadata>" +
+                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
+                            "      <gmd:fileIdentifier>" +
+                            "        <gco:CharacterString>defe1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
+                            "      </gmd:fileIdentifier>" +
+                            "    </gmd:MD_Metadata>" +
+                            "  </csw:SearchResults>" +
+                            "</csw:GetRecordsResponse>";
+        var httpResponse1 = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(batch1ExpectedData),
+        };
+
+        var httpResponse3 = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(batch3ExpectedData),
+        };
+        
+        var apiClient = ApiClientForTests.GetWithBatchError(true, httpResponse1, null, httpResponse3);
+        var harvesterConfiguration = new HarvesterConfiguration() 
+        { 
+            DataSourceApiBase = "https://base-uri", 
+            DataSourceApiUrl = "/test-url/gmd?maxRecords={{maxRecords}}&startPosition={{startPosition}}", 
+            ProcessorType = ProcessorType.Medin, Type = "" 
+        };
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
+                                              out Mock<BlobClient> mockBlobClient);
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
+
+        // Act
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
+
+        // Assert
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(4));
+        mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Exactly(4));
+        mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Exactly(4));
+        mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
+    }
 }
