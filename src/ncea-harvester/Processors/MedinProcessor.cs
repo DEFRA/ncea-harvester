@@ -74,38 +74,42 @@ public class MedinProcessor : IProcessor
             if (responseXml != null)
             {
                 startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out _totalRecordCount, responseXml!);
-                var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
-
-                if (metaDataXmlNodes != null)
-                {
-                    foreach (var metaDataXmlNode in metaDataXmlNodes)
-                    {
-                        var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
-                        var metaDataXmlString = GetMetadataXmlString(metaDataXmlNode);
-
-                        if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
-                        {
-                            harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty, null));
-                        }
-                        else
-                        {
-                            var errorMessage = "File Identifier not exists";
-                            harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage, null));
-                            CustomLogger.LogErrorMessage(_logger, errorMessage, null);
-                        }
-                    }
-                }
+                PopulateHarvestedRecords(harvestedFiles, hasNextRecords, responseXml);
             }
             else
             {
                 startPosition += maxBatchSize;
-            }
-            
+            }            
 
             if (startPosition != 0) hasNextRecords = (startPosition <= _totalRecordCount);
         }
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | Harvested record count : {itemsHarvestedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count, _dataSourceName);
+    }
+
+    private void PopulateHarvestedRecords(List<HarvestedFile> harvestedFiles, bool hasNextRecords, XDocument? responseXml)
+    {
+        var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
+
+        if (metaDataXmlNodes != null)
+        {
+            foreach (var metaDataXmlNode in metaDataXmlNodes)
+            {
+                var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+                var metaDataXmlString = GetMetadataXmlString(metaDataXmlNode);
+
+                if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+                {
+                    harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty, null));
+                }
+                else
+                {
+                    var errorMessage = "File Identifier not exists";
+                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage, null));
+                    CustomLogger.LogErrorMessage(_logger, errorMessage, null);
+                }
+            }
+        }
     }
 
     private static string GetMetadataXmlString(XElement metaDataXmlNode)
@@ -129,7 +133,7 @@ public class MedinProcessor : IProcessor
         {
             var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            ThrowExceptionWhenFailureFromInitialRequest(startPosition, ex, errorMessage);
+            ThrowExceptionWhenFailureFromInitialRequest(maxRecords, ex, errorMessage);
         }
         catch (TaskCanceledException ex)
         {
@@ -143,7 +147,7 @@ public class MedinProcessor : IProcessor
                 errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
             }
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            ThrowExceptionWhenFailureFromInitialRequest(startPosition, ex, errorMessage);
+            ThrowExceptionWhenFailureFromInitialRequest(maxRecords, ex, errorMessage);
         }
         return null;
     }
@@ -199,16 +203,16 @@ public class MedinProcessor : IProcessor
         return int.TryParse(totalRecords, out int result) ? result : 0;
     }
 
-    private static void ThrowExceptionWhenFailureFromInitialRequest(int startPosition, HttpRequestException ex, string errorMessage)
+    private static void ThrowExceptionWhenFailureFromInitialRequest(int maxRecords, HttpRequestException ex, string errorMessage)
     {
-        if (startPosition == 1)
+        if (maxRecords == 1)
         {
             throw new DataSourceConnectionException(errorMessage, ex);
         }
     }
-    private static void ThrowExceptionWhenFailureFromInitialRequest(int startPosition, TaskCanceledException ex, string errorMessage)
+    private static void ThrowExceptionWhenFailureFromInitialRequest(int maxRecords, TaskCanceledException ex, string errorMessage)
     {
-        if (startPosition == 1)
+        if (maxRecords == 1)
         {
             throw new DataSourceConnectionException(errorMessage, ex);
         }
