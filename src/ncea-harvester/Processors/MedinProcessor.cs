@@ -10,6 +10,7 @@ namespace Ncea.Harvester.Processors;
 
 public class MedinProcessor : IProcessor
 {
+    private int _totalRecordCount;
     private readonly string _dataSourceName;
     private readonly IApiClient _apiClient;
     private readonly IOrchestrationService _orchestrationService;
@@ -48,57 +49,63 @@ public class MedinProcessor : IProcessor
         await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
         await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
-        _logger.LogInformation("Harvester summary | Total record count : {total} | Saved blob count : {itemsSavedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.BlobUrl)), _dataSourceName);
+        _logger.LogInformation("Harvester summary | Total record count : {total} | Saved blob count : {itemsSavedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.BlobUrl)), _dataSourceName);
 
         // Backup the enriched xml files from previous run, send sb message with meatadata xml content from current run, delete the backed up the enriched xml files from previous run
         _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
         await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
         _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
 
-        _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
+        _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
     }
 
     private async Task HarvestMedinMetadata(List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
     {
         var startPosition = 1;
-        var maxRecords = 100;
-        var totalRecords = 0;
+        var maxBatchSize = 100;        
         var hasNextRecords = true;
+
+        _totalRecordCount = await GetTotalRecordCount(cancellationToken);
+        _logger.LogInformation("Harvester summary | Total record count : {total} | DataSource : {_dataSourceName}", _totalRecordCount, _dataSourceName);
 
         while (hasNextRecords)
         {
-            var responseXml = await GetMedinData(startPosition, maxRecords, cancellationToken);
-            startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out totalRecords, responseXml!);
-            
-            if (startPosition == 1)
+            var responseXml = await GetMedinData(startPosition, maxBatchSize, cancellationToken);
+            if (responseXml != null)
             {
-                _logger.LogInformation("Harvester summary | Total record count : {total} | DataSource : {_dataSourceName}", totalRecords, _dataSourceName);
-            }
-            
-            var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
+                startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out _totalRecordCount, responseXml!);
+                var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
 
-            if (metaDataXmlNodes != null)
-            {
-                foreach (var metaDataXmlNode in metaDataXmlNodes)
+                if (metaDataXmlNodes != null)
                 {
-                    var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
-                    var metaDataXmlString = GetMetadataXmlString(metaDataXmlNode);
+                    foreach (var metaDataXmlNode in metaDataXmlNodes)
+                    {
+                        var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+                        var metaDataXmlString = GetMetadataXmlString(metaDataXmlNode);
 
-                    if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
-                    {
-                        harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty, null));
-                    }
-                    else
-                    {
-                        var errorMessage = "File Identifier not exists";
-                        harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage, null));
-                        CustomLogger.LogErrorMessage(_logger, errorMessage, null);
+                        if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+                        {
+                            harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty, null));
+                        }
+                        else
+                        {
+                            var errorMessage = "File Identifier not exists";
+                            harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage, null));
+                            CustomLogger.LogErrorMessage(_logger, errorMessage, null);
+                        }
                     }
                 }
             }
+            else
+            {
+                startPosition += maxBatchSize;
+            }
+            
 
-            if (startPosition != 0) hasNextRecords = (startPosition <= totalRecords);
+            if (startPosition != 0) hasNextRecords = (startPosition <= _totalRecordCount);
         }
+
+        _logger.LogInformation("Harvester summary | Total record count : {total} | Harvested record count : {itemsHarvestedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count, _dataSourceName);
     }
 
     private static string GetMetadataXmlString(XElement metaDataXmlNode)
@@ -112,18 +119,17 @@ public class MedinProcessor : IProcessor
     {
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
-
-        XDocument? responseDocument;
+        
         try
         {
             var responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
-            responseDocument = XDocument.Parse(responseXmlString);
+            return XDocument.Parse(responseXmlString);
         }
         catch (HttpRequestException ex)
         {
             var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            throw new DataSourceConnectionException(errorMessage, ex);
+            ThrowExceptionWhenFailureFromInitialRequest(startPosition, ex, errorMessage);
         }
         catch (TaskCanceledException ex)
         {
@@ -137,9 +143,9 @@ public class MedinProcessor : IProcessor
                 errorMessage = $"Request timed out while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
             }
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            throw new DataSourceConnectionException(errorMessage, ex);
+            ThrowExceptionWhenFailureFromInitialRequest(startPosition, ex, errorMessage);
         }
-        return responseDocument;
+        return null;
     }
 
     private static List<XElement>? GetMetadataList(XDocument? responseXml, bool hasNextRecords)
@@ -180,5 +186,31 @@ public class MedinProcessor : IProcessor
         bool hasTotalRecords = Int32.TryParse(totalRecordAttribute, out totalRecords);
         hasNextRecords = (hasTotalRecords && hasNextRecords && nextRecord > 0);
         return nextRecord;
-    }    
+    }
+
+    private async Task<int> GetTotalRecordCount(CancellationToken cancellationToken)
+    {
+        var responseXml = await GetMedinData(1, 1, cancellationToken);
+        var cswNameSpace = "http://www.opengis.net/cat/csw/2.0.2";
+        var searchResultsElement = responseXml!.Descendants()
+                                        .FirstOrDefault(n => n.Name.Namespace.NamespaceName == cswNameSpace
+                                                    && n.Name.LocalName == "SearchResults");
+        var totalRecords = searchResultsElement?.Attribute("numberOfRecordsMatched")?.Value;
+        return int.TryParse(totalRecords, out int result) ? result : 0;
+    }
+
+    private static void ThrowExceptionWhenFailureFromInitialRequest(int startPosition, HttpRequestException ex, string errorMessage)
+    {
+        if (startPosition == 1)
+        {
+            throw new DataSourceConnectionException(errorMessage, ex);
+        }
+    }
+    private static void ThrowExceptionWhenFailureFromInitialRequest(int startPosition, TaskCanceledException ex, string errorMessage)
+    {
+        if (startPosition == 1)
+        {
+            throw new DataSourceConnectionException(errorMessage, ex);
+        }
+    }
 }
