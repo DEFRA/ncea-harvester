@@ -121,13 +121,14 @@ public class MedinProcessor : IProcessor
     
     private async Task<XDocument?> GetMedinData(int startPosition, int maxRecords, CancellationToken cancellationToken)
     {
+        XDocument? document = null;
         var apiUrl = _harvesterConfiguration.DataSourceApiUrl;
         apiUrl = apiUrl.Replace("{{maxRecords}}", Convert.ToString(maxRecords)).Replace("{{startPosition}}", Convert.ToString(startPosition));
         
         try
         {
             var responseXmlString = await _apiClient.GetAsync(apiUrl, cancellationToken);
-            return XDocument.Parse(responseXmlString);
+            document = XDocument.Parse(responseXmlString);
         }
         catch (HttpRequestException ex)
         {
@@ -149,7 +150,7 @@ public class MedinProcessor : IProcessor
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             ThrowExceptionWhenFailureFromInitialRequest(maxRecords, ex, errorMessage);
         }
-        return null;
+        return document;
     }
 
     private static List<XElement>? GetMetadataList(XDocument? responseXml, bool hasNextRecords)
