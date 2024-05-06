@@ -47,7 +47,7 @@ public class OrchestrationService : IOrchestrationService
     {
         var blobUrl = string.Empty;
         var errorMessageBase = "Error occured while saving the file to the blob storage";
-        var xmlStream = new MemoryStream(Encoding.ASCII.GetBytes(metaDataXmlString));
+        var xmlStream = new MemoryStream(Encoding.UTF8.GetBytes(metaDataXmlString));
         var documentFileName = string.Concat(documentFileIdentifier, ".xml");
 
         try
