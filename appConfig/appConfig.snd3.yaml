@@ -7,3 +7,9 @@
   value: "https://SNDADPINFVT3401.vault.azure.net/"
 - key: BlobStorageUri
   value: "https://sndadpinfst3401ncea.blob.core.windows.net"
+- key: HarvesterQueueName
+  value: ncea-search-harvested-queue
+- key: MapperQueueName
+  value: ncea-search-mapped-queue
+- key: MapperQueueName
+  value: ncea-search-mapped-queue  

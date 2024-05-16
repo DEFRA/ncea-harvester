@@ -1,2 +1,2 @@
-- key: DummyKey
-  value: "DummyValue"
+- key: FileShareName
+  value: "/metadata-import"
