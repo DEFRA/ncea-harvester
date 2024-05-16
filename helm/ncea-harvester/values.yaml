@@ -14,7 +14,6 @@ serviceAccount:
   name: ncea-harvester 
 
 jobs:    
-  # cron job configurations for medin data source
   medin:    
     env:
     - name: DataSource
@@ -26,7 +25,6 @@ jobs:
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
   
-  # cron job configurations for jncc data source
   jncc:    
     env:
     - name: DataSource
@@ -43,10 +41,8 @@ pvc:
   metaDataFileShareSize: 10Gi
 
 peSaFileshare:
-  # elasticsearchShareScName: pe-elastic-data-azurefile-sc
   metaDataFileShareScName: pe-metadata-azurefile-sc
   storageAccountResourceGroup: sndadpinfrg3401-ncea-search
   storageAccountName: sndadpinfst3401ncea
   storageAccountFilePrivateEndpointFqdn: sndadpinfst3401ncea.file.core.windows.net/elasticsearch-data
   geoStorageAccountShareName: metadata-import
-  # esStorageAccountShareName: elasticsearch-data

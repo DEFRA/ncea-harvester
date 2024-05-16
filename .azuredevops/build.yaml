@@ -50,6 +50,7 @@ extends:
       appFrameworkType: "dotnet"
       frameworkVersion: "8.x"
       projectPath: "./src/ncea-harvester/ncea-harvester.csproj"
+      testProjectPath: "./src/ncea-harvester.tests/ncea-harvester.tests.csproj"
       manifestPath: "./src/ncea-harvester/obj/project.assets.json"
       imageRepoName: "ncea-harvester"
     appTestConfig:

@@ -11,7 +11,6 @@ storageAccounts:
         roleAssignments:
           - roleName: 'BlobDataContributor'
 
-
 namespaceQueues:
   - name: harvested-queue
     roleAssignments:  
