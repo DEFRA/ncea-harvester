@@ -93,11 +93,12 @@ spec:
             persistentVolumeClaim:
               claimName: ncea-enricher-fileshare-pvc
           - name: temp-dir
-              emptyDir: {}
+            emptyDir: {}
           - name: custom-root-ca
             secret:
-              secretName: custom-ca-trust-secret
-              optional: true    
+              optional: true
+              secretName: custom-ca-trust-secret  
+   
   schedule: {{ $job.schedule | quote | replace "|" " " }}
   successfulJobsHistoryLimit: {{ $job.successfulJobsHistoryLimit }}
 {{- end }}
