@@ -5,7 +5,7 @@ FROM defradigital/dotnetcore-development:${PARENT_VERSION} AS development
 ARG PARENT_VERSION
 LABEL uk.gov.defra.ffc.parent-image=defradigital/dotnetcore-development:${PARENT_VERSION}
 
-COPY --chown=dotnet:dotnet ./Directory.Build.props ./Directory.Build.props
+COPY --chown=dotnet:dotnet ./src/Directory.Build.props ./Directory.Build.props
 RUN mkdir -p /home/dotnet/ncea-harvester/ /home/dotnet/ncea-harvester.tests/
 COPY --chown=dotnet:dotnet ./src/ncea-harvester.tests/*.csproj ./ncea-harvester.tests/
 RUN dotnet restore ./ncea-harvester.tests/ncea-harvester.tests.csproj
