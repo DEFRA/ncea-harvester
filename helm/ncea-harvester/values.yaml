@@ -1,0 +1,52 @@
+# These are populated when your service is created via the ADP Portal scaffolder. Do not change these, as they are abstracted from your service and are mandatory. They are for your reference here.
+name: ncea-harvester
+namespace: ncea-search
+workstream: ncea-search
+image: ncea-harvester
+
+labels:
+  component: job
+
+container:
+  imagePullPolicy: Always
+
+serviceAccount:
+  name: ncea-harvester 
+
+jobs:    
+  # cron job configurations for medin data source
+  medin:    
+    env:
+    - name: DataSource
+      value: "medin"
+
+    schedule: "0 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+  
+  # cron job configurations for jncc data source
+  jncc:    
+    env:
+    - name: DataSource
+      value: "jncc"
+    
+    schedule: "0 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
+    concurrencyPolicy: Forbid
+    restartPolicy: OnFailure
+
+pvc:
+  metaDataFileShareName: metadata-fileshare-pvc
+  metaDataFileShareSize: 10Gi
+
+peSaFileshare:
+  # elasticsearchShareScName: pe-elastic-data-azurefile-sc
+  metaDataFileShareScName: pe-metadata-azurefile-sc
+  storageAccountResourceGroup: sndadpinfrg3401-ncea-search
+  storageAccountName: sndadpinfst3401ncea
+  storageAccountFilePrivateEndpointFqdn: sndadpinfst3401ncea.file.core.windows.net/elasticsearch-data
+  geoStorageAccountShareName: metadata-import
+  # esStorageAccountShareName: elasticsearch-data

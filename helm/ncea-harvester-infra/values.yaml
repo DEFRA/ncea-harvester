@@ -1,0 +1,23 @@
+storageAccounts:
+  - name: 'ncea'
+     blobContainers:
+      - name: 'jncc'
+        roleAssignments:
+          - roleName: 'BlobDataContributor'
+      - name: 'medin'
+        roleAssignments:
+          - roleName: 'BlobDataContributor'
+      - name: 'ncea-classifiers'
+        roleAssignments:
+          - roleName: 'BlobDataContributor'
+
+
+namespaceQueues:
+  - name: harvested-queue
+    roleAssignments:  
+      - roleName: QueueSender
+      - roleName: QueueReceiver   
+  - name: mapped-queue
+    roleAssignments:  
+      - roleName: QueueSender
+      - roleName: QueueReceiver    

@@ -22,3 +22,5 @@
 **/project.lock.json
 **/*.csproj.user
 
+*.tgz
+

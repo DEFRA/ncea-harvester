@@ -1,0 +1,97 @@
+{{- $serviceAccountName := .Values.serviceAccount.name -}}
+{{- range $jobname, $job := .Values.jobs }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "cronjobs.releaseName" $ }}-{{ $jobname }}
+  labels:
+    azure.workload.identity/use: "true" 
+    {{- include "cronjobs.labels" $ | nindent 4 }}
+spec:
+  concurrencyPolicy: {{ $job.concurrencyPolicy }}
+  failedJobsHistoryLimit: {{ $job.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            rollme: {{ randAlphaNum 5 | quote }}
+            timestamp: {{ now | date "20060102150405" | quote }}
+          labels:
+            app: {{ include "cronjobs.releaseName" $ }}
+            cron: {{ $jobname }}
+            azure.workload.identity/use: "true"
+        spec:
+        {{- if hasKey $job "imagePullSecrets" }}
+          imagePullSecrets:
+          - name: {{ $.Release.Name }}-docker
+        {{- end }}
+          serviceAccountName: {{ required (printf "No value found for '%s' in adp-helm-library template" "serviceAccount.name") $.Values.serviceAccount.name | quote }}
+        {{- if hasKey $job "securityContext" }}
+          {{- if $job.securityContext.runAsUser }}
+          securityContext:
+            runAsUser: {{ $job.securityContext.runAsUser }}
+            {{- if $job.securityContext.runAsGroup }}
+            runAsGroup: {{ $job.securityContext.runAsGroup }}
+            {{- end }}
+            {{- if $job.securityContext.fsGroup }}
+            fsGroup: {{ $job.securityContext.fsGroup }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+          containers:
+          - image: {{ required (printf "No value found for '%s' in adp-helm-library template" "image") $.Values.image | quote }}
+            imagePullPolicy: {{ $.Values.container.imagePullPolicy | default "Always" | quote }}
+            name: {{ $jobname }}
+            {{- with $job.env }}
+            env:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            envFrom:
+            - configMapRef:
+                name: {{ printf "%s-config" $.Values.name | quote }}
+            - secretRef:
+                name: {{ printf "%s-secret" $.Values.name | quote }}
+            {{- with $job.command }}
+            command:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- with $job.args }}
+            args:
+{{ toYaml . | indent 12 }}
+              {{- end }}
+            {{- with $job.resources }}
+            resources:
+{{ toYaml . | indent 14 }}
+            {{- end }}
+            volumeMounts:
+            - mountPath: /metadata-import
+              name: enrichedmetadata
+            - mountPath: /tmp
+              name: temp-dir
+            - name: custom-root-ca
+              mountPath: /etc/ssl/certs/defra-egress-firewall-cert-01.crt
+              subPath: defra-egress-firewall-cert-01.crt
+              readOnly: true  
+          {{- with $job.nodeSelector }}
+          nodeSelector:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          {{- with $job.affinity }}
+          affinity:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          {{- with $job.tolerations }}
+          tolerations:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          restartPolicy: {{ $job.restartPolicy }}
+          dnsPolicy: Default
+          volumes:
+          - name: enrichedmetadata
+            persistentVolumeClaim:
+              claimName: ncea-enricher-fileshare-pvc
+  schedule: {{ $job.schedule | quote | replace "|" " " }}
+  successfulJobsHistoryLimit: {{ $job.successfulJobsHistoryLimit }}
+{{- end }}

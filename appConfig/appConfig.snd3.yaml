@@ -1,0 +1,6 @@
+- key: ServiceBusHostName
+  value: "TSTNCESBINF1401.servicebus.windows.net"
+- key: KeyVaultUri
+  value: "https://tstnceinfkvt1401.vault.azure.net/"
+- key: BlobStorageUri
+  value: "https://tstnceinfst1401.blob.core.windows.net"

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.pvc.metaDataFileShareName }}
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.pvc.metaDataFileShareSize }}
+  storageClassName: {{ .Values.peSaFileshare.metaDataFileShareScName }}
