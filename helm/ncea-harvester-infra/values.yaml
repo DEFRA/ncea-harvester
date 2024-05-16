@@ -1,15 +1,15 @@
 storageAccounts:
   - name: 'ncea'
-     blobContainers:
-      - name: 'jncc'
-        roleAssignments:
-          - roleName: 'BlobDataContributor'
-      - name: 'medin'
-        roleAssignments:
-          - roleName: 'BlobDataContributor'
-      - name: 'ncea-classifiers'
-        roleAssignments:
-          - roleName: 'BlobDataContributor'
+    blobContainers:
+    - name: 'jncc'
+      roleAssignments:
+        - roleName: 'BlobDataContributor'
+    - name: 'medin'
+      roleAssignments:
+        - roleName: 'BlobDataContributor'
+    - name: 'ncea-classifiers'
+      roleAssignments:
+        - roleName: 'BlobDataContributor'
 
 namespaceQueues:
   - name: harvested-queue
