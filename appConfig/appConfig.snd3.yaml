@@ -11,5 +11,3 @@
   value: ncea-search-harvested-queue
 - key: MapperQueueName
   value: ncea-search-mapped-queue
-- key: MapperQueueName
-  value: ncea-search-mapped-queue  
