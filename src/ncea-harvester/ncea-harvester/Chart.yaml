@@ -1,6 +1,0 @@
-apiVersion: v2
-name: ncea-harvester
-description: A Helm chart for ncea harvester microservice
-type: application
-version: 1.0.0
-appVersion: "0.0.1"
