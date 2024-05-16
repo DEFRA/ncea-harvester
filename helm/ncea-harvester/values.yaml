@@ -44,5 +44,5 @@ peSaFileshare:
   metaDataFileShareScName: pe-metadata-azurefile-sc
   storageAccountResourceGroup: sndadpinfrg3401-ncea-search
   storageAccountName: sndadpinfst3401ncea
-  storageAccountFilePrivateEndpointFqdn: sndadpinfst3401ncea.file.core.windows.net/elasticsearch-data
+  storageAccountFilePrivateEndpointFqdn: sndadpinfst3401ncea.file.core.windows.net
   geoStorageAccountShareName: metadata-import
