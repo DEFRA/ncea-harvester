@@ -19,7 +19,7 @@ jobs:
     - name: DataSource
       value: "medin"
 
-    schedule: "0 * * * *"
+    schedule: "0 21 * * *"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
@@ -30,7 +30,7 @@ jobs:
     - name: DataSource
       value: "jncc"
     
-    schedule: "0 * * * *"
+    schedule: "10 11 * * *"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
