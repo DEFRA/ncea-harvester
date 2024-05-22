@@ -40,7 +40,7 @@ ConfigureServices(builder);
 ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 
 var host = builder.Build();
-host.Run();
+await host.RunAsync();
 
 static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterConfiguration> harvsesterConfigurations, ProcessorType processorType)
 {
