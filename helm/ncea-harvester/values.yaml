@@ -24,6 +24,13 @@ jobs:
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
+    resources:
+      requests:
+        memory: 2000Mi
+        cpu: 150m
+      limits:
+        memory: 2000Mi
+        cpu: 150m
   
   jncc:    
     env:
@@ -35,6 +42,13 @@ jobs:
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
+    resources:
+      requests:
+        memory: 2000Mi
+        cpu: 150m
+      limits:
+        memory: 2000Mi
+        cpu: 150m
 
 pvc:
   metaDataFileShareName: metadata-fileshare-pvc
