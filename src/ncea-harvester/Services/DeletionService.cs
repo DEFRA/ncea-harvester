@@ -1,9 +1,9 @@
 ﻿using Azure;
-using ncea.harvester.Services.Contracts;
+using Ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Utils;
 
-namespace ncea.harvester.Services;
+namespace Ncea.harvester.Services;
 
 public class DeletionService : IDeletionService
 {

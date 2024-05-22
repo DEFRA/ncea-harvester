@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using FluentAssertions;
-using ncea.harvester.Services;
+using Ncea.harvester.Services;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Azure;
 

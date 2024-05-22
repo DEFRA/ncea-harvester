@@ -1,6 +1,6 @@
 ﻿using Azure;
 using Azure.Messaging.ServiceBus;
-using ncea.harvester.Services.Contracts;
+using Ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
@@ -10,7 +10,7 @@ using Ncea.Harvester.Utils;
 using System.Text;
 using System.Text.Json;
 
-namespace ncea.harvester.Services;
+namespace Ncea.harvester.Services;
 
 public class OrchestrationService : IOrchestrationService
 {

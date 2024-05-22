@@ -1,4 +1,4 @@
-﻿using ncea.harvester.Services.Contracts;
+﻿using Ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;

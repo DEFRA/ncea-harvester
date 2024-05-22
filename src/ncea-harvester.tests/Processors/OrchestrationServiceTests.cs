@@ -2,8 +2,8 @@
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
-using ncea.harvester.Infrastructure.Contracts;
-using ncea.harvester.Services;
+using Ncea.harvester.Infrastructure.Contracts;
+using Ncea.harvester.Services;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Tests.Clients;
