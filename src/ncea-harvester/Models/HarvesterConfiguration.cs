@@ -1,4 +1,4 @@
-﻿using Ncea.Harvester.Constants;
+﻿using Ncea.Harvester.Enums;
 
 namespace Ncea.Harvester.Models;
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using ncea.harvester.Infrastructure.Contracts;
 using ncea.harvester.Services;
+using Ncea.Harvester.Enums;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Tests.Clients;
 
@@ -130,7 +131,7 @@ public class OrchestrationServiceTests
 
 
         //Act
-        await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<string>(), harvetsedItemsList, It.IsAny<CancellationToken>());
+        await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<DataSource>(), harvetsedItemsList, It.IsAny<CancellationToken>());
 
         //Assert
         mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Never);
@@ -158,7 +159,7 @@ public class OrchestrationServiceTests
 
 
         //Act
-        await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<string>(), harvetsedItemsList, It.IsAny<CancellationToken>());
+        await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<DataSource>(), harvetsedItemsList, It.IsAny<CancellationToken>());
 
         //Assert
         mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(1));
@@ -202,7 +203,7 @@ public class OrchestrationServiceTests
 
 
         //Act
-        await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<string>(), harvetsedItemsList, It.IsAny<CancellationToken>());
+        await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<DataSource>(), harvetsedItemsList, It.IsAny<CancellationToken>());
 
         //Assert
         mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(1));

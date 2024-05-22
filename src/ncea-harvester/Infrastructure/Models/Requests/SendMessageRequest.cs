@@ -1,14 +1,9 @@
-﻿
-namespace Ncea.Harvester.Infrastructure.Models.Requests;
+﻿namespace Ncea.Harvester.Infrastructure.Models.Requests;
 
 public class SendMessageRequest
 {
-    public SendMessageRequest(string dataSourceName, string fileIdentifier, string message) =>
-        (DataSourceName, FileIdentifier, Message) = (dataSourceName, fileIdentifier, message);
-
-    public string DataSourceName { get; set; }
-
-    public string FileIdentifier { get; set; }
+    public SendMessageRequest(string message) =>
+        (Message) = (message);
 
     public string Message { get; set; }
 }

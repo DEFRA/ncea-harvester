@@ -2,7 +2,7 @@
 using Azure.Messaging.ServiceBus;
 using Ncea.Harvester.Infrastructure;
 using Ncea.Harvester.Models;
-using Ncea.Harvester.Constants;
+using Ncea.Harvester.Enums;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 

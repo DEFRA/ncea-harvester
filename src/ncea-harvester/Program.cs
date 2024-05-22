@@ -8,7 +8,7 @@ using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Messaging.ServiceBus.Administration;
-using Ncea.Harvester.Constants;
+using Ncea.Harvester.Enums;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;

@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using ncea.harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
+using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
@@ -56,7 +57,7 @@ public class JnccProcessor : IProcessor
 
         // Backup the enriched xml files from previous run, send sb message with meatadata xml content from current run, delete the backed up the enriched xml files from previous run
         _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+        await _orchestrationService.SendMessagesToHarvestedQueue(DataSource.Jncc, harvestedFiles, cancellationToken);
         _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName); 
         
         _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
