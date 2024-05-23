@@ -12,8 +12,32 @@ namespace Ncea.Harvester.Tests.Processors;
 
 public class OrchestrationServiceTests
 {
+    //[Fact]
+    //public async Task SaveHarvestedXmlFiles_WhenHarvetsedItemsListIsEmpty_ThenBlobClientIsNotCalled()
+    //{
+    //    //Arrange
+    //    var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+    //    var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+    //                                          out Mock<BlobContainerClient> mockBlobContainerClient,
+    //                                          out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
+    //                                          out Mock<BlobClient> mockBlobClient);
+    //    var logger = new Logger<OrchestrationService>(new LoggerFactory());
+
+    //    var orchestrationService = new OrchestrationService(blobService, serviceBusService, logger);
+    //    var harvetsedItemsList = new List<HarvestedFile>();
+
+
+    //    //Act
+    //    await orchestrationService.SaveHarvestedXmlFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>());
+
+    //    //Assert
+    //    mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Never);
+    //    mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Never);
+    //    mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+    //}
+
     [Fact]
-    public async Task SaveHarvestedXmlFiles_WhenHarvetsedItemsListIsEmpty_ThenBlobClientIsNotCalled()
+    public async Task SaveHarvestedXmlFiles_WhenHarvetsedItemWithEmptyFileIdentifiers_ThenBlobClientIsNotCalled()
     {
         //Arrange
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
@@ -24,41 +48,9 @@ public class OrchestrationServiceTests
         var logger = new Logger<OrchestrationService>(new LoggerFactory());
 
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, logger);
-        var harvetsedItemsList = new List<HarvestedFile>();
-
 
         //Act
-        await orchestrationService.SaveHarvestedXmlFiles(It.IsAny<string>(), harvetsedItemsList, It.IsAny<CancellationToken>());
-
-        //Assert
-        mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Never);
-        mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Never);
-        mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task SaveHarvestedXmlFiles_WhenHarvetsedItemsListConatinsItemsWithEmptyFileIdentifiers_ThenBlobClientIsNotCalled()
-    {
-        //Arrange
-        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
-        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
-                                              out Mock<BlobContainerClient> mockBlobContainerClient,
-                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
-                                              out Mock<BlobClient> mockBlobClient);
-        var logger = new Logger<OrchestrationService>(new LoggerFactory());
-
-        var orchestrationService = new OrchestrationService(blobService, serviceBusService, logger);
-        var harvetsedItemsList = new List<HarvestedFile>
-        {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile("test-file-id", string.Empty, "test-file-content", string.Empty, null),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
-        };
-
-
-        //Act
-        await orchestrationService.SaveHarvestedXmlFiles(It.IsAny<string>(), harvetsedItemsList, It.IsAny<CancellationToken>());
+        await orchestrationService.SaveHarvestedXmlFile(It.IsAny<string>(), "test-file-id", "test-xml-content", It.IsAny<CancellationToken>());
 
         //Assert
         mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Exactly(1));
@@ -86,17 +78,9 @@ public class OrchestrationServiceTests
         );
 
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
-        var harvetsedItemsList = new List<HarvestedFile>
-        {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile("test-file-id", string.Empty, "test-file-content", string.Empty, null),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
-        };
-
 
         //Act
-        await orchestrationService.SaveHarvestedXmlFiles(It.IsAny<string>(), harvetsedItemsList, It.IsAny<CancellationToken>());
+        await orchestrationService.SaveHarvestedXmlFile(It.IsAny<string>(), "test-file-id", "test-xml-content", It.IsAny<CancellationToken>());
 
         //Assert
         mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Exactly(1));
@@ -151,10 +135,10 @@ public class OrchestrationServiceTests
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, logger);
         var harvetsedItemsList = new List<HarvestedFile>
         {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", string.Empty, null),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
+            new HarvestedFile(string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", null),
+            new HarvestedFile("", string.Empty, string.Empty, null),
+            new HarvestedFile(" ", string.Empty, string.Empty, null)
         };
 
 
@@ -195,10 +179,10 @@ public class OrchestrationServiceTests
         var orchestrationService = new OrchestrationService(blobService, serviceBusService, mockLogger.Object);
         var harvetsedItemsList = new List<HarvestedFile>
         {
-            new HarvestedFile(string.Empty, string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", string.Empty, null),
-            new HarvestedFile("", string.Empty, string.Empty, string.Empty, null),
-            new HarvestedFile(" ", string.Empty, string.Empty, string.Empty, null)
+            new HarvestedFile(string.Empty, string.Empty, string.Empty, null),
+            new HarvestedFile("test-file-id", "test-blob-url", "test-file-content", null),
+            new HarvestedFile("", string.Empty, string.Empty, null),
+            new HarvestedFile(" ", string.Empty, string.Empty, null)
         };
 
 

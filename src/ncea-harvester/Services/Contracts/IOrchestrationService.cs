@@ -5,7 +5,7 @@ namespace Ncea.harvester.Services.Contracts
 {
     public interface IOrchestrationService
     {
-        Task SaveHarvestedXmlFiles(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken);
+        Task<HarvestedFile> SaveHarvestedXmlFile(string dataSourceName, string fileIdentifier, string xmlContent, CancellationToken cancellationToken);
         Task SendMessagesToHarvestedQueue(DataSource dataSource, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken);
     }
 }

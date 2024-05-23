@@ -46,12 +46,8 @@ public class JnccProcessor : IProcessor
         var harvestedFiles = new List<HarvestedFile>();
 
         // Harvest metadata from datasource
-        await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);
-
         // Backup the metadata xml blobs from previous run, save the meatadata xml blobs in current run, delete the backed up blobs from previous run
-        await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
-        await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
-        await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
+        await HarvestJnccMetadataFiles(harvestedFiles, cancellationToken);        
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | Saved blob count : {itemsSavedSuccessfully} | DataSource : {_dataSourceName}", harvestedFiles.Count, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.BlobUrl)), _dataSourceName);
 
@@ -70,32 +66,37 @@ public class JnccProcessor : IProcessor
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | DataSource : {_dataSourceName}", documentLinks.Count, _dataSourceName);
 
+        await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
+
         foreach (var documentLink in documentLinks)
         {
             var apiUrl = "/waf/" + documentLink;
             var metaDataXmlString = await GetJnccMetadata(apiUrl, documentLink, cancellationToken);
             if (!string.IsNullOrEmpty(metaDataXmlString))
             {
-                var documentFileIdentifier = GetFileIdentifier(metaDataXmlString);
+                var fileIdentifier = GetFileIdentifier(metaDataXmlString);
 
-                if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+                if (!string.IsNullOrWhiteSpace(fileIdentifier))
                 {
-                    harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty, null));
+                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier, metaDataXmlString, cancellationToken);
+                    harvestedFiles.Add(harvestedFile);
                 }
                 else
                 {
                     var errorMessage = "File Identifier not exists";
-                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage, null));
+                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }
             }
             else
             {
                 var errorMessage = $"File not found exception : file-id : {documentLink}";
-                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, string.Empty, errorMessage, null));
+                harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                 CustomLogger.LogErrorMessage(_logger, errorMessage, null);
             }            
         }
+
+        await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
     }
 
     private async Task<string> GetJnccDataMaster(string apiUrl, CancellationToken cancellationToken)

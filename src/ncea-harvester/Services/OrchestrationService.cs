@@ -25,14 +25,10 @@ public class OrchestrationService : IOrchestrationService
         _logger = logger;
     }
 
-    public async Task SaveHarvestedXmlFiles(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    public async Task<HarvestedFile> SaveHarvestedXmlFile(string dataSourceName, string fileIdentifier, string xmlContent, CancellationToken cancellationToken)
     {
-        foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.FileIdentifier)))
-        {
-            var response = await SaveHarvestedXml(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
-            harvestedFile.BlobUrl = response.BlobUrl;
-            harvestedFile.ErrorMessage = response.ErrorMessage;
-        }
+        var response = await SaveHarvestedXml(dataSourceName, fileIdentifier, xmlContent, cancellationToken);
+        return new HarvestedFile(fileIdentifier, response.BlobUrl, response.ErrorMessage, null);
     }
 
     public async Task SendMessagesToHarvestedQueue(DataSource dataSource, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
