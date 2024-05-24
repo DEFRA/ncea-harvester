@@ -24,3 +24,6 @@
 
 *.tgz
 
+geonetwork-priv-fileshare-storageclass-local.yaml
+geonetwork-priv-fileshare-pvc-local.yaml
+helloworld.yaml

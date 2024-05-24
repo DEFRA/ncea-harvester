@@ -9,6 +9,7 @@ parameters:
   storageAccount: {{ .Values.peSaFileshare.storageAccountName }}
   server: {{ .Values.peSaFileshare.storageAccountFilePrivateEndpointFqdn }} 
   shareName: {{ .Values.peSaFileshare.geoStorageAccountShareName }}  
+  storeAccountKey: "false"
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
