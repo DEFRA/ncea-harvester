@@ -57,6 +57,6 @@ pvc:
 peSaFileshare:
   metaDataFileShareScName: pe-metadata-azurefile-sc
   storageAccountResourceGroup: sndadpinfrg3401-ncea-search
-  storageAccountName: sndadpinfst3401ncea
-  storageAccountFilePrivateEndpointFqdn: sndadpinfst3401ncea.file.core.windows.net
-  geoStorageAccountShareName: metadata-import
+  storageAccountName: sndadpinfst3401nceasrh
+  storageAccountFilePrivateEndpointFqdn: sndadpinfst3401nceasrh.file.core.windows.net
+  geoStorageAccountShareName: metadata-import 
