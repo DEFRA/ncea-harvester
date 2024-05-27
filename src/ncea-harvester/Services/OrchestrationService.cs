@@ -1,21 +1,26 @@
 ﻿using Azure;
 using Azure.Messaging.ServiceBus;
-using Ncea.harvester.Services.Contracts;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Models.Responses;
 using Ncea.Harvester.Models;
+using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Utils;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace Ncea.harvester.Services;
+namespace Ncea.Harvester.Services;
 
 public class OrchestrationService : IOrchestrationService
 {
     private readonly IBlobService _blobService;
     private readonly IServiceBusService _serviceBusService;
+    private static readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
     private readonly ILogger _logger;
 
     public OrchestrationService(IBlobService blobService, IServiceBusService serviceBusService, ILogger<OrchestrationService> logger)
@@ -70,7 +75,7 @@ public class OrchestrationService : IOrchestrationService
         
         try
         {
-            var message = JsonSerializer.Serialize(harvestedRecord);
+            var message = JsonSerializer.Serialize(harvestedRecord, _serializerOptions);
             await _serviceBusService.SendMessageAsync(new SendMessageRequest(message), cancellationToken);
             isSuceeded = true;
         }

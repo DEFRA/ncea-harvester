@@ -2,7 +2,6 @@
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Azure.Storage.Blobs.Models;
-using Ncea.harvester.Infrastructure.Contracts;
 using Ncea.harvester.Extensions;
 
 namespace Ncea.Harvester.Infrastructure;

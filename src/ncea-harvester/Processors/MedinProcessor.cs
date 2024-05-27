@@ -1,4 +1,4 @@
-﻿using Ncea.harvester.Services.Contracts;
+﻿using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
@@ -42,8 +42,7 @@ public class MedinProcessor : IProcessor
     {
         var harvestedFiles = new List<HarvestedFile>();
 
-        // Harvest metadata from datasource
-        // Backup the metadata xml blobs from previous run, save the meatadata xml blobs in current run, delete the backed up blobs from previous run
+        // Harvest metadata from datasource, Backup the metadata xml blobs from previous run, save the meatadata xml blobs in current run and delete the backed up blobs from previous run
         await HarvestMedinMetadata(harvestedFiles, cancellationToken);
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | Saved blob count : {itemsSavedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.BlobUrl)), _dataSourceName);

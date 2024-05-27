@@ -13,10 +13,8 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.Extensions.Azure;
-using Ncea.harvester.Services.Contracts;
-using Ncea.harvester.Services;
-using Ncea.harvester.Infrastructure.Contracts;
-using Ncea.harvester.Infrastructure;
+using Ncea.Harvester.Services.Contracts;
+using Ncea.Harvester.Services;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())

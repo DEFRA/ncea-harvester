@@ -1,6 +1,6 @@
 ﻿using Azure.Storage.Blobs.Specialized;
 
-namespace Ncea.harvester.Infrastructure.Contracts;
+namespace Ncea.Harvester.Infrastructure.Contracts;
 
 public interface IBlobBatchClientWrapper
 {

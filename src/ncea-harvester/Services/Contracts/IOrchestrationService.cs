@@ -1,7 +1,7 @@
 ﻿using Ncea.Harvester.Enums;
 using Ncea.Harvester.Models;
 
-namespace Ncea.harvester.Services.Contracts
+namespace Ncea.Harvester.Services.Contracts
 {
     public interface IOrchestrationService
     {

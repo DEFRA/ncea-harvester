@@ -1,4 +1,4 @@
-﻿namespace Ncea.harvester.Services.Contracts;
+﻿namespace Ncea.Harvester.Services.Contracts;
 
 public interface IBackUpService
 {

@@ -1,7 +1,6 @@
 ﻿using Moq;
 using Moq.Protected;
 using Ncea.Harvester.Infrastructure;
-using System;
 
 namespace Ncea.Harvester.Tests.Clients;
 
