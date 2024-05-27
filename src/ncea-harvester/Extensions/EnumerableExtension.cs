@@ -1,4 +1,4 @@
-﻿namespace Ncea.harvester.Extensions;
+﻿namespace Ncea.Harvester.Extensions;
 
 internal static class EnumerableExtension
 {
