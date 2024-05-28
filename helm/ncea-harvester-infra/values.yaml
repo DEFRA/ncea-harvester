@@ -1,5 +1,6 @@
 storageAccounts:
   - name: 'nceasrh'
+    allowSharedKeyAccess: true
     blobContainers:
     - name: 'jncc'
       roleAssignments:
