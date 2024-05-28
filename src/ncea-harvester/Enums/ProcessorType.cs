@@ -1,4 +1,4 @@
-﻿namespace Ncea.Harvester.Constants;
+﻿namespace Ncea.Harvester.Enums;
 
 public enum ProcessorType
 {

@@ -1,10 +1,10 @@
 ﻿using Azure;
-using ncea.harvester.Services.Contracts;
+using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Utils;
 
-namespace ncea.harvester.Services;
+namespace Ncea.Harvester.Services;
 
 public class BackUpService : IBackUpService
 {

@@ -1,5 +1,6 @@
-﻿using ncea.harvester.Services.Contracts;
+﻿using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.BusinessExceptions;
+using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
@@ -41,19 +42,14 @@ public class MedinProcessor : IProcessor
     {
         var harvestedFiles = new List<HarvestedFile>();
 
-        // Harvest metadata from datasource
+        // Harvest metadata from datasource, Backup the metadata xml blobs from previous run, save the meatadata xml blobs in current run and delete the backed up blobs from previous run
         await HarvestMedinMetadata(harvestedFiles, cancellationToken);
-
-        // Backup the metadata xml blobs from previous run, save the meatadata xml blobs in current run, delete the backed up blobs from previous run
-        await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
-        await _orchestrationService.SaveHarvestedXmlFiles(_dataSourceName, harvestedFiles, cancellationToken);
-        await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | Saved blob count : {itemsSavedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.BlobUrl)), _dataSourceName);
 
         // Backup the enriched xml files from previous run, send sb message with meatadata xml content from current run, delete the backed up the enriched xml files from previous run
         _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
-        await _orchestrationService.SendMessagesToHarvestedQueue(_dataSourceName, harvestedFiles, cancellationToken);
+        await _orchestrationService.SendMessagesToHarvestedQueue(DataSource.Medin, harvestedFiles, cancellationToken);
         _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
@@ -68,13 +64,15 @@ public class MedinProcessor : IProcessor
         _totalRecordCount = await GetTotalRecordCount(cancellationToken);
         _logger.LogInformation("Harvester summary | Total record count : {total} | DataSource : {_dataSourceName}", _totalRecordCount, _dataSourceName);
 
+        await _backUpService.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
+        
         while (hasNextRecords)
         {
             var responseXml = await GetMedinData(startPosition, maxBatchSize, cancellationToken);
             if (responseXml != null)
             {
                 startPosition = GetNextStartPostionInMedinData(out hasNextRecords, out _totalRecordCount, responseXml!);
-                PopulateHarvestedRecords(harvestedFiles, hasNextRecords, responseXml);
+                await SaveHarvestedRecords(harvestedFiles, hasNextRecords, responseXml, cancellationToken);
             }
             else
             {
@@ -84,10 +82,12 @@ public class MedinProcessor : IProcessor
             if (startPosition != 0) hasNextRecords = (startPosition <= _totalRecordCount);
         }
 
+        await _deletionService.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(_dataSourceName, cancellationToken);
+
         _logger.LogInformation("Harvester summary | Total record count : {total} | Harvested record count : {itemsHarvestedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count, _dataSourceName);
     }
 
-    private void PopulateHarvestedRecords(List<HarvestedFile> harvestedFiles, bool hasNextRecords, XDocument? responseXml)
+    private async Task SaveHarvestedRecords(List<HarvestedFile> harvestedFiles, bool hasNextRecords, XDocument? responseXml, CancellationToken cancellationToken)
     {
         var metaDataXmlNodes = GetMetadataList(responseXml, hasNextRecords);
 
@@ -95,17 +95,18 @@ public class MedinProcessor : IProcessor
         {
             foreach (var metaDataXmlNode in metaDataXmlNodes)
             {
-                var documentFileIdentifier = GetFileIdentifier(metaDataXmlNode);
+                var fileIdentifier = GetFileIdentifier(metaDataXmlNode);
                 var metaDataXmlString = GetMetadataXmlString(metaDataXmlNode);
 
-                if (!string.IsNullOrWhiteSpace(documentFileIdentifier))
+                if (!string.IsNullOrWhiteSpace(fileIdentifier))
                 {
-                    harvestedFiles.Add(new HarvestedFile(documentFileIdentifier, string.Empty, metaDataXmlString, string.Empty, null));
+                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier, metaDataXmlString, cancellationToken);
+                    harvestedFiles.Add(harvestedFile);
                 }
                 else
                 {
                     var errorMessage = "File Identifier not exists";
-                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, metaDataXmlString, errorMessage, null));
+                    harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }
             }

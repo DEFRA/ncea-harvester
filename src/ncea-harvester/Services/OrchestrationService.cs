@@ -1,19 +1,26 @@
 ﻿using Azure;
 using Azure.Messaging.ServiceBus;
-using ncea.harvester.Services.Contracts;
+using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
 using Ncea.Harvester.Infrastructure.Models.Responses;
 using Ncea.Harvester.Models;
+using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Utils;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace ncea.harvester.Services;
+namespace Ncea.Harvester.Services;
 
 public class OrchestrationService : IOrchestrationService
 {
     private readonly IBlobService _blobService;
     private readonly IServiceBusService _serviceBusService;
+    private static readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
     private readonly ILogger _logger;
 
     public OrchestrationService(IBlobService blobService, IServiceBusService serviceBusService, ILogger<OrchestrationService> logger)
@@ -23,21 +30,19 @@ public class OrchestrationService : IOrchestrationService
         _logger = logger;
     }
 
-    public async Task SaveHarvestedXmlFiles(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    public async Task<HarvestedFile> SaveHarvestedXmlFile(string dataSourceName, string fileIdentifier, string xmlContent, CancellationToken cancellationToken)
     {
-        foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.FileIdentifier)))
-        {
-            var response = await SaveHarvestedXml(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
-            harvestedFile.BlobUrl = response.BlobUrl;
-            harvestedFile.ErrorMessage = response.ErrorMessage;
-        }
+        var response = await SaveHarvestedXml(dataSourceName, fileIdentifier, xmlContent, cancellationToken);
+        return new HarvestedFile(fileIdentifier, response.BlobUrl, response.ErrorMessage, null);
     }
 
-    public async Task SendMessagesToHarvestedQueue(string dataSourceName, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
+    public async Task SendMessagesToHarvestedQueue(DataSource dataSource, List<HarvestedFile> harvestedFiles, CancellationToken cancellationToken)
     {
+        var dataStandard = (dataSource == DataSource.Jncc) ? DataStandard.Gemini22 : DataStandard.Gemini23;
+
         foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.BlobUrl)))
         {
-            var response = await SendMessageToHarvestedQueue(dataSourceName, harvestedFile.FileIdentifier, harvestedFile.FileContent, cancellationToken);
+            var response = await SendMessageToHarvestedQueue(new HarvestedRecordMessage(harvestedFile.FileIdentifier, DataFormat.Xml, dataStandard, dataSource), cancellationToken);
             harvestedFile.ErrorMessage = response.ErrorMessage;
             harvestedFile.HasMessageSent = response.IsSucceeded;
         }
@@ -63,24 +68,25 @@ public class OrchestrationService : IOrchestrationService
         return new SaveBlobResponse(documentFileIdentifier, blobUrl, (blobUrl == string.Empty) ? errorMessageBase : string.Empty);
     }
 
-    private async Task<SendMessageResponse> SendMessageToHarvestedQueue(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
+    private async Task<SendMessageResponse> SendMessageToHarvestedQueue(HarvestedRecordMessage harvestedRecord, CancellationToken cancellationToken)
     {
         bool isSuceeded;
         var errorMessageBase = string.Empty;
         
         try
         {
-            await _serviceBusService.SendMessageAsync(new SendMessageRequest(dataSourceName, documentFileIdentifier, metaDataXmlString), cancellationToken);
+            var message = JsonSerializer.Serialize(harvestedRecord, _serializerOptions);
+            await _serviceBusService.SendMessageAsync(new SendMessageRequest(message), cancellationToken);
             isSuceeded = true;
         }
         catch (ServiceBusException ex)
         {
             errorMessageBase = "Error occured while sending message to harvested-queue";
-            var errorMessage = $"{errorMessageBase}: for datasource: {dataSourceName}, file-id: {documentFileIdentifier}";
+            var errorMessage = $"{errorMessageBase}: for datasource: {harvestedRecord.DataSource}, file-id: {harvestedRecord.FileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
-            return new SendMessageResponse(documentFileIdentifier, false, errorMessageBase);
+            return new SendMessageResponse(harvestedRecord.FileIdentifier, false, errorMessageBase);
         }
 
-        return new SendMessageResponse(documentFileIdentifier, isSuceeded, errorMessageBase);
+        return new SendMessageResponse(harvestedRecord.FileIdentifier, isSuceeded, errorMessageBase);
     }
 }

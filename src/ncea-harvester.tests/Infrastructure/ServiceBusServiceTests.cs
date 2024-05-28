@@ -13,7 +13,7 @@ public class ServiceBusServiceTests
         // Arrange
         var service = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender>  mockServiceBusSender);
         
-        var sendMessageRequest = new SendMessageRequest("test-datasource-name", "tets-file-id", "test-message");
+        var sendMessageRequest = new SendMessageRequest("test-message");
         // Act
         await service.SendMessageAsync(sendMessageRequest, It.IsAny<CancellationToken>());
 

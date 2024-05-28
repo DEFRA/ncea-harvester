@@ -1,9 +1,9 @@
 ﻿using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Blobs;
-using ncea.harvester.Infrastructure.Contracts;
+using Ncea.Harvester.Infrastructure.Contracts;
 using System.Diagnostics.CodeAnalysis;
 
-namespace ncea.harvester.Infrastructure;
+namespace Ncea.Harvester.Infrastructure;
 
 [ExcludeFromCodeCoverage]
 public class BlobBatchClientWrapper : IBlobBatchClientWrapper

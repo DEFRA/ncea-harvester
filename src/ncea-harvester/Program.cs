@@ -8,15 +8,13 @@ using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Messaging.ServiceBus.Administration;
-using Ncea.Harvester.Constants;
+using Ncea.Harvester.Enums;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.Extensions.Azure;
-using ncea.harvester.Services.Contracts;
-using ncea.harvester.Services;
-using ncea.harvester.Infrastructure.Contracts;
-using ncea.harvester.Infrastructure;
+using Ncea.Harvester.Services.Contracts;
+using Ncea.Harvester.Services;
 
 var configuration = new ConfigurationBuilder()
                                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -40,7 +38,7 @@ ConfigureServices(builder);
 ConfigureProcessor(builder, harvsesterConfigurations, processorType);
 
 var host = builder.Build();
-host.Run();
+await host.RunAsync();
 
 static void ConfigureProcessor(HostApplicationBuilder builder, IList<HarvesterConfiguration> harvsesterConfigurations, ProcessorType processorType)
 {
