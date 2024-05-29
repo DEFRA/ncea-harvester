@@ -26,6 +26,14 @@ jobs:
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 250Mi
+      limits:
+        cpu: 200m
+        memory: 500Mi
   
   # cron job configurations for jncc data source
   jncc:    
@@ -38,4 +46,12 @@ jobs:
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 250Mi
+      limits:
+        cpu: 200m
+        memory: 500Mi
   
