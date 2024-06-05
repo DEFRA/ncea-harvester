@@ -82,14 +82,14 @@ public class JnccProcessor : IProcessor
                 }
                 else
                 {
-                    var errorMessage = "File Identifier not exists";
+                    var errorMessage = "File Identifier not exists | DataSource : {_dataSourceName}";
                     harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }
             }
             else
             {
-                var errorMessage = $"File not found exception : file-id : {documentLink}";
+                var errorMessage = $"File not found exception : file-id : {documentLink}, DataSource : {_dataSourceName}";
                 harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                 CustomLogger.LogErrorMessage(_logger, errorMessage, null);
             }            
