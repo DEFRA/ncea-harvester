@@ -43,7 +43,7 @@ public class Worker : BackgroundService
             }
             catch(Exception Ex)
             {
-                var errorMessage = $"Error occured while harvesting metadata from {_harvesterConfiguration.ProcessorType}";
+                var errorMessage = $"Error occurred while harvesting metadata from {_harvesterConfiguration.ProcessorType}";
                 CustomLogger.LogErrorMessage(_logger, errorMessage, Ex);
             }
             finally

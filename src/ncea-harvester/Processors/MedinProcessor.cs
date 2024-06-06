@@ -105,7 +105,7 @@ public class MedinProcessor : IProcessor
                 }
                 else
                 {
-                    var errorMessage = "File Identifier not exists";
+                    var errorMessage = "File Identifier not exists | DataSource : {_dataSourceName}";
                     harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }
@@ -133,7 +133,7 @@ public class MedinProcessor : IProcessor
         }
         catch (HttpRequestException ex)
         {
-            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
+            var errorMessage = $"Error occurred while harvesting the metadata for Data source: {_dataSourceName}, start position: {startPosition}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             ThrowExceptionWhenFailureFromInitialRequest(maxRecords, ex, errorMessage);
         }
