@@ -107,7 +107,7 @@ public class JnccProcessor : IProcessor
         }
         catch (HttpRequestException ex)
         {
-            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}";
+            var errorMessage = $"Error occurred while harvesting the metadata for Data source: {_dataSourceName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             throw new DataSourceConnectionException(errorMessage, ex);
         }
@@ -136,7 +136,7 @@ public class JnccProcessor : IProcessor
         }
         catch (HttpRequestException ex)
         {
-            var errorMessage = $"Error occured while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
+            var errorMessage = $"Error occurred while harvesting the metadata for Data source: {_dataSourceName}, file-id: {jnccFileName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             if (ex.StatusCode != HttpStatusCode.NotFound)
             {

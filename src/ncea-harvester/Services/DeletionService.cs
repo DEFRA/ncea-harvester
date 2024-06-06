@@ -36,7 +36,7 @@ public class DeletionService : IDeletionService
         }
         catch (RequestFailedException ex)
         {
-            var errorMessage = $"Error occured while performing cleanup operation for datasource: {dataSourceName}";
+            var errorMessage = $"Error occurred while performing cleanup operation for datasource: {dataSourceName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }
     }

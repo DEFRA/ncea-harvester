@@ -51,7 +51,7 @@ public class OrchestrationService : IOrchestrationService
     private async Task<SaveBlobResponse> SaveHarvestedXml(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
     {
         var blobUrl = string.Empty;
-        var errorMessageBase = "Error occured while saving the file to the blob storage";
+        var errorMessageBase = "Error occurred while saving the file to the blob storage";
         var xmlStream = new MemoryStream(Encoding.UTF8.GetBytes(metaDataXmlString));
         var documentFileName = string.Concat(documentFileIdentifier, ".xml");
 
@@ -81,7 +81,7 @@ public class OrchestrationService : IOrchestrationService
         }
         catch (ServiceBusException ex)
         {
-            errorMessageBase = "Error occured while sending message to harvested-queue";
+            errorMessageBase = "Error occurred while sending message to harvested-queue";
             var errorMessage = $"{errorMessageBase}: for datasource: {harvestedRecord.DataSource}, file-id: {harvestedRecord.FileIdentifier}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
             return new SendMessageResponse(harvestedRecord.FileIdentifier, false, errorMessageBase);

@@ -40,7 +40,7 @@ public class BackUpService : IBackUpService
         }
         catch (Exception ex)
         {
-            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSourceName}";
+            var errorMessage = $"Error occurred while performing backup operation for datasource: {dataSourceName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }
 
@@ -56,7 +56,7 @@ public class BackUpService : IBackUpService
         }
         catch (RequestFailedException ex)
         {
-            var errorMessage = $"Error occured while performing backup operation for datasource: {dataSourceName}";
+            var errorMessage = $"Error occurred while performing backup operation for datasource: {dataSourceName}";
             CustomLogger.LogErrorMessage(_logger, errorMessage, ex);
         }
     }
