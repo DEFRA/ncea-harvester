@@ -1,6 +1,5 @@
 # These are populated when your service is created via the ADP Portal scaffolder. Do not change these, as they are abstracted from your service and are mandatory. They are for your reference here.
 name: ncea-harvester
-namespace: ncea-search
 workstream: ncea-search
 image: ncea-harvester
 
@@ -13,7 +12,7 @@ container:
 serviceAccount:
   name: ncea-harvester 
 
-jobs:    
+jobs:
   medin:    
     env:
     - name: DataSource
