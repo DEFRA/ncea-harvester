@@ -1,61 +1,68 @@
 # These are populated when your service is created via the ADP Portal scaffolder. Do not change these, as they are abstracted from your service and are mandatory. They are for your reference here.
 name: ncea-harvester
+namespace: ncea-search
 workstream: ncea-search
 image: ncea-harvester
+teamResourceGroupName:
+storageAccountPrefix:
 
 labels:
   component: job
 
 container:
   imagePullPolicy: Always
+  memCpuTier: CUSTOM
+  requestMemory: 2000Mi
+  requestCpu: 150m
+  limitMemory: 2000Mi
+  limitCpu: 150m
 
 serviceAccount:
   name: ncea-harvester 
 
-jobs:
-  medin:    
+cronjobs:
+  - name: medin   
     env:
     - name: DataSource
       value: "medin"
-
     schedule: "0 21 * * *"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
-    resources:
-      requests:
-        memory: 2000Mi
-        cpu: 150m
-      limits:
-        memory: 2000Mi
-        cpu: 150m
-  
-  jncc:    
+    volumes:    
+    - name: enrichedmetadata
+      persistentVolumeClaim:
+        claimName: metadata-fileshare-pvc  
+    container:
+      volumeMounts:
+      - mountPath: /metadata-import
+        name: enrichedmetadata      
+
+  - name: jncc   
     env:
     - name: DataSource
-      value: "jncc"
-    
+      value: "jncc"    
     schedule: "10 11 * * *"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
-    resources:
-      requests:
-        memory: 2000Mi
-        cpu: 150m
-      limits:
-        memory: 2000Mi
-        cpu: 150m
+    volumes:    
+    - name: enrichedmetadata
+      persistentVolumeClaim:
+        claimName: metadata-fileshare-pvc
+    container:
+      volumeMounts:
+      - mountPath: /metadata-import
+        name: enrichedmetadata         
 
-pvc:
-  metaDataFileShareName: metadata-fileshare-pvc
-  metaDataFileShareSize: 10Gi
+storageClassFile:
+  name: pe-metadata-azurefile-sc
+  storageAccountName: nceasrh
+  shareName: metadata-import  
 
-peSaFileshare:
-  metaDataFileShareScName: pe-metadata-azurefile-sc
-  storageAccountResourceGroup: sndadpinfrg3401-ncea-search
-  storageAccountName: sndadpinfst3401nceasrh
-  storageAccountFilePrivateEndpointFqdn: sndadpinfst3401nceasrh.file.core.windows.net
-  geoStorageAccountShareName: metadata-import 
+persistentVolumeClaim:
+  name: metadata-fileshare-pvc
+  size: 10Gi
+  storageClassName: pe-metadata-azurefile-sc
