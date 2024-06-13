@@ -1,0 +1,13 @@
+- key: ApplicationInsights__ConnectionString
+  value: "{{servicename}}-APPINSIGHTS-CONNECTIONSTRING"
+  type: "keyvault"
+- key: ServiceBusHostName
+  value: "SNDADPINFSB1401.servicebus.windows.net"
+- key: KeyVaultUri
+  value: "https://SNDADPINFVT1401.vault.azure.net/"
+- key: BlobStorageUri
+  value: "https://sndadpinfst1401nceasrh.blob.core.windows.net"
+- key: HarvesterQueueName
+  value: ncea-search-harvested-queue
+- key: MapperQueueName
+  value: ncea-search-mapped-queue
