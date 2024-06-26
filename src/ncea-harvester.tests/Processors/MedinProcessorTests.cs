@@ -2,15 +2,21 @@
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Ncea.Harvester.Services;
-using Ncea.Harvester.Services.Contracts;
+using ncea.harvester.Services;
 using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Enums;
+using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors;
+using Ncea.Harvester.Services;
+using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Tests.Clients;
+using Ncea.Mapper.Services;
+using Ncea.Mapper.Services.Contracts;
+using ncea_harvester.tests.Clients;
 using System.Net;
-using Ncea.Harvester.Infrastructure.Contracts;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Ncea.Harvester.Tests.Processors;
 
@@ -20,6 +26,7 @@ public class MedinProcessorTests
     private readonly Mock<ILogger<OrchestrationService>> _mockOrchestrationServiceLogger;
     private readonly Mock<IBackUpService> _backUpServiceMock;
     private readonly Mock<IDeletionService> _deletionServiceMock;
+    private readonly Mock<IValidationService> _validationServiceMock;
 
     public MedinProcessorTests()
     {
@@ -46,6 +53,8 @@ public class MedinProcessorTests
         _backUpServiceMock.Setup(x => x.BackUpMetadataXmlBlobsCreatedInPreviousRunAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(true));
         _deletionServiceMock = new Mock<IDeletionService>();
         _deletionServiceMock.Setup(x => x.DeleteMetadataXmlBlobsCreatedInPreviousRunAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(true));
+        _validationServiceMock = new Mock<IValidationService>();
+        _validationServiceMock.Setup(x => x.IsValid(It.IsAny<XElement>())).Returns(true);
     }
 
     [Fact]
@@ -53,22 +62,7 @@ public class MedinProcessorTests
     {
         //Arrange
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
-        string expectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                            "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
-                            "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
-                            "  <csw:SearchResults numberOfRecordsMatched=\"2\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"3\">" +
-                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
-                            "      <gmd:fileIdentifier>" +
-                            "        <gco:CharacterString>abce1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
-                            "      </gmd:fileIdentifier>" +
-                            "    </gmd:MD_Metadata>" +
-                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
-                            "      <gmd:fileIdentifier>" +
-                            "        <gco:CharacterString>defe1a60-c7f2-42fd-81e9-03d54ab01f0f</gco:CharacterString>" +
-                            "      </gmd:fileIdentifier>" +
-                            "    </gmd:MD_Metadata>" +
-                            "  </csw:SearchResults>" +
-                            "</csw:GetRecordsResponse>";
+        string expectedData = GetFileContent("MEDIN_Metadata_srv_valid.xml");
         var httpResponse = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
@@ -81,16 +75,16 @@ public class MedinProcessorTests
                                               out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
-        
-            // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
+
+        // Act
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
-        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(2));
-        mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Exactly(2));
-        mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Exactly(2));
-        mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Once);
+        mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Once);
+        mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Once);
+        mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -98,14 +92,49 @@ public class MedinProcessorTests
     {
         //Arrange
         var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
-        string expectedData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                            "<csw:GetRecordsResponse xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\">" +
-                            "  <csw:SearchStatus timestamp=\"2024-02-15T17:54:36.664Z\" />" +
-                            "  <csw:SearchResults numberOfRecordsMatched=\"2\" numberOfRecordsReturned=\"2\" elementSet=\"full\" nextRecord=\"3\">" +
-                            "    <gmd:MD_Metadata xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">" +
-                            "    </gmd:MD_Metadata>" +
-                            "  </csw:SearchResults>" +
-                            "</csw:GetRecordsResponse>";
+        string expectedData = GetFileContent("MEDIN_Metadata_dataset_no_fileidentifier.xml");
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(expectedData),
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        //var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
+                                              out Mock<BlobClient> mockBlobClient);
+
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
+
+        var configuration = ConfigurationForTests.GetConfiguration();
+        var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
+        var xmlNodeService = new XmlNodeService(configuration);
+        var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
+
+        // Act
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationService, _mockLogger.Object, harvesterConfig);
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
+
+        //Assert
+        _mockLogger.Verify(
+            m => m.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once,
+            It.IsAny<string>()
+        );
+    }    
+
+    [Fact]
+    public async Task Process_WhenMedinMetadataWithNoTitleIsHarvested_ShouldLogErrorMessage()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+        string expectedData = GetFileContent("MEDIN_Metadata_dataset_no_title.xml");
         var httpResponse = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
@@ -113,15 +142,99 @@ public class MedinProcessorTests
         };
         var apiClient = ApiClientForTests.Get(httpResponse);
         var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
-        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,                                              
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
                                               out Mock<BlobContainerClient> mockBlobContainerClient,
                                               out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
                                               out Mock<BlobClient> mockBlobClient);
-        
+
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
+        var configuration = ConfigurationForTests.GetConfiguration();
+        var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
+        var xmlNodeService = new XmlNodeService(configuration);
+        var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
 
         // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationService, _mockLogger.Object, harvesterConfig);
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
+
+        //Assert
+        _mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString().Count() > 0),
+                It.IsAny<Exception>(),
+                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Process_WhenMedinMetadataWithNoAbstractIsHarvested_ShouldLogErrorMessage()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+        string expectedData = GetFileContent("MEDIN_Metadata_dataset_no_abstract.xml");
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(expectedData),
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
+                                              out Mock<BlobClient> mockBlobClient);
+
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
+        var configuration = ConfigurationForTests.GetConfiguration();
+        var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
+        var xmlNodeService = new XmlNodeService(configuration);
+        var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
+
+        // Act
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationService, _mockLogger.Object, harvesterConfig);
+        await medinService.ProcessAsync(It.IsAny<CancellationToken>());
+
+        //Assert
+        _mockLogger.Verify(
+            m => m.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(1),
+            It.IsAny<string>()
+        );
+    }
+
+    [Fact]
+    public async Task Process_WhenMedinMetadataWithNoPointOfContactIsHarvested_ShouldLogErrorMessage()
+    {
+        //Arrange
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
+        string expectedData = GetFileContent("MEDIN_Metadata_dataset_no_pointofcontact.xml");
+        var httpResponse = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(expectedData),
+        };
+        var apiClient = ApiClientForTests.Get(httpResponse);
+        var harvesterConfiguration = new HarvesterConfiguration() { DataSourceApiBase = "https://base-uri", DataSourceApiUrl = "/test-url", ProcessorType = ProcessorType.Medin, Type = "" };
+        var blobService = BlobServiceForTests.Get(out Mock<BlobServiceClient> mockBlobServiceClient,
+                                              out Mock<BlobContainerClient> mockBlobContainerClient,
+                                              out Mock<IBlobBatchClientWrapper> mockBlobBatchClient,
+                                              out Mock<BlobClient> mockBlobClient);
+
+        var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
+        var configuration = ConfigurationForTests.GetConfiguration();
+        var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
+        var xmlNodeService = new XmlNodeService(configuration);
+        var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
+
+        // Act
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationService, _mockLogger.Object, harvesterConfig);
         await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         //Assert
@@ -163,7 +276,7 @@ public class MedinProcessorTests
         var orchestrationservice = new OrchestrationService(blobServiceMock, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, loggerMock.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationServiceMock.Object, loggerMock.Object, harvesterConfiguration);
         await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
@@ -192,7 +305,7 @@ public class MedinProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));        
     }
 
@@ -212,7 +325,7 @@ public class MedinProcessorTests
 
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
@@ -232,7 +345,7 @@ public class MedinProcessorTests
 
 
         // Act & Assert
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await Assert.ThrowsAsync<DataSourceConnectionException>(() => medinService.ProcessAsync(It.IsAny<CancellationToken>()));
     }
 
@@ -300,7 +413,7 @@ public class MedinProcessorTests
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
         // Act
-        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
+        var medinService = new MedinProcessor(apiClient, orchestrationservice, _backUpServiceMock.Object, _deletionServiceMock.Object, _validationServiceMock.Object, _mockLogger.Object, harvesterConfiguration);
         await medinService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
@@ -308,5 +421,15 @@ public class MedinProcessorTests
         mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Exactly(4));
         mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Exactly(4));
         mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
+    }
+
+    private string GetFileContent(string fileName)
+    {
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", fileName);
+        var xDoc = new XmlDocument();
+        xDoc.Load(filePath);
+        var messageBody = xDoc.InnerXml;
+
+        return messageBody;
     }
 }

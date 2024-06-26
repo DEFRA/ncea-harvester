@@ -8,5 +8,6 @@ public class HarvesterConfiguration
     public string Type { get; set; } = null!;
     public string DataSourceApiBase { get; set; } = null!;
     public string DataSourceApiUrl { get; set; } = null!;
+    public List<MandatoryField> MandatoryFields { get; set; } = null!;
 }
 
