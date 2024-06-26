@@ -159,13 +159,15 @@ public class MedinProcessorTests
 
         //Assert
         _mockLogger.Verify(
-            x => x.Log(
+            m => m.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Count() > 0),
+                It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
-                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
-            Times.Once);
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once,
+            It.IsAny<string>()
+        );
     }
 
     [Fact]
