@@ -6,6 +6,6 @@ namespace Ncea.Mapper.Services.Contracts;
 
 public interface IXmlNodeService
 {
-    XmlNamespaceManager GetXmlNamespaceManager(XElement xDoc);    
+    XmlNamespaceManager GetXmlNamespaceManager(XElement xElement);    
     string GetNodeValues(MandatoryField field, XElement rootNode, XmlNamespaceManager nsMgr);
 }

@@ -148,7 +148,7 @@ public class XmlNodeServiceTests
         return nsMgr;
     }
 
-    private string GetFilePath(string fileName)
+    private static string GetFilePath(string fileName)
     {
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", fileName);
         return filePath;

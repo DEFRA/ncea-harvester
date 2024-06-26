@@ -104,7 +104,7 @@ public class MedinProcessor : IProcessor
                 
                 if (isMetadataValid)
                 {
-                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier, metaDataXmlString, cancellationToken);
+                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier!, metaDataXmlString, cancellationToken);
                     harvestedFiles.Add(harvestedFile);
                 }
                 else

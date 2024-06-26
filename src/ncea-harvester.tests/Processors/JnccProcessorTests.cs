@@ -288,7 +288,7 @@ public class JnccProcessorTests
 
 
 
-    private string GetFileContent(string fileName)
+    private static string GetFileContent(string fileName)
     {
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", fileName);
         var xDoc = new XmlDocument();

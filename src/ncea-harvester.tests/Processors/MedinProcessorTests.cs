@@ -423,7 +423,7 @@ public class MedinProcessorTests
         mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
     }
 
-    private string GetFileContent(string fileName)
+    private static string GetFileContent(string fileName)
     {
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", fileName);
         var xDoc = new XmlDocument();
