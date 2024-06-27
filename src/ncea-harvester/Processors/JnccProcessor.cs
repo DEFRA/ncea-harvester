@@ -6,6 +6,7 @@ using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Utils;
+using Ncea.Mapper.Services.Contracts;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Xml;
@@ -21,12 +22,14 @@ public class JnccProcessor : IProcessor
     private readonly IDeletionService _deletionService;
     private readonly IOrchestrationService _orchestrationService;
     private readonly HarvesterConfiguration _harvesterConfiguration;
+    private readonly IValidationService _validationService;
     private readonly ILogger _logger;
 
     public JnccProcessor(IApiClient apiClient,
         IOrchestrationService orchestrationService,
         IBackUpService backUpService,
         IDeletionService deletionService,
+        IValidationService validationService,
         ILogger<JnccProcessor> logger,
         HarvesterConfiguration harvesterConfiguration)
     {
@@ -35,6 +38,7 @@ public class JnccProcessor : IProcessor
         _deletionService = deletionService;
         _orchestrationService = orchestrationService;
         _harvesterConfiguration = harvesterConfiguration;
+        _validationService = validationService;
         _logger = logger;
 
         _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
@@ -74,15 +78,18 @@ public class JnccProcessor : IProcessor
             if (!string.IsNullOrEmpty(metaDataXmlString))
             {
                 var fileIdentifier = GetFileIdentifier(metaDataXmlString);
+                var xDocument = XDocument.Parse(metaDataXmlString);
+                var metaDataXmlNode = xDocument.Root;
+                var isMetadataValid = _validationService.IsValid(metaDataXmlNode!);
 
-                if (!string.IsNullOrWhiteSpace(fileIdentifier))
+                if (isMetadataValid)
                 {
-                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier, metaDataXmlString, cancellationToken);
+                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier!, metaDataXmlString, cancellationToken);
                     harvestedFiles.Add(harvestedFile);
                 }
                 else
                 {
-                    var errorMessage = "File Identifier not exists | DataSource : {_dataSourceName}";
+                    var errorMessage = "One or more mandatory fields does not exist | DataSource : {_dataSourceName}";
                     harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }

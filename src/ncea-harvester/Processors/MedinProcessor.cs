@@ -1,10 +1,11 @@
-﻿using Ncea.Harvester.Services.Contracts;
-using Ncea.Harvester.BusinessExceptions;
+﻿using Ncea.Harvester.BusinessExceptions;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
+using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Utils;
+using Ncea.Mapper.Services.Contracts;
 using System.Xml.Linq;
 
 namespace Ncea.Harvester.Processors;
@@ -17,6 +18,7 @@ public class MedinProcessor : IProcessor
     private readonly IOrchestrationService _orchestrationService;
     private readonly IBackUpService _backUpService;
     private readonly IDeletionService _deletionService;
+    private readonly IValidationService _validationService;
     private readonly ILogger _logger;
     private readonly HarvesterConfiguration _harvesterConfiguration;
 
@@ -24,6 +26,7 @@ public class MedinProcessor : IProcessor
         IOrchestrationService orchestrationService,
         IBackUpService backUpService,
         IDeletionService deletionService,
+        IValidationService validationService,
         ILogger<MedinProcessor> logger,
         HarvesterConfiguration harvesterConfiguration)
     {
@@ -33,7 +36,7 @@ public class MedinProcessor : IProcessor
         _backUpService = backUpService;
         _deletionService = deletionService;
         _logger = logger;
-
+        _validationService = validationService;
         _apiClient.CreateClient(_harvesterConfiguration.DataSourceApiBase);
         _dataSourceName = _harvesterConfiguration.ProcessorType.ToString().ToLowerInvariant();
     }
@@ -97,15 +100,16 @@ public class MedinProcessor : IProcessor
             {
                 var fileIdentifier = GetFileIdentifier(metaDataXmlNode);
                 var metaDataXmlString = GetMetadataXmlString(metaDataXmlNode);
-
-                if (!string.IsNullOrWhiteSpace(fileIdentifier))
+                var isMetadataValid = _validationService.IsValid(metaDataXmlNode);
+                
+                if (isMetadataValid)
                 {
-                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier, metaDataXmlString, cancellationToken);
+                    var harvestedFile = await _orchestrationService.SaveHarvestedXmlFile(_dataSourceName, fileIdentifier!, metaDataXmlString, cancellationToken);
                     harvestedFiles.Add(harvestedFile);
                 }
                 else
                 {
-                    var errorMessage = "File Identifier not exists | DataSource : {_dataSourceName}";
+                    var errorMessage = "One or more mandatory fields does not exist | DataSource : {_dataSourceName}";
                     harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }

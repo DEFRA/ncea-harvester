@@ -29,4 +29,34 @@
     <ProjectReference Include="..\ncea-harvester\ncea-harvester.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\JNCC_Metadata.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\JNCC_Metadata_no_fileidentifier.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\MEDIN_Metadata_srv_valid.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\MEDIN_Metadata_dataset_no_pointofcontact_XmlNodeSrviceTests.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\MEDIN_Metadata_dataset_no_abstract.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\MEDIN_Metadata_dataset_no_fileidentifier_XmlNodeSrviceTests.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\MEDIN_Metadata_dataset_no_fileidentifier.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\MEDIN_Metadata_dataset_no_pointofcontact.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\MEDIN_Metadata_dataset_no_title.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
