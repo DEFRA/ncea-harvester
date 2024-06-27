@@ -109,7 +109,7 @@ public class MedinProcessor : IProcessor
                 }
                 else
                 {
-                    var errorMessage = "File Identifier not exists | DataSource : {_dataSourceName}";
+                    var errorMessage = "One or more mandatory fields does not exist | DataSource : {_dataSourceName}";
                     harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }
