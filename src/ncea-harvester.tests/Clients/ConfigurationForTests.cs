@@ -1,13 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ncea_harvester.tests.Clients
+namespace Ncea.Harvester.Tests.Clients
 {
     public static class ConfigurationForTests
     {

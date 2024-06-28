@@ -11,11 +11,7 @@ using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors;
 using Ncea.Harvester.Tests.Clients;
 using System.Net;
-using ncea.harvester.Services;
-using Ncea.Mapper.Services;
-using ncea_harvester.tests.Clients;
 using System.Xml;
-using Castle.Core.Configuration;
 using Microsoft.Extensions.Configuration;
 
 namespace Ncea.Harvester.Tests.Processors;

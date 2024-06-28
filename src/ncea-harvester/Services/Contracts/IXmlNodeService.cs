@@ -2,7 +2,7 @@
 using System.Xml;
 using System.Xml.Linq;
 
-namespace Ncea.Mapper.Services.Contracts;
+namespace Ncea.Harvester.Services.Contracts;
 
 public interface IXmlNodeService
 {

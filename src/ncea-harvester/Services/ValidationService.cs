@@ -1,8 +1,8 @@
 ﻿using Ncea.Harvester.Models;
-using Ncea.Mapper.Services.Contracts;
+using Ncea.Harvester.Services.Contracts;
 using System.Xml.Linq;
 
-namespace Ncea.Mapper.Services;
+namespace Ncea.Harvester.Services;
 
 public class ValidationService : IValidationService
 {

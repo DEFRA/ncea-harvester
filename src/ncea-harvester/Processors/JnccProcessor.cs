@@ -6,7 +6,6 @@ using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Utils;
-using Ncea.Mapper.Services.Contracts;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Xml;
