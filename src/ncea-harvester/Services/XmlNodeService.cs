@@ -1,10 +1,10 @@
-﻿using Ncea.Mapper.Services.Contracts;
+﻿using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Models;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
-namespace ncea.harvester.Services;
+namespace Ncea.Harvester.Services;
 
 public class XmlNodeService : IXmlNodeService
 {
