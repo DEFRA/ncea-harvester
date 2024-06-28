@@ -5,7 +5,6 @@ using Ncea.Harvester.Models;
 using Ncea.Harvester.Processors.Contracts;
 using Ncea.Harvester.Services.Contracts;
 using Ncea.Harvester.Utils;
-using Ncea.Harvester.Services.Contracts;
 using System.Xml.Linq;
 
 namespace Ncea.Harvester.Processors;
