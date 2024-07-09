@@ -28,8 +28,7 @@ public class XmlNodeServiceTests
     public void GetNodeValues_WhenTextValueExists_ReturnTextValue()
     {
         // Arrange
-        var configuration = _serviceProvider.GetService<IConfiguration>();
-        var xmlNodeService = new XmlNodeService(configuration!);
+        var xmlNodeService = new XmlNodeService();
         var field = new MandatoryField
         {
             Name = "Title",
@@ -51,8 +50,7 @@ public class XmlNodeServiceTests
     public void GetNodeValues_WhenTextValueNotExists_ReturnEmptyString()
     {
         // Arrange
-        var configuration = _serviceProvider.GetService<IConfiguration>();
-        var xmlNodeService = new XmlNodeService(configuration!);
+        var xmlNodeService = new XmlNodeService();
         var field = new MandatoryField
         {
             Name = "FileIdentifier",
@@ -73,8 +71,7 @@ public class XmlNodeServiceTests
     public void GetNodeValues_WhenListValueExists_ReturnCommaSeperatedTextValues()
     {
         // Arrange
-        var configuration = _serviceProvider.GetService<IConfiguration>();
-        var xmlNodeService = new XmlNodeService(configuration!);
+        var xmlNodeService = new XmlNodeService();
         var field = new MandatoryField
         {
             Name = "PointOfContact",
@@ -98,8 +95,7 @@ public class XmlNodeServiceTests
         // Arrange
         var filePath = GetFilePath("MEDIN_Metadata_dataset_no_pointofcontact_XmlNodeSrviceTests.xml");
         var _xDocNoPointOfContact = XDocument.Load(filePath);
-        var configuration = _serviceProvider.GetService<IConfiguration>();
-        var xmlNodeService = new XmlNodeService(configuration!);
+        var xmlNodeService = new XmlNodeService();
         var field = new MandatoryField
         {
             Name = "PointOfContact",
@@ -120,8 +116,7 @@ public class XmlNodeServiceTests
     public void GetXmlNamespaceManager_ReturnsNamespaceManager()
     {
         // Arrange
-        var configuration = _serviceProvider.GetService<IConfiguration>();
-        var xmlNodeService = new XmlNodeService(configuration!);        
+        var xmlNodeService = new XmlNodeService();        
 
         // Act
         var result = xmlNodeService.GetXmlNamespaceManager(_xDoc.Root!);
@@ -132,7 +127,6 @@ public class XmlNodeServiceTests
         result.HasNamespace("gmd").Should().BeTrue();
         result.HasNamespace("gco").Should().BeTrue();
         result.HasNamespace("gmx").Should().BeTrue();
-        result.HasNamespace("mdc").Should().BeTrue();
     }
 
 

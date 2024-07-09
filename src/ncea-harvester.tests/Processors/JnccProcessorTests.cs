@@ -22,7 +22,6 @@ public class JnccProcessorTests
     private readonly Mock<ILogger<OrchestrationService>> _mockOrchestrationServiceLogger;
     private readonly Mock<IBackUpService> _backUpServiceMock;
     private readonly Mock<IDeletionService> _deletionServiceMock;
-    private readonly IConfigurationRoot _configuration;
     private readonly HarvesterConfiguration _harvesterConfig;
     private readonly XmlNodeService _xmlNodeService;
     private readonly ValidationService _validationService;
@@ -58,9 +57,8 @@ public class JnccProcessorTests
 
 
         //Variables
-        _configuration = ConfigurationForTests.GetConfiguration();
         _harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Jncc);
-        _xmlNodeService = new XmlNodeService(_configuration);
+        _xmlNodeService = new XmlNodeService();
         _validationService = new ValidationService(_harvesterConfig!, _xmlNodeService);
     }
 
