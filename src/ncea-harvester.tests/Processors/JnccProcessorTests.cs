@@ -22,7 +22,6 @@ public class JnccProcessorTests
     private readonly Mock<ILogger<OrchestrationService>> _mockOrchestrationServiceLogger;
     private readonly Mock<IBackUpService> _backUpServiceMock;
     private readonly Mock<IDeletionService> _deletionServiceMock;
-    private readonly IConfigurationRoot _configuration;
     private readonly HarvesterConfiguration _harvesterConfig;
     private readonly XmlNodeService _xmlNodeService;
     private readonly ValidationService _validationService;
