@@ -88,7 +88,7 @@ public class JnccProcessor : IProcessor
                 }
                 else
                 {
-                    var errorMessage = "One or more mandatory fields does not exist | DataSource : {_dataSourceName}";
+                    var errorMessage = $"One or more mandatory fields does not exist | DataSource : {_dataSourceName} | file-id : {fileIdentifier ?? string.Empty}";
                     harvestedFiles.Add(new HarvestedFile(string.Empty, string.Empty, errorMessage, null));
                     CustomLogger.LogErrorMessage(_logger, errorMessage, null);
                 }
