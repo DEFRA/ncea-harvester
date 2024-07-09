@@ -58,9 +58,8 @@ public class JnccProcessorTests
 
 
         //Variables
-        _configuration = ConfigurationForTests.GetConfiguration();
         _harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Jncc);
-        _xmlNodeService = new XmlNodeService(_configuration);
+        _xmlNodeService = new XmlNodeService();
         _validationService = new ValidationService(_harvesterConfig!, _xmlNodeService);
     }
 

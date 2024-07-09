@@ -103,9 +103,8 @@ public class MedinProcessorTests
 
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
 
-        var configuration = ConfigurationForTests.GetConfiguration();
         var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
-        var xmlNodeService = new XmlNodeService(configuration);
+        var xmlNodeService = new XmlNodeService();
         var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
 
         // Act
@@ -144,9 +143,8 @@ public class MedinProcessorTests
                                               out Mock<BlobClient> mockBlobClient);
 
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
-        var configuration = ConfigurationForTests.GetConfiguration();
         var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
-        var xmlNodeService = new XmlNodeService(configuration);
+        var xmlNodeService = new XmlNodeService();
         var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
 
         // Act
@@ -185,9 +183,8 @@ public class MedinProcessorTests
                                               out Mock<BlobClient> mockBlobClient);
 
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
-        var configuration = ConfigurationForTests.GetConfiguration();
         var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
-        var xmlNodeService = new XmlNodeService(configuration);
+        var xmlNodeService = new XmlNodeService();
         var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
 
         // Act
@@ -226,9 +223,8 @@ public class MedinProcessorTests
                                               out Mock<BlobClient> mockBlobClient);
 
         var orchestrationservice = new OrchestrationService(blobService, serviceBusService, _mockOrchestrationServiceLogger.Object);
-        var configuration = ConfigurationForTests.GetConfiguration();
         var harvesterConfig = ConfigurationForTests.GetHarvesterConfiguration(ProcessorType.Medin);
-        var xmlNodeService = new XmlNodeService(configuration);
+        var xmlNodeService = new XmlNodeService();
         var _validationService = new ValidationService(harvesterConfig!, xmlNodeService);
 
         // Act
