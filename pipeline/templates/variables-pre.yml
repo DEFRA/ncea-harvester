@@ -1,0 +1,4 @@
+variables:
+- group: azureVariables-pre
+- group: harvesterServiceVariables-pre
+- group: pipelineVariables
