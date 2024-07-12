@@ -41,7 +41,10 @@ public class BlobService : IBlobService
             blobItems.Add(blob.Name);
         }
 
-        await DeleteBlobsInBatches(request.SourceContainer, blobItems, cancellationToken);
+        if (blobItems.Count != 0)
+        {
+            await DeleteBlobsInBatches(request.SourceContainer, blobItems, cancellationToken);
+        }
     }  
 
     public async Task DeleteBlobsAsync(string containerName, CancellationToken cancellationToken)
@@ -57,7 +60,11 @@ public class BlobService : IBlobService
                 blobItems.Add(blob.Name);
             }
 
-            await DeleteBlobsInBatches(containerName, blobItems, cancellationToken);
+            if (blobItems.Count != 0)
+            {
+                await DeleteBlobsInBatches(containerName, blobItems, cancellationToken);
+            }
+
             await backupContainer.DeleteAsync(null, cancellationToken);
         }        
     }
