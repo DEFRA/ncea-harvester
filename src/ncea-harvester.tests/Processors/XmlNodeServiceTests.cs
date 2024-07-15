@@ -137,7 +137,6 @@ public class XmlNodeServiceTests
         nsMgr.AddNamespace("gmd", "http://www.isotc211.org/2005/gmd");
         nsMgr.AddNamespace("gco", "http://www.isotc211.org/2005/gco");
         nsMgr.AddNamespace("gmx", "http://www.isotc211.org/2005/gmx");
-        nsMgr.AddNamespace("mdc", "https://github.com/DEFRA/ncea-geonetwork/tree/main/core-geonetwork/schemas/iso19139/src/main/plugin/iso19139/schema2007/mdc");
 
         return nsMgr;
     }
