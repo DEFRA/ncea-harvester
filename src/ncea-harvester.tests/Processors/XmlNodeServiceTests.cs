@@ -74,9 +74,9 @@ public class XmlNodeServiceTests
         var xmlNodeService = new XmlNodeService();
         var field = new MandatoryField
         {
-            Name = "PointOfContact",
-            Type = "list",
-            Xpath = "//gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString"
+          Name = "PointOfContactEmail",
+          Type = "list",
+          Xpath = "//gmd:CI_ResponsibleParty[./gmd:organisationName/gco:CharacterString != '']/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/*"
         };
 
         // Act
@@ -100,7 +100,7 @@ public class XmlNodeServiceTests
         {
             Name = "PointOfContact",
             Type = "list",
-            Xpath = "//gmd:identificationInfo/*/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString"
+            Xpath = "//gmd:CI_ResponsibleParty[./gmd:organisationName/gco:CharacterString != '' and (./gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/* != '' or ./gmd:role/gmd:CI_RoleCode != '')]/gmd:organisationName"
         };
 
         // Act
