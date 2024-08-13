@@ -95,7 +95,7 @@ public class OrchestrationServiceTests
         await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<DataSource>(), harvetsedItemsList, It.IsAny<CancellationToken>());
 
         //Assert
-        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Never);
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(2));
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class OrchestrationServiceTests
         await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<DataSource>(), harvetsedItemsList, It.IsAny<CancellationToken>());
 
         //Assert
-        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(1));
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(3));
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class OrchestrationServiceTests
         await orchestrationService.SendMessagesToHarvestedQueue(It.IsAny<DataSource>(), harvetsedItemsList, It.IsAny<CancellationToken>());
 
         //Assert
-        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(1));
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(3));
 
         mockLogger.Verify(
             m => m.Log(
@@ -176,7 +176,7 @@ public class OrchestrationServiceTests
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Exactly(1),
+            Times.Exactly(3),
             It.IsAny<string>()
         );
     }

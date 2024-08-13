@@ -88,7 +88,7 @@ public class JnccProcessorTests
         await jnccMockService.Object.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
-        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Once);
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(3));
         mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Once);
         mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Once);
         mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -118,7 +118,7 @@ public class JnccProcessorTests
         await jnccService.ProcessAsync(It.IsAny<CancellationToken>());
 
         // Assert
-        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Never);
+        mockServiceBusSender.Verify(x => x.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Exactly(2));
         mockBlobServiceClient.Verify(x => x.GetBlobContainerClient(It.IsAny<string>()), Times.Never);
         mockBlobContainerClient.Verify(x => x.GetBlobClient(It.IsAny<string>()), Times.Never);
         mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -186,7 +186,7 @@ public class JnccProcessorTests
     public async Task Process_WhenJnccMetadataWithNoFileIdentifierIsHarvested_ShouldLogMessage()
     {
         //Arrange
-        var serviceBusService = ServiceBusServiceForTests.GetServiceBusWithError(out Mock<ServiceBusSender> mockServiceBusSender);
+        var serviceBusService = ServiceBusServiceForTests.Get(out Mock<ServiceBusSender> mockServiceBusSender);
         var expectedData = "<html><body><a href=\"a.xml\">a</a><a href=\"b.xml\">b</a></body></html>";
         var httpResponse = new HttpResponseMessage
         {

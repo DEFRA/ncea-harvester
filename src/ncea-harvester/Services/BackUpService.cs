@@ -78,15 +78,7 @@ public class BackUpService : IBackUpService
 
         string newDirectory;
 
-        if (oldDirectory.Parent == null)
-        {
-            //root directory
-            newDirectory = Path.Combine(dataSourceEnrichedXmlDirectoryPath, newBackUpFolderName);
-        }
-        else
-        {
-            newDirectory = Path.Combine(oldDirectory.Parent.FullName, newBackUpFolderName);
-        }
+        newDirectory = Path.Combine(oldDirectory!.Parent!.FullName, newBackUpFolderName);
         oldDirectory.MoveTo(newDirectory);
     }
 }

@@ -50,9 +50,9 @@ public class MedinProcessor : IProcessor
         _logger.LogInformation("Harvester summary | Total record count : {total} | Saved blob count : {itemsSavedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count(x => !string.IsNullOrWhiteSpace(x.BlobUrl)), _dataSourceName);
 
         // Backup the enriched xml files from previous run, send sb message with meatadata xml content from current run, delete the backed up the enriched xml files from previous run
-        _backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
+        //_backUpService.BackUpEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
         await _orchestrationService.SendMessagesToHarvestedQueue(DataSource.Medin, harvestedFiles, cancellationToken);
-        _deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
+        //_deletionService.DeleteEnrichedXmlFilesCreatedInPreviousRun(_dataSourceName);
 
         _logger.LogInformation("Harvester summary | Total record count : {total} | Queued item count : {itemsQueuedSuccessfully} | DataSource : {_dataSourceName}", _totalRecordCount, harvestedFiles.Count(x => x.HasMessageSent.GetValueOrDefault(false)), _dataSourceName);
     }
