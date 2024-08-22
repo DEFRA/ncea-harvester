@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Messaging.ServiceBus;
+using ncea.harvester.Enums;
 using Ncea.Harvester.Enums;
 using Ncea.Harvester.Infrastructure.Contracts;
 using Ncea.Harvester.Infrastructure.Models.Requests;
@@ -40,12 +41,16 @@ public class OrchestrationService : IOrchestrationService
     {
         var dataStandard = (dataSource == DataSource.Jncc) ? DataStandard.Gemini22 : DataStandard.Gemini23;
 
+        await SendMessageToHarvestedQueue(new HarvestedRecordMessage(string.Empty, DataFormat.Xml, dataStandard, dataSource, MessageType.Start), cancellationToken);
+
         foreach (var harvestedFile in harvestedFiles.Where(x => !string.IsNullOrWhiteSpace(x.BlobUrl)))
         {
-            var response = await SendMessageToHarvestedQueue(new HarvestedRecordMessage(harvestedFile.FileIdentifier, DataFormat.Xml, dataStandard, dataSource), cancellationToken);
+            var response = await SendMessageToHarvestedQueue(new HarvestedRecordMessage(harvestedFile.FileIdentifier, DataFormat.Xml, dataStandard, dataSource, MessageType.Metadata), cancellationToken);
             harvestedFile.ErrorMessage = response.ErrorMessage;
             harvestedFile.HasMessageSent = response.IsSucceeded;
         }
+
+        await SendMessageToHarvestedQueue(new HarvestedRecordMessage(string.Empty, DataFormat.Xml, dataStandard, dataSource, MessageType.End), cancellationToken);
     }
 
     private async Task<SaveBlobResponse> SaveHarvestedXml(string dataSourceName, string documentFileIdentifier, string metaDataXmlString, CancellationToken cancellationToken)
