@@ -8,86 +8,131 @@ Before proceeding, ensure you have the following installed:
 
 - .NET 8 SDK: You can download and install it from [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/8.0).
 
-# Configuration
+# Configurations
 
-1. **Processor Configuration**
+## Processor Configurations
    
-   Below explains the properties of Processor configuration.
+Below explains the properties of Processor configuration.
 
-    ***ProcessorType:***
+***ProcessorType:***
     This config is defined for the type of processor to be injected while running the Harvester service.
-    Possible values are defined in "Constants.ProcessorType" enum.
+    Possible values are defined in *Enums.DataSource* enum.
    
-    Example: 
-    `Jncc`
-    `Medin`
+    Example: Jncc | Medin 
 
-    ***Type:***
+***Type:***
     This will be the Class Type of the processor.
    
-    Example:
-    `Ncea.Harvester.Processors.JnccProcessor`
-    `Ncea.Harvester.Processors.MedinProcessor`
+    Example: Ncea.Harvester.Processors.JnccProcessor | Ncea.Harvester.Processors.MedinProcessor
 
-    ***DataSourceApiBase:***
-    This configuration is for setting the data source API base URI.
+***DataSourceApiBase:***
+    To provide DataSource base uri path.
    
-    Example: 
-    `https://data.jncc.gov.uk`
+    Example: https://data.jncc.gov.uk | https://portal.medin.org.uk
 
-    ***DataSourceApiUrl:***
-    Data source API url can be configured with the endpoint from which data can be pulled.
+***DataSourceApiUrl:***
+    To provide Data source API Endpoint.
    
-    Example:  For Jncc data source DataSourceApiUrl will be `"/waf/index.html"`
+    Example:  /waf/index.html | /geonetwork?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&outputFormat=application/xml&resultType=results&ElementSetName=full&outputSchema=http://www.isotc211.org/2005/gmd&maxRecords={{maxRecords}}&startPosition={{startPosition}}
 
-    ***Schedule:***
-    We can configure the schedule of the harvester configuration with this setting.
-3. **Cloud Service Configuration**
-   
-    ***ServiceBus Configuration***
-    We are using ServiceBusHostName to connect to ServiceBus service.
-   
-    Example:
-    `"ServiceBusHostName": "harvestersb.servicebus.windows.net"`
+***MandatoryFields:***
+    To provide mandatory field configurations.
 
-    ***KeyVault Configuration***
-    KeyVaultUri expects the KeyVault Uri to connect to the KayVault service.
-   
-    Example:
-    `"KeyVaultUri": "https://nceakv.vault.azure.net"`
-
-    ***BlobStorage Configuration***
-    BlobStorageUri config is used for connecting to Blob Storage.
-   
-    Example:
-    `"BlobStorageUri": "https://nceaharvesterblob.blob.core.windows.net"`
-
-    ***ApplicationInsights Configuration***
-    We are using ServiceBusHostName to connect to ServiceBus service.
-   
-    Example:
-    `"ApplicationInsights": {
-        "LogLevel": {
-        "Default": "Information"
+    "MandatoryFields": [
+        {
+          "Name": "FileIdentifier",
+          "Type": "text",
+          "Xpath": "//gmd:fileIdentifier/gco:CharacterString"
+        },
+        {
+          "Name": "Title",
+          "Type": "text",
+          "Xpath": "//gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString"
+        },
+        {
+          "Name": "Abstract",
+          "Type": "text",
+          "Xpath": "//gmd:identificationInfo/*/gmd:abstract/gco:CharacterString"
+        },
+        {
+          "Name": "PointOfContact",
+          "Type": "list",
+          "Xpath": "//gmd:CI_ResponsibleParty[./gmd:organisationName/gco:CharacterString != '' and (./gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/* != '' or ./gmd:role/gmd:CI_RoleCode != '')]/gmd:organisationName"
         }
-    }`
+      ]
 
-    ***Pipeline Variables***
-    Variable Groups
-    - pipelineVariables
-        - *acrConatinerRegistry*
-        - *acrContainerRepositoryHarvester*
-        - *acrName*
-        - *sonarCloudOrganization*
-        - *sonarProjectKeyHarvester*
-        - *sonarProjectNameHarvester*
-    - azureVariables-[dev/test/sandbox/...]
-        - *aksNamespace*
-        - *blobStorageUri*
-        - *keyVaultUri*
-        - *serviceBusHostName*
-    - *harvesterServiceVariables-[dev/test/sandbox/...]*
-        - *containerRepostitoryFullPath*
-        - *jnccSchedule*
-        - *medinSchedule*
-        - *serviceAccountHarvester*
+
+## Azure Dependencies
+   
+***ServiceBus Configurations:***
+    *ServiceBusHostName* to connect to ServiceBus, to send messages in servicebus queues and to dynamically create queues, if the *DynamicQueueCreation* is set to *True*   
+
+    "ServiceBusHostName": "DEVNCESBINF1401.servicebus.windows.net"
+    "HarvesterQueueName": "harvested-queue"
+    "MapperQueueName": "mapped-queue",
+    "DynamicQueueCreation": true,
+
+***KeyVault Configurations:***
+    *KeyVaultUri* to access Azure KeyVault and to access secrets and connection strings.   
+
+    "KeyVaultUri": "https://devnceinfkvt1401.vault.azure.net/"
+
+***BlobStorage Configuration:***
+    *BlobStorageUri* to connect to Azure Blob Storage, to create containers per DataSource and to Save the XML files for the respective data source.
+       
+    "BlobStorageUri": "https://devnceinfst1401.blob.core.windows.net"
+
+***FileShare Configuration:***
+    *FileShareName* to connect Azure File Share where Enriched XML Files are saved.   
+
+    "FileShareName": "/metadata-import"
+
+***ApplicationInsights Configuration:***
+    *ApplicationInsights* to enable logging and monitoring.   
+
+    "ApplicationInsights": {
+        "LogLevel": {
+        "Default": "Trace",
+        "System": "Trace",
+        "Microsoft": "Trace",
+        "Microsoft.Hosting.Lifetime": "Information",
+        "System.Net.Http.HttpClient": "Trace"
+        }
+    }
+    "Logging": {
+    "LogLevel": {
+      "Default": "Trace",
+      "System": "Trace",
+      "Microsoft": "Trace",
+      "Microsoft.Hosting.Lifetime": "Information",
+      "System.Net.Http.HttpClient": "Trace"
+    }
+  }
+
+
+## Pipeline Variables
+    
+### Variable Groups
+
+***pipelineVariables***
+
+    - acrConatinerRegistry
+    - acrContainerRepositoryHarvester
+    - acrName
+    - sonarCloudOrganization
+    - sonarProjectKeyHarvester
+    - sonarProjectNameHarvester
+
+***azureVariables-[dev/test/sandbox/...]***
+
+    - aksNamespace
+    - blobStorageUri
+    - keyVaultUri
+    - serviceBusHostName
+
+***harvesterServiceVariables-[dev/test/sandbox/...]***
+
+    - containerRepostitoryFullPath
+    - jnccSchedule
+    - medinSchedule
+    - serviceAccountHarvester
