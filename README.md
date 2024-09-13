@@ -1,6 +1,6 @@
 # Welcome to the NCEA Harvester Repository
 
-This is the code repository for the NCEA Metadata Harvester Microservice codebase.
+This is the code repository for the NCEA Metadata Harvester ETL Service codebase.
 
 # Prerequisites
 
@@ -108,6 +108,21 @@ Below explains the properties of Processor configuration.
       "System.Net.Http.HttpClient": "Trace"
     }
   }
+
+## Helm Chart Variables
+
+The variables on helm Chart value file (*ncea-harvester\values\values.yaml*) will be replaced during Helm Deploy with environment specific values
+
+| Variable name               | Variable Group            | Notes                                                               |
+| ----------------------------|---------------------------|---------------------------------------------------------------------|
+| containerRepositoryFullPath | harvesterServiceVariables |                                                                     |
+| imageTag                    |                           |  imageTag value is calculated dynamically variables-global.yml file |
+| serviceAccountHarvester     | harvesterServiceVariables |                                                                     |
+| serviceBusHostName          | azureVariables            |                                                                     |
+| keyVaultUri                 | azureVariables            |                                                                     |
+| blobStorageUri              | azureVariables            |                                                                     |
+| medinSchedule               | harvesterServiceVariables |                                                                     |
+| jnccSchedule                | harvesterServiceVariables |                                                                     |
 
 
 ## Pipeline Variables
