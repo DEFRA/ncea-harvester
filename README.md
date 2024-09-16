@@ -106,8 +106,8 @@ Below explains the properties of Processor configuration.
       "Microsoft": "Trace",
       "Microsoft.Hosting.Lifetime": "Information",
       "System.Net.Http.HttpClient": "Trace"
+     }
     }
-  }
 
 ## Helm Chart Variables
 
@@ -125,15 +125,74 @@ The variables on helm Chart value file (*ncea-harvester\values\values.yaml*) wil
 | jnccSchedule                | harvesterServiceVariables |                                                                     |
 
 
-## Pipeline Variables
+## Pipeline Configurations
+
+### Pipeline Setup
+
+- azure-pipelines.yaml
+
+- ***Stage : Build***
+    - steps-build-and-test.yaml
+        - task: UseDotNet@2 | version: '8.x'
+        - task: DotNetCoreCLI@2 | command: 'restore'
+        - task: DotNetCoreCLI@2 | command: 'build'
+        - task: DotNetCoreCLI@2 | command: 'dotnet test'
+        - task: PublishCodeCoverageResults@1 | codeCoverageTool: 'Cobertura'
+        - task: SonarCloudAnalyze@1
+        - task: SonarCloudPublish@1
+        
+    - steps-build-and-push-docker-images.yaml
+        - task: AzureCLI@2 | To build and push docker images to DEV ACR
+        
+    - steps-package-and-push-helm-charts.yaml
+        - task: HelmDeploy@0 | command: package
+        - task: PublishPipelineArtifact@1 | Saves the Helm Chart as Pipeline Artifact
+
+- ***Stage : dev***
+    - steps-deploy-helm-charts.yaml
+        - task: DownloadPipelineArtifact@2 | Downloads Helm Chart
+        - task: ExtractFiles@1 | Extracts files from Helm Chart
+        - task: HelmDeploy@0 | command: 'upgrade'
+
+- ***Stage : tst***
+    - steps-deploy-helm-charts.yaml
+        - task: DownloadPipelineArtifact@2 | Downloads Helm Chart
+        - task: ExtractFiles@1 | Extracts files from Helm Chart
+        - task: HelmDeploy@0 | command: 'upgrade' 
+
+- ***Stage : pre***
+    - steps-import-docker-images.yaml
+        - task: AzureCLI@2 | Import Docker Image from Dev ACR to Pre ACR
     
+    - steps-deploy-helm-charts.yaml
+        - task: DownloadPipelineArtifact@2 | Downloads Helm Chart
+        - task: ExtractFiles@1 | Extracts files from Helm Chart
+        - task: HelmDeploy@0 | command: 'upgrade' 
+    
+### Service Connections
+- **dev**: AZR-NCE-DEV1
+- **tst**: AZR-NCE-TST
+- **pre**: AZR-NCE-PRE
+
+### Build / Deployment Agents
+- **dev** | **tst** : DEFRA-COMMON-ubuntu2204-SSV3
+- **pre** : DEFRA-COMMON-ubuntu2204-SSV5
+
 ### Variable Groups
 
 ***pipelineVariables***
 
     - acrConatinerRegistry
+    - acrContainerRegistryPre
+    - acrContainerRegistryPreShort
+    - acrContainerRegistryDevResourceId
     - acrContainerRepositoryHarvester
     - acrName
+    - acrUser
+    - acrResourceGroupName
+    - azureSubscriptionDev
+    - azureSubscriptionTest
+    - azureSubscriptionPre
     - sonarCloudOrganization
     - sonarProjectKeyHarvester
     - sonarProjectNameHarvester
@@ -141,9 +200,16 @@ The variables on helm Chart value file (*ncea-harvester\values\values.yaml*) wil
 ***azureVariables-[dev/test/sandbox/...]***
 
     - aksNamespace
-    - blobStorageUri
+    - aksResourceGroupName
+    - acrResourceGroupName
+    - aksClusterName    
     - keyVaultUri
     - serviceBusHostName
+    - blobStorageUri
+    - fileShareClientUri
+    - storageAccountName
+    - storageAccountResourceGroup
+    - storageAccountFilePrivateEndpointFqdn 
 
 ***harvesterServiceVariables-[dev/test/sandbox/...]***
 
