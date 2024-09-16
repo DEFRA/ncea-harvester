@@ -1,4 +1,4 @@
-# Welcome to the NCEA Harvester Repository
+# Welcome to the NCEA Harvester ETL Service Repository
 
 This is the code repository for the NCEA Metadata Harvester ETL Service codebase.
 
