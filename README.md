@@ -2,6 +2,21 @@
 
 This is the code repository for the NCEA Metadata Harvester ETL Service codebase.
 
+## Process Flow
+
+- BackUp the metadata xml blobs created during the previous job run
+- Download the metadata xml files from data source (Medin / Jncc)
+- Check for mandatory fields in downloaded xml files.
+    - Mandatory Fields
+        - File Identitier
+        - Title
+        - Abstract
+        - PointOfContact
+- Save the metadata xml files to azure blob storage, if all the mandatory fields exists
+- Once all the metadata xml files are downloaded and saved on Azure Blob Storage, delete the Backed Up the metadata xml blobs created from previous job run
+- Finally send messages to the harvested-queue for each metadata xml file saved on Azure Blob Storage
+
+
 # Prerequisites
 
 Before proceeding, ensure you have the following installed:
