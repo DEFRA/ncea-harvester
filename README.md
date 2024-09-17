@@ -14,7 +14,12 @@ This is the code repository for the NCEA Metadata Harvester ETL Service codebase
         - PointOfContact
 - Save the metadata xml files to azure blob storage, if all the mandatory fields exists
 - Once all the metadata xml files are downloaded and saved on Azure Blob Storage, delete the Backed Up the metadata xml blobs created from previous job run
-- Finally send messages to the harvested-queue for each metadata xml file saved on Azure Blob Storage
+- Finally send messages to the harvested-queue for each metadata xml file saved on Azure Blob Storage. And send 2 additional messages to indicate the Start and End of the processflow. Each message with the following details,
+    - FileIdentitier 
+    - DataFormat ( *Xml | Csv* )
+    - DataStandard ( *Gemini23 | Gemini22* )
+    - DataSource ( *Medin | Jncc* )
+    - MessageType ( *Start | Metadata | End* )
 
 
 # Prerequisites
