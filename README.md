@@ -87,7 +87,7 @@ Below explains the properties of Processor configuration.
 ***ServiceBus Configurations:***
     *ServiceBusHostName* to connect to ServiceBus, to send messages in servicebus queues and to dynamically create queues, if the *DynamicQueueCreation* is set to *True*   
 
-    "ServiceBusHostName": "DEVNCESBINF1401.servicebus.windows.net"
+    "ServiceBusHostName": "[Azure ServiceBus Namespace].servicebus.windows.net"
     "HarvesterQueueName": "harvested-queue"
     "MapperQueueName": "mapped-queue",
     "DynamicQueueCreation": true,
@@ -95,12 +95,12 @@ Below explains the properties of Processor configuration.
 ***KeyVault Configurations:***
     *KeyVaultUri* to access Azure KeyVault and to access secrets and connection strings.   
 
-    "KeyVaultUri": "https://devnceinfkvt1401.vault.azure.net/"
+    "KeyVaultUri": "https://[Azure KeyVault Name].vault.azure.net/"
 
 ***BlobStorage Configuration:***
     *BlobStorageUri* to connect to Azure Blob Storage, to create containers per DataSource and to Save the XML files for the respective data source.
        
-    "BlobStorageUri": "https://devnceinfst1401.blob.core.windows.net"
+    "BlobStorageUri": "https://[Azure Storage Account Name].blob.core.windows.net"
 
 ***FileShare Configuration:***
     *FileShareName* to connect Azure File Share where Enriched XML Files are saved.   
